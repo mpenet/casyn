@@ -31,7 +31,7 @@ Contributions and suggestions are welcome.
 (require '[casyn.client :as client]
          '[casyn.ddl :as ddl])
 
-(ddl/add-keyspace (make-client)
+(ddl/add-keyspace (client/make-client)
                   "Keyspace1"
                   "SimpleStrategy"
                   [["colFamily1"]
