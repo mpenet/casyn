@@ -52,14 +52,14 @@ user> < ... >
          '[casyn.cluster :as cluster]
          '[lamina.core :as l])
 
-(def cl (cluster/make-cluster "localhost" 9160 ks))
+(def cl (cluster/make-cluster "localhost" 9160 "Keyspace1"))
 
 ;; We now create a client "executor" for our future requests
 ;; This will manage the node selection, connection pooling, and client
 ;; workflow for every command. It also allows you to set failover and
 ;; timeout at this level, separately from the cluster definition
 
-(def cx (client/client-executor cluster))
+(def cx (client/client-executor cl))
 ```
 
    API calls return result-channels.
