@@ -46,9 +46,9 @@
   ColumnOrSuperColumn
   (thrift->clojure [c]
     (thrift->clojure (or (.column c)
-                     (.counter_column c)
-                     (.super_column c)
-                     (.counter_super_column c))))
+                         (.counter_column c)
+                         (.super_column c)
+                         (.counter_super_column c))))
 
   SuperColumn
   (thrift->clojure [sc]
