@@ -47,8 +47,8 @@
 (extend-type TAsyncClient
 
   PClient
-  (set-timeout [client]
-    (.setTimeout client)
+  (set-timeout [client timeout]
+    (.setTimeout client timeout)
     client)
 
   (has-errors? [client]
