@@ -8,3 +8,4 @@
 /.lein-deps-sum
 src/casyn/play.clj
 /doc
+/updoc.sh

@@ -7,7 +7,7 @@
                  [org.apache.cassandra/cassandra-all "1.0.9"]
                  [tron "0.5.3"]
                  [log4j/log4j "1.2.16"]
-                 [commons-pool "1.5.6"]]
+                 [commons-pool "1.6"]]
 
-  :dev-dependencies [[codox "0.5.0"]]
+  :dev-dependencies [[codox "0.6.1"]]
   :warn-on-reflection true)
