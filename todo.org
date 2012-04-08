@@ -1,0 +1,4 @@
+* TODO composite col support
+* TODO get_index_slices
+* TODO more sugar (put etc)
+* TODO improve schema with cf/ks definitions and related meta data
