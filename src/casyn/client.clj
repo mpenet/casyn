@@ -58,7 +58,7 @@
   p/PPoolableClient
   (borrowable? [client]
     "Health check client before borrow"
-    (has-errors? client))
+    (not (has-errors? client)))
 
   (returnable? [client]
     "Health check client before it is returned"

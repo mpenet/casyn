@@ -74,10 +74,7 @@
       (c/kill client))
 
     (activateObject [this node-host client])
-
-    (validateObject [this node-host client]
-      (borrowable? client))
-
+    (validateObject [this node-host client])
     (passivateObject [this node-host client])))
 
 (defn ^GenericKeyedObjectPool create-pool

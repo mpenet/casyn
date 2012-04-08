@@ -128,10 +128,6 @@
            #(schema/decode-result % test-schema)
            count)))
 
-  (println @(lc/run-pipeline
-           (client-x core/get-rows ["0" "1"] cf)
-           #(schema/decode-result % test-schema)))
-
     (is (= 2
          @(lc/run-pipeline
            (client-x core/get-rows ["0" "1"] cf)
