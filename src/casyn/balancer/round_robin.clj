@@ -14,7 +14,7 @@
 
   (select-node [b _ avoid-node-set]
     (let [node (.take nodes)]
-      (.offer nodes node) ;; complete rotatation
+      (.offer nodes node) ;; complete rotation
       (if (contains? avoid-node-set node)
         (.select-node b _ avoid-node-set)
         node)))
