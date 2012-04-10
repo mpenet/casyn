@@ -34,19 +34,18 @@ http://javasourcecode.org/html/open-source/cassandra/cassandra-0.8.1/org/apache/
 ;; Async helper
 
 (defmacro wrap-result-channel
-  "Wraps a form in a resultset, and make the last arg of the form an
+  "Wraps a form in a Lamina result-channel, and make the last arg of the form an
    AsyncMethodCallback with error/complete callback bound to the result-channel"
   [form]
-  (let [call (gensym)
-        result-hint
-        (->> form first str rest (apply str)
-             (format "org.apache.cassandra.thrift.Cassandra$AsyncClient$%s_call"))]
+  (let [thrift-cmd-call (gensym)
+        result-hint (->> form first str rest (apply str)
+                         (format "org.apache.cassandra.thrift.Cassandra$AsyncClient$%s_call"))]
     `(let [result-ch# (lc/result-channel)]
        (~@form ^"org.apache.thrift.async.AsyncMethodCallback"
                (reify AsyncMethodCallback
-                 (onComplete [_ ~call]
+                 (onComplete [_ ~thrift-cmd-call]
                    (lc/success result-ch#
-                                (.getResult ~(with-meta call {:tag result-hint}))))
+                                (.getResult ~(with-meta thrift-cmd-call {:tag result-hint}))))
                  (onError [_ error#]
                    (lc/error result-ch# error#))))
        (lc/run-pipeline result-ch# codecs/thrift->clojure))))
@@ -69,14 +68,16 @@ http://javasourcecode.org/html/open-source/cassandra/cassandra-0.8.1/org/apache/
     (when ttl (.setTtl col (int ttl)))
     col))
 
-(defn ^CounterColumn counter-column
+(defn counter-column
   "Returns a Thrift CounterColumn instance"
+  ^CounterColumn
   [name value]
   (CounterColumn. (codecs/clojure->byte-buffer name)
                   (long value)))
 
-(defn ^SuperColumn super-column
+(defn super-column
   "Returns a Thrift SuperColumn instance"
+  ^SuperColumn
   [name columns]
   (SuperColumn. (codecs/clojure->byte-buffer name)
                 (map (partial apply column) columns)))
@@ -87,9 +88,10 @@ http://javasourcecode.org/html/open-source/cassandra/cassandra-0.8.1/org/apache/
   (CounterSuperColumn. (codecs/clojure->byte-buffer name)
                        (map (partial apply counter-column) columns)))
 
-(defn ^ColumnParent column-parent
+(defn column-parent
   "Returns a Thrift ColumnParent instance, api fns accept a vector or a single
  value that will be applied to this fn"
+  ^ColumnParent
   ([^String cf sc]
      (doto (ColumnParent. cf)
        (.setSuper_column ^ByteBuffer (codecs/clojure->byte-buffer sc))))
@@ -103,9 +105,10 @@ http://javasourcecode.org/html/open-source/cassandra/cassandra-0.8.1/org/apache/
   (doto (ColumnPath. cf)
     (.setSuper_column ^ByteBuffer (codecs/clojure->byte-buffer sc))))
 
-(defn ^ColumnPath column-path
+(defn column-path
   "Returns a Thrift ColumnPath instance, api fns accept a vector or a single
  value that will be applied to this fn"
+  ^ColumnPath
   ([^String cf sc c]
      (doto ^ColumnPath (column-path cf c)
        (.setSuper_column ^ByteBuffer (codecs/clojure->byte-buffer sc))))
@@ -183,10 +186,11 @@ http://javasourcecode.org/html/open-source/cassandra/cassandra-0.8.1/org/apache/
 
 (defn ^Deletion deletion
   ""
-  ([^SlicePredicate slice-pred ^ByteBuffer sc]
+  ^SlicePredicate
+  ([slice-pred ^ByteBuffer sc]
      (doto ^Deletion (deletion  slice-pred)
        (.setSuper_column sc)))
-  ([^SlicePredicate  slice-pred]
+  ([slice-pred]
      (doto (Deletion.)
        (.setTimestamp (utils/ts))
        (.setPredicate slice-pred))))

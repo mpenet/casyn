@@ -77,11 +77,12 @@
     (validateObject [this node-host client])
     (passivateObject [this node-host client])))
 
-(defn ^GenericKeyedObjectPool create-pool
+(defn create-pool
   "Using the constructor with the most options here,
    it is not very pretty but at least everything is accessible from the
    clojure side without having to do java interop and I can control
    defaults if needed"
+  ^GenericKeyedObjectPool
   [host port keyspace
    & {:keys [max-active exhausted-action max-wait max-idle max-total min-idle
              test-on-borrow test-on-return time-between-eviction-runs-millis
