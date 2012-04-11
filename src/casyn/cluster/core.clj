@@ -38,8 +38,7 @@
 
   PDiscoverable
   (refresh [cluster active-nodes]
-    (let [current-nodes-hosts (->> (b/get-nodes balancer)
-                                   (into #{}))]
+    (let [current-nodes-hosts (into #{} (b/get-nodes balancer))]
       (doseq [node-host (difference active-nodes current-nodes-hosts)]
         (add-node cluster node-host))
       (doseq [node-host (difference current-nodes-hosts active-nodes)]
