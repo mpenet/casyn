@@ -322,8 +322,8 @@ http://javasourcecode.org/html/open-source/cassandra/cassandra-0.8.1/org/apache/
    & {:keys [consistency]}]
   (wrap-result-channel
    (.batch_mutate client
-                  (reduce (fn [m [k v]]
-                            (assoc m (codecs/clojure->byte-buffer k) v))
+                  (reduce-kv (fn [m k v]
+                               (assoc m (codecs/clojure->byte-buffer k) v))
                           {}
                           mutations)
                   (consistency-level consistency))))
