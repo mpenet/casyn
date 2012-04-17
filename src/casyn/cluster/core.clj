@@ -1,19 +1,20 @@
 (ns casyn.cluster.core
-  (:use
-   [clojure.set]
-   [casyn.cluster]
-   [casyn.pool])
-
   (:require
+   [casyn.cluster :refer [add-node remove-node select-node
+                          get-balancer get-pool set-keyspace refresh
+                          PCluster PDiscoverable]]
+   [clojure.set :refer [difference]]
    [clojure.tools.logging :as log]
    [lamina.core :as lac]
    [casyn.utils :as u]
+   [casyn.core :as core]
    [casyn.balancer :as b]
+   [casyn.pool :as p]
    ;; [casyn.balancer.least-loaded :as bll]
    [casyn.balancer.round-robin :as brr]
-   [casyn.auto-discovery :as d]
-   [casyn.core :as core]
-   [casyn.pool.commons :as p])
+   [casyn.auto-discovery :as discovery]
+
+   [casyn.pool.commons :as commons])
 
   (:import [org.apache.commons.pool.impl GenericKeyedObjectPool]))
 
@@ -28,12 +29,12 @@
 
   (add-node [cluster node-host]
     (log/info :cluster.node.add node-host)
-    (add pool node-host)
+    (p/add pool node-host)
     (b/register-node balancer node-host))
 
   (remove-node [cluster node-host]
     (log/info :cluster.node.remove node-host)
-    (drain pool node-host)
+    (p/drain pool node-host)
     (b/deregister-node balancer node-host))
 
   PDiscoverable
@@ -53,12 +54,12 @@
   (let [host (u/host->ip host)
         cluster (Cluster. host port keyspace
                           (b/balancer load-balancer-strategy host)
-                          (apply p/create-pool host port keyspace
+                          (apply commons/create-pool host port keyspace
                                  (mapcat (juxt key val) (:pool options)))
                           options)]
 
     ;; (Thread/sleep 4000)
     (when auto-discovery
-      (d/start-worker cluster 2000))
+      (discovery/start-worker cluster 2000))
 
     cluster))

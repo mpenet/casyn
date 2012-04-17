@@ -1,5 +1,5 @@
 (ns casyn.codecs
-  (:require [casyn.types])
+  (:require casyn.types)
   (:import
    [org.apache.cassandra.utils ByteBufferUtil]
    [org.apache.cassandra.thrift

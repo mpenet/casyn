@@ -1,6 +1,6 @@
 (ns casyn.auto-discovery
-  (:use [clojure.core.incubator :only [-?>>]])
   (:require
+   [clojure.core.incubator :refer [-?>>]]
    [casyn.core :as core]
    [casyn.client :as cl]
    [casyn.cluster :as clu]

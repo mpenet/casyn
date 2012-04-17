@@ -1,13 +1,13 @@
 (ns casyn.balancer.least-loaded
   (:require
-   [casyn.balancer :as b]
+   [casyn.balancer :refer [PBalancer balancer]]
    [casyn.pool :as p]
    [lamina.core :as lac])
-  (:import [java.util.concurrent LinkedBlockingQueue ]))
+  (:import [java.util.concurrent LinkedBlockingQueue]))
 
 (deftype LeastLoadedBalancer [^LinkedBlockingQueue nodes]
 
-  b/PBalancer
+  PBalancer
 
   (get-nodes [b]
     (to-array nodes))
@@ -24,5 +24,5 @@
   (deregister-node [b node]
     (.remove nodes node)))
 
-(defmethod b/balancer :least-loaded [_ & initial-nodes]
+(defmethod balancer :least-loaded [_ & initial-nodes]
   (LeastLoadedBalancer. (LinkedBlockingQueue. initial-nodes)))

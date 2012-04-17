@@ -1,7 +1,6 @@
 (ns casyn.pool.commons
-  (:use [casyn.pool])
-
   (:require
+   [casyn.pool :refer [PPool returnable? return invalidate]]
    [casyn.client :as c]
    [casyn.core :as core]
    [casyn.ddl :as ddl]

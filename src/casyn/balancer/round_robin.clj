@@ -1,13 +1,13 @@
 (ns casyn.balancer.round-robin
   (:require
-   [casyn.balancer :as b]
+   [casyn.balancer :refer [PBalancer balancer]]
    [lamina.core :as lac])
 
   (:import [java.util.concurrent LinkedBlockingQueue]))
 
 (deftype LinkedBlockingQueueRoundRobinBalancer [^LinkedBlockingQueue nodes]
 
-  casyn.balancer/PBalancer
+  PBalancer
 
   (get-nodes [b]
     (to-array nodes))
@@ -26,6 +26,6 @@
     (.remove nodes node)))
 
 
-(defmethod b/balancer :round-robin [_ & initial-nodes]
+(defmethod balancer :round-robin [_ & initial-nodes]
   (LinkedBlockingQueueRoundRobinBalancer.
    (LinkedBlockingQueue. initial-nodes)))
