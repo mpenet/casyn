@@ -186,7 +186,11 @@
                [(core/delete-mutation (core/columns-by-names "n0" ))
                 (core/delete-mutation (core/columns-by-names "n00"))]}
           "1" {cf
-               [(core/delete-mutation (core/columns-by-names "n1"))]}}))))
+               [(core/delete-mutation (core/columns-by-names "n1"))]}})))
+  (is (nil?
+       @(client-x core/put "11" cf
+                  [["test-dwa1" "dwa1"]
+                   ["test-dwa2" "dwa2"]]))))
 
 (deftest test-ranges
   (is (= 2
@@ -195,10 +199,7 @@
                      (core/columns-by-names "n0" "n00")
                      [:start-key "0" :end-key "1"])
            #(schema/decode-result % test-schema)
-           count)))
-
-
-  )
+           count))))
 
 ;; (deftest test-index
 ;;   (is (= 2

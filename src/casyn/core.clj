@@ -442,8 +442,7 @@ http://javasourcecode.org/html/open-source/cassandra/cassandra-0.8.1/org/apache/
 
 (defn put
   "Accepts cols as vectors to be applied to cols constructors"
-  [^Cassandra$AsyncClient client cf row-key column-parent-args
-   columns
+  [^Cassandra$AsyncClient client row-key cf columns
    & {:keys [consistency
              counters
              super-columns
@@ -451,10 +450,11 @@ http://javasourcecode.org/html/open-source/cassandra/cassandra-0.8.1/org/apache/
   (batch-mutate
    client
    {row-key
-    {cf (map (cond
-               super-columns super-column-mutation
-               super-counters super-counter-column-mutation
-               counters counter-column-mutation
-               :else column-mutation)
+    {cf (map (partial apply
+                      (cond
+                        super-columns super-column-mutation
+                        super-counters super-counter-column-mutation
+                        counters counter-column-mutation
+                        :else column-mutation))
              columns)}}
    :consistency consistency))
