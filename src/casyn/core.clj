@@ -441,12 +441,11 @@ http://javasourcecode.org/html/open-source/cassandra/cassandra-0.8.1/org/apache/
              :consistency consistency))
 
 (defn put
-  "Accepts cols as vectors to be applied to cols constructors"
+  "Accepts cols as vectors or maps to be applied to cols
+  constructors (use maps for simple key vals, use vectors if you need
+  to set ttl or timestamp"
   [^Cassandra$AsyncClient client row-key cf columns
-   & {:keys [consistency
-             counters
-             super-columns
-             super-counters]}]
+   & {:keys [consistency counters super-columns super-counters]}]
   (batch-mutate
    client
    {row-key

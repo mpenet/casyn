@@ -187,10 +187,16 @@
                 (core/delete-mutation (core/columns-by-names "n00"))]}
           "1" {cf
                [(core/delete-mutation (core/columns-by-names "n1"))]}})))
+
   (is (nil?
        @(client-x core/put "11" cf
                   [["test-dwa1" "dwa1"]
-                   ["test-dwa2" "dwa2"]]))))
+                   ["test-dwa2" "dwa2"]])))
+
+  (is (nil?
+       @(client-x core/put "12" cf
+                  {:test-dwa1 "dwa1"
+                   :test-dwa2 "dwa12"}))))
 
 (deftest test-ranges
   (is (= 2
