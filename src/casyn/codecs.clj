@@ -84,6 +84,14 @@
   (clojure->byte-buffer [s]
     (ByteBuffer/wrap (.getBytes s "utf-8")))
 
+  clojure.lang.Keyword
+  (clojure->byte-buffer [s]
+    (clojure->byte-buffer (name s)))
+
+  clojure.lang.Symbol
+  (clojure->byte-buffer [s]
+    (clojure->byte-buffer (str s)))
+
   Object
   (clojure->byte-buffer [b]
     (ByteBufferUtil/bytes b))
@@ -101,6 +109,9 @@
 
 (defmethod bytes->clojure :string [_  v]
   (ByteBufferUtil/string (ByteBuffer/wrap v)))
+
+(defmethod bytes->clojure :keyword [_  v]
+  (keyword (ByteBufferUtil/string (ByteBuffer/wrap v))))
 
 (defmethod bytes->clojure :long [_  v]
   (ByteBufferUtil/toLong (ByteBuffer/wrap v)))
