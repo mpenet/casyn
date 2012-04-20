@@ -26,8 +26,8 @@
 
   clojure.lang.IPersistentMap
   (decode-result [r s]
-    (reduce
-     (fn [m [k v]]
+    (reduce-kv
+     (fn [m k v]
        (assoc m
          (codecs/bytes->clojure (:row s) k)
          (decode-result v s)))
