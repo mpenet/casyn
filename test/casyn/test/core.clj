@@ -198,6 +198,9 @@
                   {:test-dwa1 "dwa1"
                    :test-dwa2 "dwa12"}))))
 
+(deftest deletes
+  (is (= nil (seq @(client-x core/remove-column "0" cf)))))
+
 (deftest test-ranges
   (is (= 2
          @(lc/run-pipeline

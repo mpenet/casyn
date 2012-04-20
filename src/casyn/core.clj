@@ -457,3 +457,5 @@ http://javasourcecode.org/html/open-source/cassandra/cassandra-0.8.1/org/apache/
                         :else column-mutation))
              columns)}}
    :consistency consistency))
+
+(def delete-row remove-column)
