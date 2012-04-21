@@ -26,12 +26,14 @@
   :super :string
   :columns
   {:default [:string :string]
-   :exceptions {"age" :long}})
+   :exceptions {"age" :long
+                "n2-nil" :long}})
 
 (defn setup-test []
   @(client-x core/insert-column "0" cf (core/column "n0" "value0"))
   @(client-x core/insert-column "0" cf (core/column "n00" "value00"))
   @(client-x core/insert-column "1" cf (core/column "n1" "value1"))
+  @(client-x core/insert-column "1" cf (core/column "n2-nil" nil))
   @(client-x core/add "5" ccf "c0" 2))
 
 (defn teardown-test []
@@ -154,7 +156,7 @@
                      (core/columns-by-names "n0" "n1" "n00"))
            #(schema/decode-result % test-schema))))
 
-  (is (= {"1" 1 "0" 2}
+  (is (= {"1" 2 "0" 2}
          @(lc/run-pipeline
            (client-x core/mget-count
                      ["0" "1"]

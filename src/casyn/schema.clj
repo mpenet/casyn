@@ -7,6 +7,9 @@
             CounterSuperColumn
             KeySlice]))
 
+(def empty-byte-array (byte-array 0))
+
+
 ;; probably overkill, but we could imagine having different schema later
 (defrecord Schema [name row super columns])
 (defmacro defschema
@@ -37,12 +40,14 @@
   Column
   (decode-result [r s]
     (let [[name-type value-type] (-> s :columns :default)
-          col-name (codecs/bytes->clojure name-type (:name r))]
+          col-name (codecs/bytes->clojure name-type (:name r))
+          col-value-bytes (:value r)]
       (assoc r
         :name col-name
-        :value (codecs/bytes->clojure
-                (get-in s [:columns :exceptions col-name] value-type)
-                (:value r)))))
+        :value  (when-not (empty? col-value-bytes)
+                  (codecs/bytes->clojure
+                   (get-in s [:columns :exceptions col-name] value-type)
+                   col-value-bytes)))))
 
   CounterColumn
   (decode-result [r s]

@@ -1,4 +1,4 @@
-(defproject casyn "0.1.0-SNAPSHOT"
+(defproject casyn "0.1.1-SNAPSHOT"
   :description "Async Thrift based Cassandra Client"
   :dependencies [[org.clojure/clojure "1.4.0"]
                  [org.clojure/core.incubator "0.1.0"]

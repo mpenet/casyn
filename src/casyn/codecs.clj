@@ -92,13 +92,29 @@
   (clojure->byte-buffer [s]
     (clojure->byte-buffer (str s)))
 
-  Object
+  Long
   (clojure->byte-buffer [b]
-    (ByteBufferUtil/bytes b))
+    (ByteBufferUtil/bytes ^long b))
+
+  Integer
+  (clojure->byte-buffer [b]
+    (ByteBufferUtil/bytes ^int b))
+
+  Double
+  (clojure->byte-buffer [b]
+    (ByteBufferUtil/bytes ^double b))
+
+  Float
+  (clojure->byte-buffer [b]
+    (ByteBufferUtil/bytes ^float b))
 
   clojure.lang.Sequential
   (clojure->byte-buffer [v]
     (map clojure->byte-buffer v))
+
+  Object
+  (clojure->byte-buffer [b]
+    (ByteBufferUtil/bytes b))
 
   nil
   (clojure->byte-buffer [b]
