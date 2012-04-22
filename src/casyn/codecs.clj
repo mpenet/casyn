@@ -74,6 +74,7 @@
   nil
   (thrift->clojure [v] v))
 
+
 (extend-protocol ByteBufferEncodable
 
   (Class/forName "[B")
@@ -91,6 +92,11 @@
   clojure.lang.Symbol
   (clojure->byte-buffer [s]
     (clojure->byte-buffer (str s)))
+
+  Boolean
+  (clojure->byte-buffer [b]
+    (ByteBufferUtil/bytes
+     (int (if b 1 0))))
 
   Long
   (clojure->byte-buffer [b]
@@ -114,7 +120,9 @@
 
   Object
   (clojure->byte-buffer [b]
-    (ByteBufferUtil/bytes b))
+    ;; we asume it s a clojure data structure, if you want to escape
+    ;; this for other types extend this protocol to do so
+    (ByteBufferUtil/bytes (prn-str b)))
 
   nil
   (clojure->byte-buffer [b]
@@ -127,7 +135,7 @@
   (ByteBufferUtil/string (ByteBuffer/wrap v)))
 
 (defmethod bytes->clojure :keyword [_  v]
-  (keyword (ByteBufferUtil/string (ByteBuffer/wrap v))))
+  (keyword (bytes->clojure :string v)))
 
 (defmethod bytes->clojure :long [_  v]
   (ByteBufferUtil/toLong (ByteBuffer/wrap v)))
@@ -139,9 +147,19 @@
   (ByteBufferUtil/toDouble (ByteBuffer/wrap v)))
 
 (defmethod bytes->clojure :int [_ v]
-  (ByteBufferUtil/toDouble (ByteBuffer/wrap v)))
+  (ByteBufferUtil/toInt (ByteBuffer/wrap v)))
+
+(defmethod bytes->clojure :boolean [_ v]
+  (= 1 (bytes->clojure :int v)))
+
+(defmethod bytes->clojure :symbol [_ v]
+  (symbol (bytes->clojure :string v)))
 
 (defmethod bytes->clojure :clojure [_ v]
   (read-string (bytes->clojure :string v)))
 
 (defmethod bytes->clojure :default [_ v] v)
+
+(defn cols->map
+  [cols]
+  (apply array-map (mapcat (juxt :name :value) cols)))

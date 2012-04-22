@@ -29,11 +29,38 @@
    :exceptions {"age" :long
                 "n2-nil" :long}})
 
+(schema/defschema test-codec-schema
+  :row :string
+  :super :string
+  :columns
+  {:default [:keyword :string]
+   :exceptions {:long :long
+                :int :int
+                :double :double
+                :float :float
+                :str :string
+                :symbol :symbol
+                :kw :keyword
+                :boo :boolean
+                :clj :clojure}})
+
+(def test-coerce-data
+  {:long 1
+   :int (int 1)
+   :float (float 0.2)
+   :double 0.3
+   :str "meh"
+   :symbol 'sym
+   :kw :keyword
+   :boo true
+   :clj {:foo "bar"}})
+
 (defn setup-test []
   @(client-x core/insert-column "0" cf (core/column "n0" "value0"))
   @(client-x core/insert-column "0" cf (core/column "n00" "value00"))
   @(client-x core/insert-column "1" cf (core/column "n1" "value1"))
   @(client-x core/insert-column "1" cf (core/column "n2-nil" nil))
+  @(client-x core/put "2" cf test-coerce-data)
   @(client-x core/add "5" ccf "c0" 2))
 
 (defn teardown-test []
@@ -204,13 +231,23 @@
   (is (= nil (seq @(client-x core/remove-column "0" cf)))))
 
 (deftest test-ranges
-  (is (= 2
+  (is (= 3
          @(lc/run-pipeline
            (client-x core/get-range-slice cf
                      (core/columns-by-names "n0" "n00")
                      [:start-key "0" :end-key "1"])
            #(schema/decode-result % test-schema)
            count))))
+
+
+(deftest codecs
+  (is (= test-coerce-data
+         @(lc/run-pipeline
+          (client-x core/get-row "2" cf)
+          #(schema/decode-result % test-codec-schema)
+          codecs/cols->map))))
+
+
 
 ;; (deftest test-index
 ;;   (is (= 2
