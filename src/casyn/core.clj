@@ -38,8 +38,8 @@ http://javasourcecode.org/html/open-source/cassandra/cassandra-0.8.1/org/apache/
    AsyncMethodCallback with error/complete callback bound to the result-channel"
   [form]
   (let [thrift-cmd-call (gensym)
-        result-hint (->> form first str rest (apply str)
-                         (format "org.apache.cassandra.thrift.Cassandra$AsyncClient$%s_call"))]
+        result-hint (format "org.apache.cassandra.thrift.Cassandra$AsyncClient$%s_call"
+                            (-> form first str (subs 1)))]
     `(let [result-ch# (lc/result-channel)]
        (~@form ^"org.apache.thrift.async.AsyncMethodCallback"
                (reify AsyncMethodCallback
