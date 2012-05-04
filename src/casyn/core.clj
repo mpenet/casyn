@@ -14,7 +14,7 @@ http://javasourcecode.org/html/open-source/cassandra/cassandra-0.8.1/org/apache/
     Column SuperColumn CounterSuperColumn CounterColumn ColumnPath
     ColumnOrSuperColumn ColumnParent Mutation Deletion SlicePredicate
     SliceRange KeyRange AuthenticationRequest Cassandra$AsyncClient
-    IndexClause ConsistencyLevel Compression]
+    IndexClause IndexExpression IndexOperator ConsistencyLevel Compression]
    [org.apache.thrift.async AsyncMethodCallback TAsyncClient]
    [java.nio ByteBuffer]))
 
@@ -201,12 +201,38 @@ http://javasourcecode.org/html/open-source/cassandra/cassandra-0.8.1/org/apache/
   (doto (Mutation.)
     (.setDeletion (apply deletion args))))
 
-  ;; TODO
-(defn index-clause
-  ""
-  []
-  )
 
+;; Secondary indexes
+
+(def index-operators
+  {:eq? IndexOperator/EQ
+   :lt? IndexOperator/LT
+   :gt? IndexOperator/GT
+   :lte? IndexOperator/LTE
+   :gte? IndexOperator/GTE})
+
+(defn index-expressions
+  [expressions]
+  (map (fn [[op k v]]
+         (IndexExpression. (codecs/clojure->byte-buffer k)
+                           (index-operators op)
+                           (codecs/clojure->byte-buffer v)))
+       expressions))
+
+(defn with-indexes
+  "Defines one or more IndexExpressions for get_indexed_slices. An
+  IndexExpression containing an EQ IndexOperator must be present"
+  [expressions & {:keys [start-key count]
+      :or {count 100}}]
+  (IndexClause. (index-expressions expressions)
+                (codecs/clojure->byte-buffer start-key)
+                (int count)))
+
+(comment
+  (with-indexes :where [[:eq? :name "dwa"]
+                       [:eq? :name "dwa"]
+                       [:eq? :name "dwa"]]
+    :start-key 123 :count 123))
 ;; API
 
 (defn login
@@ -341,13 +367,13 @@ http://javasourcecode.org/html/open-source/cassandra/cassandra-0.8.1/org/apache/
 
 (defn get-indexed-slice
   ""
-  [^Cassandra$AsyncClient client column-parent-args slice-predicate index-clause
+  [^Cassandra$AsyncClient client column-parent-args index-clause slice-predicate
    & {:keys [consistency]}]
   (wrap-result-channel
    (.get_indexed_slices client
                         (column-parent-from-args column-parent-args)
-                        slice-predicate
                         index-clause
+                        slice-predicate
                         (consistency-level consistency))))
 
 (defn truncate
