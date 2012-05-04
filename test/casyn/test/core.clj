@@ -249,18 +249,15 @@
           #(schema/decode-result % test-codec-schema)
           codecs/cols->map))))
 
-
-
-;; (deftest test-index
-;;   (is (= 2
-;;          @(lc/run-pipeline
-;;            (core/get-index-slice *c*
-;;                                  [cf]
-;;                                  (core/columns-by-names "n0" "n00")
-;;                                  [:start-key "0" :end-key "1"])
-;;            #(schema/decode-result % test-schema)
-;;            count))))
-
+(deftest test-index
+  (is (= 1
+         @(lc/run-pipeline
+           (client-x core/get-indexed-slice
+                     cf
+                     [[:eq? :n1 "value1"]]
+                     (core/columns-by-names "n1"))
+           #(schema/decode-result % test-schema)
+           count))))
 
 (deftest test-cql
   (is true))

@@ -80,13 +80,13 @@ http://javasourcecode.org/html/open-source/cassandra/cassandra-0.8.1/org/apache/
   ^SuperColumn
   [name columns]
   (SuperColumn. (codecs/clojure->byte-buffer name)
-                (map (partial apply column) columns)))
+                (map #(apply column %) columns)))
 
 (defn counter-super-column
   ""
   [name columns]
   (CounterSuperColumn. (codecs/clojure->byte-buffer name)
-                       (map (partial apply counter-column) columns)))
+                       (map #(apply counter-column %) columns)))
 
 (defn column-parent
   "Returns a Thrift ColumnParent instance, api fns accept a vector or a single
@@ -219,7 +219,7 @@ http://javasourcecode.org/html/open-source/cassandra/cassandra-0.8.1/org/apache/
                            (codecs/clojure->byte-buffer v)))
        expressions))
 
-(defn with-indexes
+(defn index-clause
   "Defines one or more IndexExpressions for get_indexed_slices. An
   IndexExpression containing an EQ IndexOperator must be present"
   [expressions & {:keys [start-key count]
@@ -228,11 +228,6 @@ http://javasourcecode.org/html/open-source/cassandra/cassandra-0.8.1/org/apache/
                 (codecs/clojure->byte-buffer start-key)
                 (int count)))
 
-(comment
-  (with-indexes :where [[:eq? :name "dwa"]
-                       [:eq? :name "dwa"]
-                       [:eq? :name "dwa"]]
-    :start-key 123 :count 123))
 ;; API
 
 (defn login
@@ -367,12 +362,12 @@ http://javasourcecode.org/html/open-source/cassandra/cassandra-0.8.1/org/apache/
 
 (defn get-indexed-slice
   ""
-  [^Cassandra$AsyncClient client column-parent-args index-clause slice-predicate
+  [^Cassandra$AsyncClient client column-parent-args index-clause-args slice-predicate
    & {:keys [consistency]}]
   (wrap-result-channel
    (.get_indexed_slices client
                         (column-parent-from-args column-parent-args)
-                        index-clause
+                        (index-clause index-clause-args)
                         slice-predicate
                         (consistency-level consistency))))
 
@@ -475,12 +470,13 @@ http://javasourcecode.org/html/open-source/cassandra/cassandra-0.8.1/org/apache/
   (batch-mutate
    client
    {row-key
-    {cf (map (partial apply
-                      (cond
-                        super-columns super-column-mutation
-                        super-counters super-counter-column-mutation
-                        counters counter-column-mutation
-                        :else column-mutation))
+    {cf (map #(apply
+               (cond
+                 super-columns super-column-mutation
+                 super-counters super-counter-column-mutation
+                 counters counter-column-mutation
+                 :else column-mutation)
+               %)
              columns)}}
    :consistency consistency))
 
