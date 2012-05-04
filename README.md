@@ -11,8 +11,6 @@ At the moment the api is relatively low level, it will be improved.
 
 The majority of the [Cassandra Api](http://wiki.apache.org/cassandra/API) is
 supported though.
-The only missing parts are get_indexed_slices and helpers to deal with
-composite types.
 
 Pooling is using Apache commons pools, but it is open to other
 implementations from clojure Protocols/multimethods, the same is true for almost
