@@ -82,7 +82,9 @@
      @(ddl/add-keyspace (client/make-client "127.0.0.1" 9160)
                         ks
                         "SimpleStrategy"
-                        [[cf]
+                        [[cf
+                          :column-metadata [[:n0 :utf-8]
+                                            [:n1 :utf-8 :n1-index :utf-8]]]
                          [ccf
                           :default-validation-class :counter
                           :replicate-on-write true]]
