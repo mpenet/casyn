@@ -1,6 +1,8 @@
 (ns casyn.ddl
-  (:require [casyn.core :as core])
-  (:import [org.apache.cassandra.thrift CfDef KsDef Cassandra$AsyncClient]))
+  (:require [casyn.core :as core]
+            [casyn.codecs :as codecs])
+  (:import [org.apache.cassandra.thrift CfDef KsDef ColumnDef
+            Cassandra$AsyncClient IndexType]))
 
 
 ;; AbstractCommutativeType, AbstractCompositeType, AbstractUUIDType,
@@ -47,12 +49,22 @@
 
 ;; :: TODO
 
+(defn column-definition
+  [name validation-class & [index-name]]
+  (let [cdef (ColumnDef. (codecs/clojure->byte-buffer name)
+                         (cassandra-types validation-class))]
+    (when index-name
+      (.setIndex_name cdef (name index-name))
+      (.setIndex_type cdef IndexType/KEYS))
+    cdef))
+
 (defn column-family-definition
   ""
   [ks-name cf-name
    & {:keys [cf-type comparator-type
              default-validation-class
-             replicate-on-write]}]
+             replicate-on-write
+             column-metadata]}]
   (let [cfd (CfDef. ks-name cf-name)]
     (when cf-type
       (.setColumn_type cfd (column-type cf-type)))
@@ -64,6 +76,8 @@
        (default-validation-class cassandra-types)))
     (when replicate-on-write
       (.setReplicate_on_write cfd replicate-on-write))
+    (when column-metadata
+      (.setColumn_metadata cfd (map #(apply column-definition %) column-metadata)))
     cfd))
 
 (defn keyspace-definition
@@ -72,7 +86,7 @@
    & {:keys [durable-writes strategy-options]}]
   (let [ksd (KsDef. ks-name
                     strategy-class
-                    (map (partial apply column-family-definition)
+                    (map #(apply column-family-definition %)
                          column-family-definitions))]
     (when strategy-options
       (.setStrategy_options ksd strategy-options))
@@ -87,7 +101,7 @@
     client
     (apply keyspace-definition
            ks-name strategy-class
-           (map (partial cons ks-name)
+           (map #(cons ks-name %)
                 column-family-defs)
            more))))
 
@@ -99,7 +113,7 @@
     client
     (apply keyspace-definition
            ks-name strategy-class
-           (map (partial cons ks-name)
+           (map #(cons ks-name %)
                 column-family-defs)
            more))))
 
