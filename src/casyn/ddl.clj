@@ -84,7 +84,7 @@
   ""
   [ks-name strategy-class column-family-definitions
    & {:keys [durable-writes strategy-options]}]
-  (let [ksd (KsDef. ks-name
+  (let [ksd (KsDef. (name ks-name)
                     strategy-class
                     (map #(apply column-family-definition %)
                          column-family-definitions))]
