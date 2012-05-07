@@ -3,7 +3,8 @@
    [casyn.balancer :refer [PBalancer balancer]]
    [lamina.core :as lac])
 
-  (:import [java.util.concurrent LinkedBlockingQueue]))
+  (:import [java.util.concurrent LinkedBlockingQueue]
+           [java.util Collection]))
 
 (deftype LinkedBlockingQueueRoundRobinBalancer [^LinkedBlockingQueue nodes]
 
@@ -28,4 +29,4 @@
 
 (defmethod balancer :round-robin [_ & initial-nodes]
   (LinkedBlockingQueueRoundRobinBalancer.
-   (LinkedBlockingQueue. initial-nodes)))
+   (LinkedBlockingQueue. ^Collection initial-nodes)))
