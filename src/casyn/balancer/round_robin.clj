@@ -1,8 +1,5 @@
 (ns casyn.balancer.round-robin
-  (:require
-   [casyn.balancer :refer [PBalancer balancer]]
-   [lamina.core :as lac])
-
+  (:require [casyn.balancer :refer [PBalancer balancer]])
   (:import [java.util.concurrent LinkedBlockingQueue]
            [java.util Collection]))
 
