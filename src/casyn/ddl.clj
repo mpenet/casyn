@@ -65,7 +65,7 @@
              default-validation-class
              replicate-on-write
              column-metadata]}]
-  (let [cfd (CfDef. (name ks-name) (name cf-name))]
+  (let [cfd (CfDef. ks-name cf-name)]
     (when cf-type
       (.setColumn_type cfd (column-type cf-type)))
     (when comparator-type
@@ -84,7 +84,7 @@
   ""
   [ks-name strategy-class column-family-definitions
    & {:keys [durable-writes strategy-options]}]
-  (let [ksd (KsDef. (name ks-name)
+  (let [ksd (KsDef. ks-name
                     strategy-class
                     (map #(apply column-family-definition %)
                          column-family-definitions))]
