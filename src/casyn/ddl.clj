@@ -65,7 +65,7 @@
              default-validation-class
              replicate-on-write
              column-metadata]}]
-  (let [cfd (CfDef. ks-name cf-name)]
+  (let [cfd (CfDef. (name ks-name) cf-name)]
     (when cf-type
       (.setColumn_type cfd (column-type cf-type)))
     (when comparator-type
