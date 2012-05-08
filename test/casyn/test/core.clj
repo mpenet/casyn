@@ -84,7 +84,7 @@
                         "SimpleStrategy"
                         [[cf
                           :column-metadata [[:n0 :utf-8]
-                                            [:n1 :utf-8 :n1-index :utf-8]]]
+                                            [:n1 :utf-8 :n1_index :utf-8]]]
                          [ccf
                           :default-validation-class :counter
                           :replicate-on-write true]]
@@ -126,6 +126,10 @@
            type))))
 
 (deftest test-get-slice
+
+  (println            @(client-x core/get-slice "0" cf
+                                 (core/columns-by-names "n0" "n00")))
+
   (is (= 2
          @(lc/run-pipeline
            (client-x core/get-slice "0" cf
