@@ -129,7 +129,9 @@
     (java.nio.ByteBuffer/allocate 0)))
 
 
-(defmulti bytes->clojure (fn [type-key v] type-key))
+(defmulti bytes->clojure
+  ""
+  (fn [type-key v] type-key))
 
 (defmethod bytes->clojure :string [_  v]
   (ByteBufferUtil/string (ByteBuffer/wrap v)))
@@ -161,5 +163,6 @@
 (defmethod bytes->clojure :default [_ v] v)
 
 (defn cols->map
+  "Turns a collection of columns into an array-map with column name mapped to key"
   [cols]
   (apply array-map (mapcat (juxt :name :value) cols)))

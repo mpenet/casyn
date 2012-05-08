@@ -126,10 +126,6 @@
            type))))
 
 (deftest test-get-slice
-
-  (println            @(client-x core/get-slice "0" cf
-                                 (core/columns-by-names "n0" "n00")))
-
   (is (= 2
          @(lc/run-pipeline
            (client-x core/get-slice "0" cf

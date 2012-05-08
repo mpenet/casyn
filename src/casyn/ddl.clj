@@ -50,8 +50,8 @@
 ;; :: TODO
 
 (defn column-definition
-  [name validation-class & [index-name]]
-  (let [cdef (ColumnDef. (codecs/clojure->byte-buffer name)
+  [col-name validation-class & [index-name]]
+  (let [cdef (ColumnDef. (codecs/clojure->byte-buffer col-name)
                          (cassandra-types validation-class))]
     (when index-name
       (.setIndex_name cdef (name index-name))
@@ -84,7 +84,7 @@
   ""
   [ks-name strategy-class column-family-definitions
    & {:keys [durable-writes strategy-options]}]
-  (let [ksd (KsDef. ks-name
+  (let [ksd (KsDef. (name ks-name)
                     strategy-class
                     (map #(apply column-family-definition %)
                          column-family-definitions))]
