@@ -117,12 +117,12 @@ user> #casyn.types.Column{:name #<byte[] [B@7cc09980>, :value #<byte[] [B@489de2
    Schema supports `:string` `:long`  `:float`  `:double` `:int` `:boolean` `:keyword` `:clojure` `:symbol` `:bytes`
    These are also extendable from a multimethod.
 
-   See See [tests](https://github.com/mpenet/casyn/blob/master/test/casyn/test/core.clj) and  [core.clj](https://github.com/mpenet/casyn/blob/master/src/casyn/core.clj) for more details.
-
    If you want a collection of columns to be turned into a regular map
    you can use `cols->map` , :name and :value are then mapped to
    key/value. You have no longer access to the additional data such as
    ttl or timestamp on the column though.
+
+   See See [tests](https://github.com/mpenet/casyn/blob/master/test/casyn/test/core.clj) and  [api.clj](https://github.com/mpenet/casyn/blob/master/src/casyn/api.clj) for more details.
 
 ## License
 
