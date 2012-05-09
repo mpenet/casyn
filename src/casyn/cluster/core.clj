@@ -1,7 +1,7 @@
 (ns casyn.cluster.core
   (:require
    [casyn.cluster :refer [add-node remove-node select-node
-                          get-balancer get-pool set-keyspace refresh
+                          get-balancer get-pool refresh
                           PCluster PDiscoverable]]
    [clojure.set :refer [difference]]
    [clojure.tools.logging :as log]

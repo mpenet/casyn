@@ -7,8 +7,7 @@
   (get-balancer [cluster] "")
   (add-node [cluster node] "")
   (remove-node [cluster node] "")
-  (select-node [cluster avoid-node-set] "")
-  (set-keyspace [cluster ks] ""))
+  (select-node [cluster avoid-node-set] ""))
 
 (defprotocol PDiscoverable
   (refresh [cluster nodes] ""))
