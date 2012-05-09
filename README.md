@@ -106,9 +106,9 @@ user> #casyn.types.Column{:name #<byte[] [B@7cc09980>, :value #<byte[] [B@489de2
  :exceptions {"age" :long}})
 
 (l/run-pipeline
-  (cx insert-column "1" "colFamily1" (column "n0" "value0") :consistency :all)
+  (c insert-column "1" "colFamily1" (column "n0" "value0") :consistency :all)
   :on-error (fn [_] (println "something went wrong"))
-  (fn [_] (cx get-row "1" "colFamily1"))
+  (fn [_] (c get-row "1" "colFamily1"))
   #(decode-result % test-schema))
 
  user> #casyn.types.Column{:name "n0", :value "value0", :ttl 0, :timestamp 1332536503948650}
