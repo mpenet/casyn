@@ -1,5 +1,6 @@
 (defproject casyn "0.1.1-SNAPSHOT"
   :description "Async Thrift based Cassandra Client"
+  :url "https://github.com/mpenet/casyn"
   :dependencies [[org.clojure/clojure "1.4.0"]
                  [org.clojure/core.incubator "0.1.0"]
                  [lamina "0.5.0-alpha3"]
