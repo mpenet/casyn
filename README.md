@@ -57,9 +57,7 @@ user> < ... >
    you can just have the call block and wait for a result/error by dereferencing it
 
    ```clojure
-   @(c set-keyspace "Keyspace1")
    @(c get-row "1" "colFamily1")
-
    ```
 
    or since we want to play asynchronously register a callback
@@ -122,7 +120,7 @@ user> #casyn.types.Column{:name #<byte[] [B@7cc09980>, :value #<byte[] [B@489de2
    key/value. You have no longer access to the additional data such as
    ttl or timestamp on the column though.
 
-   See See [tests](https://github.com/mpenet/casyn/blob/master/test/casyn/test/core.clj) and  [api.clj](https://github.com/mpenet/casyn/blob/master/src/casyn/api.clj) for more details.
+   See See [tests](https://github.com/mpenet/casyn/blob/master/test/casyn/test/core.clj),  [api.clj](https://github.com/mpenet/casyn/blob/master/src/casyn/api.clj) and [codox doc](http://mpenet.github.com/casyn/) for more details.
 
 ## License
 

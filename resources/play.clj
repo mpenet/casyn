@@ -1,17 +1,6 @@
 (ns playground
-  (:require [casyn
-             [core :as core]
-             [client :as client]
-             [schema :as schema]
-             [ddl :as ddl]
-             [codecs :as codecs]
-             [utils :as utils]]
-            [casyn.pool.commons :as p]
-            [casyn.cluster :as cp]
-            [casyn.cluster.core :as cluster]
+  (:require [casyn.core :as c]
             [lamina.core :as lac]))
-
-
 
 (def ks "casyn_test_ks")
 (def cf "test_cf")
@@ -20,7 +9,7 @@
 
 
 (try
- @(ddl/add-keyspace (client/make-client)
+ @(c/add-keyspace (c/make-client)
                     ks
                     "SimpleStrategy"
                     [[cf]
@@ -33,16 +22,16 @@
 
 
 
-(schema/defschema test-schema
+(c/defschema test-schema
   :row :string
   :super :string
   :columns
   {:default [:string :string]
    :exceptions {"age" :long}})
 
-(def cl (cluster/make-cluster "localhost" 9160 ks))
+(def cl (c/make-cluster "localhost" 9160 ks))
 
-(def client-x (client/client-fn cl))
+(def client-x (c/client-fn cl))
 
 
 ;; (prn cl)
@@ -54,14 +43,14 @@
 ;; (prn (cp/refresh cl (prn (discover cl))))
 ;; ;; (connection/close  client-pool)
 
-(prn @(client-x core/insert-column
+(prn @(client-x c/insert-column
             "1"
             cf
-            (core/column "col-name" "col-value")))
+            (c/column "col-name" "col-value")))
 
 
 
-(prn @(client-x core/get-column
+(prn @(client-x c/get-column
             "1"
            [cf "col-name"]))
 
@@ -80,7 +69,7 @@
 (time
 
  (dotimes [d 1000]
-   (client-x core/insert-column
+   (client-x c/insert-column
              "1"
              cf
-             (core/column "col-name" "col-value"))))
+             (c/column "col-name" "col-value"))))
