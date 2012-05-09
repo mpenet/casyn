@@ -21,7 +21,7 @@
   (register-node [b node]
     (.offer nodes node))
 
-  (deregister-node [b node]
+  (unregister-node [b node]
     (.remove nodes node)))
 
 (defmethod balancer :least-loaded [_ & initial-nodes]

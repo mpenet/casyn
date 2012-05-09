@@ -4,6 +4,6 @@
   (get-nodes [b])
   (select-node [b pool avoid-node-set])
   (register-node [b node])
-  (deregister-node [b node]))
+  (unregister-node [b node]))
 
 (defmulti balancer (fn [k & initial-nodes] k))

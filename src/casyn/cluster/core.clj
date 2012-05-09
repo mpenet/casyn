@@ -34,7 +34,7 @@
   (remove-node [cluster node-host]
     (log/info :cluster.node.remove node-host)
     (p/drain pool node-host)
-    (b/deregister-node balancer node-host))
+    (b/unregister-node balancer node-host))
 
   PDiscoverable
   (refresh [cluster active-nodes]
