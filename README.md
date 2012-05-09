@@ -26,38 +26,30 @@ Contributions and suggestions are welcome.
    Start by creating a playground for this introduction:
 
    ```clojure
-(require '[casyn.client :as client]
-         '[casyn.ddl :as ddl])
+(use 'casyn.core)
 
-(ddl/add-keyspace (client/make-client)
-                  "Keyspace1"
-                  "SimpleStrategy"
-                  [["colFamily1"]
-                  ["colFamily2"
-                  :default-validation-class :counter
-                  :replicate-on-write true]]
-                  :strategy-options {"replication_factor" "1"})
+(add-keyspace (make-client)
+               "Keyspace1"
+               "SimpleStrategy"
+               [["colFamily1"]
+               ["colFamily2"
+               :default-validation-class :counter
+               :replicate-on-write true]]
+               :strategy-options {"replication_factor" "1"})
 user> < ... >
    ```
 
-   Every call will return a [Result Channel](https://github.com/ztellman/lamina/wiki/Result-Channels) which relies on a
-   org.apache.thrift.async.AsyncMethodCallback under the hood. So it
-   will return immediately and emit a success or error at some point.
-
    ```clojure
-(require '[casyn.core :as core]
-         '[casyn.client :as client]
-         '[casyn.cluster :as cluster]
-         '[lamina.core :as l])
+(require '[lamina.core :as l])
 
-(def cl (cluster/make-cluster "localhost" 9160 "Keyspace1"))
+(def cl (make-cluster "localhost" 9160 "Keyspace1"))
 
-;; We now create a client "executor" for our future requests
+;; We now create a client function for our future requests
 ;; This will manage the node selection, connection pooling, and client
 ;; workflow for every command. It also allows you to set failover and
 ;; timeout at this level, separately from the cluster definition
 
-(def cx (client/client-executor cl))
+(def c (client-fn cl))
 ```
 
    API calls return result-channels.
@@ -65,14 +57,16 @@ user> < ... >
    you can just have the call block and wait for a result/error by dereferencing it
 
    ```clojure
-   @(cx core/set-keyspace "Keyspace1")
+   @(c set-keyspace "Keyspace1")
+   @(c get-row "1" "colFamily1")
+
    ```
 
    or since we want to play asynchronously register a callback
 
    ```clojure
-(on-success (cx core/set-keyspace "Keyspace1")
-            #(println %))
+   (on-success (c get-row "1" "colFamily1")
+               #(println "It worked, row:" %))
    ```
 
    or use a pipeline to compose async/sync operations.
@@ -82,10 +76,10 @@ user> < ... >
 
    ```clojure
 
-(lc/run-pipeline
-  (cx core/insert-column "1" "colFamily1" (core/column "n0" "value0"))
+(l/run-pipeline
+  (c insert-column "1" "colFamily1" (column "n0" "value0"))
   {:error-handler (fn [_] (println "snap, something went wrong"))}
-  (fn [_] (cx core/get-row "1" "colFamily1")))
+  (fn [_] (c get-row "1" "colFamily1")))
 
 user> < .. >
 user> #casyn.types.Column{:name #<byte[] [B@7cc09980>, :value #<byte[] [B@489de27c>, :ttl 0, :timestamp 1332535710069564}
@@ -102,9 +96,8 @@ user> #casyn.types.Column{:name #<byte[] [B@7cc09980>, :value #<byte[] [B@489de2
   The same example as before with a simple schema:
 
   ```clojure
-(require '[casyn.schema :as s])
 
-(s/defschema test-schema
+(defschema test-schema
   :row :string
   :super :string
   :columns
@@ -112,11 +105,11 @@ user> #casyn.types.Column{:name #<byte[] [B@7cc09980>, :value #<byte[] [B@489de2
  ;; when a column with the age name is encountered it will overwrite the defaults for decoding
  :exceptions {"age" :long}})
 
-(lc/run-pipeline
-  (cx core/insert-column "1" "colFamily1" (core/column "n0" "value0") :consistency :all)
+(l/run-pipeline
+  (cx insert-column "1" "colFamily1" (column "n0" "value0") :consistency :all)
   :on-error (fn [_] (println "something went wrong"))
-  (fn [_] (cx core/get-row "1" "colFamily1"))
-  #(s/decode-result % test-schema))
+  (fn [_] (cx get-row "1" "colFamily1"))
+  #(decode-result % test-schema))
 
  user> #casyn.types.Column{:name "n0", :value "value0", :ttl 0, :timestamp 1332536503948650}
    ```
@@ -126,6 +119,10 @@ user> #casyn.types.Column{:name #<byte[] [B@7cc09980>, :value #<byte[] [B@489de2
 
    See See [tests](https://github.com/mpenet/casyn/blob/master/test/casyn/test/core.clj) and  [core.clj](https://github.com/mpenet/casyn/blob/master/src/casyn/core.clj) for more details.
 
+   If you want a collection of columns to be turned into a regular map
+   you can use `cols->map` , :name and :value are then mapped to
+   key/value. You have no longer access to the additional data such as
+   ttl or timestamp on the column though.
 
 ## License
 
