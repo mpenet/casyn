@@ -1,15 +1,10 @@
 (ns casyn.test.core
-  (:require [casyn
-             [core :as core]
-             [client :as client]
-             [schema :as schema]
-             [ddl :as ddl]
-             [codecs :as codecs]
-             [utils :as utils]]
-            ;; [casyn.pool.fifo :as fifo-pool]
-            [casyn.cluster.core :as cluster]
-            [lamina.core :as lc])
-  (:use [clojure.test]))
+  (:use
+   casyn.core
+   clojure.test)
+  (:require
+   [casyn.utils :as utils]
+   [lamina.core :as lc]))
 
 
 (def client-x nil)
@@ -21,7 +16,7 @@
 (defn print-line []
   (print "\n--------------------------------------------------------------------------------\n"))
 
-(schema/defschema test-schema
+(defschema test-schema
   :row :string
   :super :string
   :columns
@@ -29,7 +24,7 @@
    :exceptions {"age" :long
                 "n2-nil" :long}})
 
-(schema/defschema test-codec-schema
+(defschema test-codec-schema
   :row :string
   :super :string
   :columns
@@ -56,15 +51,15 @@
    :clj {:foo "bar"}})
 
 (defn setup-test []
-  @(client-x core/insert-column "0" cf (core/column "n0" "value0"))
-  @(client-x core/insert-column "0" cf (core/column "n00" "value00"))
-  @(client-x core/insert-column "1" cf (core/column "n1" "value1"))
-  @(client-x core/insert-column "1" cf (core/column "n2-nil" nil))
-  @(client-x core/put "2" cf test-coerce-data)
-  @(client-x core/add "5" ccf "c0" 2))
+  @(client-x insert-column "0" cf (column "n0" "value0"))
+  @(client-x insert-column "0" cf (column "n00" "value00"))
+  @(client-x insert-column "1" cf (column "n1" "value1"))
+  @(client-x insert-column "1" cf (column "n2-nil" nil))
+  @(client-x put "2" cf test-coerce-data)
+  @(client-x add "5" ccf "c0" 2))
 
 (defn teardown-test []
-  @(client-x core/truncate cf))
+  @(client-x truncate cf))
 
 (use-fixtures
  :once
@@ -73,13 +68,13 @@
      (try
        (println "trying to drop" ks)
 
-       @(ddl/drop-keyspace (client/make-client "127.0.0.1" 9160) ks)
+       @(drop-keyspace (make-client "127.0.0.1" 9160) ks)
        (println "droped" ks)
        (catch Exception e
          (print-line)
          (println "You can ignore this")))
 
-     @(ddl/add-keyspace (client/make-client "127.0.0.1" 9160)
+     @(add-keyspace (make-client "127.0.0.1" 9160)
                         ks
                         "SimpleStrategy"
                         [[cf
@@ -94,8 +89,8 @@
      (println  "Keyspace created, waiting for the change to propagate to other nodes")
      (print-line)
 
-     (let [cl (cluster/make-cluster "127.0.0.1" 9160 ks)
-           cx (client/client-executor cl)]
+     (let [cl (make-cluster "127.0.0.1" 9160 ks)
+           cx (client-fn cl)]
        ;; (Thread/sleep 000)
        (alter-var-root #'client-x
                        (constantly cx)
@@ -105,7 +100,7 @@
      (catch Exception e
        (.printStackTrace e))
      (finally
-       @(ddl/drop-keyspace (client/make-client) ks)))))
+       @(drop-keyspace (make-client) ks)))))
 
 (use-fixtures
  :each
@@ -115,148 +110,148 @@
      (teardown-test)))
 
 (deftest test-set-keyspace
-  (is (nil? @(client-x core/set-keyspace ks))))
+  (is (nil? @(client-x set-keyspace ks))))
 
 (deftest test-insert-and-read
   (is (= casyn.types.Column
          @(lc/run-pipeline
-           (client-x core/insert-column "4" cf
-                     (core/column "col-name" "col-value"))
-           (fn [_] (client-x core/get-column "4" [cf "col-name"]))
+           (client-x insert-column "4" cf
+                     (column "col-name" "col-value"))
+           (fn [_] (client-x get-column "4" [cf "col-name"]))
            type))))
 
 (deftest test-get-slice
   (is (= 2
          @(lc/run-pipeline
-           (client-x core/get-slice "0" cf
-                     (core/columns-by-names "n0" "n00"))
+           (client-x get-slice "0" cf
+                     (columns-by-names "n0" "n00"))
            count)))
 
   (is (= 2
          @(lc/run-pipeline
-           (client-x core/get-slice "0" [cf]
-                     (core/columns-by-range :start "n0" :finish "n00"))
+           (client-x get-slice "0" [cf]
+                     (columns-by-range :start "n0" :finish "n00"))
            count)))
 
   (is (= 2
          @(lc/run-pipeline
-           (client-x core/get-row "0" cf)
-           #(schema/decode-result % test-schema)
+           (client-x get-row "0" cf)
+           #(decode-result % test-schema)
            count)
          )))
 
 (deftest test-mget-slice
   (is (= 2
          @(lc/run-pipeline
-           (client-x core/mget-slice ["0" "1"] cf
-                     (core/columns-by-names "n0" "n1" "n00"))
+           (client-x mget-slice ["0" "1"] cf
+                     (columns-by-names "n0" "n1" "n00"))
            count)))
 
   (is (= 2
          @(lc/run-pipeline
-           (client-x core/mget-slice ["0" "1"] cf
-                     (core/columns-by-range))
-           #(schema/decode-result % test-schema)
+           (client-x mget-slice ["0" "1"] cf
+                     (columns-by-range))
+           #(decode-result % test-schema)
            count)))
 
     (is (= 2
          @(lc/run-pipeline
-           (client-x core/get-rows ["0" "1"] cf)
-           #(schema/decode-result % test-schema)
+           (client-x get-rows ["0" "1"] cf)
+           #(decode-result % test-schema)
            count))))
 
 (deftest test-get-count
   (is (= 2
          @(lc/run-pipeline
-           (client-x core/get-count "0" [cf]
-                     (core/columns-by-names "n0" "n00"))
-           #(schema/decode-result % test-schema))))
+           (client-x get-count "0" [cf]
+                     (columns-by-names "n0" "n00"))
+           #(decode-result % test-schema))))
 
   (is (= 2
          @(lc/run-pipeline
-           (client-x core/get-count "0" cf
-                     (core/columns-by-range :start "n0" :finish "n00"))
-           #(schema/decode-result % test-schema)))))
+           (client-x get-count "0" cf
+                     (columns-by-range :start "n0" :finish "n00"))
+           #(decode-result % test-schema)))))
 
 (deftest test-mget-count
   (is (= {"1" 1 "0" 2}
          @(lc/run-pipeline
-           (client-x core/mget-count ["0" "1"] cf
-                     (core/columns-by-names "n0" "n1" "n00"))
-           #(schema/decode-result % test-schema))))
+           (client-x mget-count ["0" "1"] cf
+                     (columns-by-names "n0" "n1" "n00"))
+           #(decode-result % test-schema))))
 
   (is (= {"1" 2 "0" 2}
          @(lc/run-pipeline
-           (client-x core/mget-count
+           (client-x mget-count
                      ["0" "1"]
                      cf
-                     (core/columns-by-range :start "n0" :finish "zzzzz"))
-           #(schema/decode-result % test-schema)))))
+                     (columns-by-range :start "n0" :finish "zzzzz"))
+           #(decode-result % test-schema)))))
 
 (deftest counters
-  (is (nil? @(client-x core/add "5" ccf "c0" 10)))
+  (is (nil? @(client-x add "5" ccf "c0" 10)))
 
   (is (= 12 @(lc/run-pipeline
-              (client-x core/get-column "5" [ccf "c0"])
+              (client-x get-column "5" [ccf "c0"])
               #(:value %))))
 
-  (is (nil? @(client-x core/remove-counter "5" [ccf "c0"]))))
+  (is (nil? @(client-x remove-counter "5" [ccf "c0"]))))
 
 (deftest test-mutation
   (is (nil?
-       @(client-x core/batch-mutate
+       @(client-x batch-mutate
          {"0" {cf
-               [(core/column-mutation "n0" "un0")
-                (core/column-mutation "n00" "un00")]}
+               [(column-mutation "n0" "un0")
+                (column-mutation "n00" "un00")]}
           "1" {cf
-               [(core/column-mutation "n1" "n10")]}})))
+               [(column-mutation "n1" "n10")]}})))
 
   (is (nil?
-       @(client-x core/batch-mutate
+       @(client-x batch-mutate
          {"0" {cf
-               [(core/delete-mutation (core/columns-by-names "n0" ))
-                (core/delete-mutation (core/columns-by-names "n00"))]}
+               [(delete-mutation (columns-by-names "n0" ))
+                (delete-mutation (columns-by-names "n00"))]}
           "1" {cf
-               [(core/delete-mutation (core/columns-by-names "n1"))]}})))
+               [(delete-mutation (columns-by-names "n1"))]}})))
 
   (is (nil?
-       @(client-x core/put "11" cf
+       @(client-x put "11" cf
                   [["test-dwa1" "dwa1"]
                    ["test-dwa2" "dwa2"]])))
 
   (is (nil?
-       @(client-x core/put "12" cf
+       @(client-x put "12" cf
                   {:test-dwa1 "dwa1"
                    :test-dwa2 "dwa12"}))))
 
 (deftest deletes
-  (is (= nil (seq @(client-x core/remove-column "0" cf)))))
+  (is (= nil (seq @(client-x remove-column "0" cf)))))
 
 (deftest test-ranges
   (is (= 3
          @(lc/run-pipeline
-           (client-x core/get-range-slice cf
-                     (core/columns-by-names "n0" "n00")
+           (client-x get-range-slice cf
+                     (columns-by-names "n0" "n00")
                      [:start-key "0" :end-key "1"])
-           #(schema/decode-result % test-schema)
+           #(decode-result % test-schema)
            count))))
 
 
 (deftest codecs
   (is (= test-coerce-data
          @(lc/run-pipeline
-          (client-x core/get-row "2" cf)
-          #(schema/decode-result % test-codec-schema)
-          codecs/cols->map))))
+          (client-x get-row "2" cf)
+          #(decode-result % test-codec-schema)
+          cols->map))))
 
 (deftest test-index
   (is (= 1
          @(lc/run-pipeline
-           (client-x core/get-indexed-slice
+           (client-x get-indexed-slice
                      cf
                      [[:eq? :n1 "value1"]]
-                     (core/columns-by-names "n1"))
-           #(schema/decode-result % test-schema)
+                     (columns-by-names "n1"))
+           #(decode-result % test-schema)
            count))))
 
 (deftest test-cql

@@ -121,7 +121,7 @@
 
 (defmethod failover :default identity)
 
-(defn client-executor
+(defn client-fn
   "Returns a fn that will execute its first arg against the
    rest of args handling the client borrow/return/sanity/timeouts checks"
   [cluster & {:keys [timeout failover]}]

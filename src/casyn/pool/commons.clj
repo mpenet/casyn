@@ -2,7 +2,7 @@
   (:require
    [casyn.pool :refer [PPool returnable? return invalidate]]
    [casyn.client :as c]
-   [casyn.core :as core]
+   [casyn.api :as api]
    [casyn.ddl :as ddl]
    [lamina.core :as lac])
 
@@ -66,7 +66,7 @@
   (reify KeyedPoolableObjectFactory
     (makeObject [this node-host]
       (when-let [client (c/make-client node-host port)]
-        @(core/set-keyspace client keyspace)
+        @(api/set-keyspace client keyspace)
         client))
 
     (destroyObject [this node-host client]

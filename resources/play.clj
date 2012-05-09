@@ -42,7 +42,7 @@
 
 (def cl (cluster/make-cluster "localhost" 9160 ks))
 
-(def client-x (client/client-executor cl))
+(def client-x (client/client-fn cl))
 
 
 ;; (prn cl)
@@ -76,7 +76,9 @@
 ;;                    "1"
 ;;                    [cf "col-name"]))
 ;;  )
+
 (time
+
  (dotimes [d 1000]
    (client-x core/insert-column
              "1"

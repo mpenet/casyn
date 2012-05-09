@@ -7,7 +7,6 @@
    [clojure.tools.logging :as log]
    [lamina.core :as lac]
    [casyn.utils :as u]
-   [casyn.core :as core]
    [casyn.balancer :as b]
    [casyn.pool :as p]
    ;; [casyn.balancer.least-loaded :as bll]

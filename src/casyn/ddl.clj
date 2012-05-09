@@ -1,5 +1,5 @@
 (ns casyn.ddl
-  (:require [casyn.core :as core]
+  (:require [casyn.api :as api]
             [casyn.codecs :as codecs])
   (:import [org.apache.cassandra.thrift CfDef KsDef ColumnDef
             Cassandra$AsyncClient IndexType]))
@@ -96,7 +96,7 @@
 (defn add-keyspace
   ""
   [^Cassandra$AsyncClient client ks-name strategy-class column-family-defs & more]
-  (core/wrap-result-channel
+  (api/wrap-result-channel
    (.system_add_keyspace
     client
     (apply keyspace-definition
@@ -108,7 +108,7 @@
 (defn update-keyspace
   ""
   [^Cassandra$AsyncClient client ks-name strategy-class column-family-defs & more]
-  (core/wrap-result-channel
+  (api/wrap-result-channel
    (.system_update_keyspace
     client
     (apply keyspace-definition
@@ -120,13 +120,13 @@
 (defn drop-keyspace
   ""
   [^Cassandra$AsyncClient client ks-name]
-  (core/wrap-result-channel
+  (api/wrap-result-channel
    (.system_drop_keyspace client ks-name)))
 
 (defn add-column-family
   ""
   [^Cassandra$AsyncClient client & cf-args]
-  (core/wrap-result-channel
+  (api/wrap-result-channel
    (.system_add_column_family
     client
     (apply column-family-definition cf-args))))
@@ -134,7 +134,7 @@
 (defn update-column-family
   ""
   [^Cassandra$AsyncClient client & cf-args]
-  (core/wrap-result-channel
+  (api/wrap-result-channel
    (.system_update_column_family
     client
     (apply column-family-definition cf-args))))
@@ -142,5 +142,5 @@
 (defn drop-column-family
   ""
   [^Cassandra$AsyncClient client cf-name]
-  (core/wrap-result-channel
+  (api/wrap-result-channel
    (.system_drop_column_family client cf-name)))
