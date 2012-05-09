@@ -7,9 +7,6 @@
             CounterSuperColumn
             KeySlice]))
 
-(def empty-byte-array (byte-array 0))
-
-
 ;; probably overkill, but we could imagine having different schema later
 (defrecord Schema [name row super columns])
 (defmacro defschema

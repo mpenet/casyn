@@ -11,8 +11,8 @@ implementations")
   (make [pool node-host client] "Add idle/connected client to the pool")
   (drain [pool] [pool node-host] "")
   (close [pool] "Clear and close the pool")
-  (active-clients [pool] [pool node-host])
-  (idle-clients [pool] [pool node-host]))
+  (active-clients [pool] [pool node-host] "")
+  (idle-clients [pool] [pool node-host] ""))
 
 (defprotocol PPoolableClient
   (borrowable? [client] "Health check client before borrow")
