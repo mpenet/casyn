@@ -10,18 +10,6 @@
    [org.apache.commons.pool KeyedPoolableObjectFactory]
    [org.apache.commons.pool.impl GenericKeyedObjectPool]))
 
-(def exhausted-actions
-  {:fail GenericKeyedObjectPool/WHEN_EXHAUSTED_FAIL
-   :block GenericKeyedObjectPool/WHEN_EXHAUSTED_BLOCK
-   :grow GenericKeyedObjectPool/WHEN_EXHAUSTED_GROW})
-
-(defn create-pool [factory max-active exhausted-action max-wait max-idle]
-  (GenericKeyedObjectPool. factory
-                           max-active
-                           (exhausted-actions exhausted-actions)
-                           max-wait
-                           max-idle))
-
 (extend-type GenericKeyedObjectPool
   PPool
   (add [pool node-host]
@@ -68,13 +56,32 @@
       (when-let [client (c/make-client node-host port)]
         @(api/set-keyspace client keyspace)
         client))
-
     (destroyObject [this node-host client]
       (c/kill client))
-
     (activateObject [this node-host client])
     (validateObject [this node-host client])
     (passivateObject [this node-host client])))
+
+;; borrowed from ptaoussanis/accession
+(defn set-pool-option [^GenericKeyedObjectPool pool [opt v]]
+  (case opt
+    :max-active (.setMaxActive pool v)
+    :max-total  (.setMaxTotal pool v)
+    :min-idle   (.setMinIdle pool v)
+    :max-idle   (.setMaxIdle pool v)
+    :max-wait   (.setMaxWait pool v)
+    :lifo       (.setLifo pool v)
+    :test-on-borrow  (.setTestOnBorrow pool v)
+    :test-on-return  (.setTestOnReturn pool v)
+    :test-while-idle (.setTestWhileIdle pool v)
+    :when-exhausted-action         (.setWhenExhaustedAction pool v)
+    :num-tests-per-eviction-run    (.setNumTestsPerEvictionRun pool v)
+    :time-between-eviction-runs-ms (.setTimeBetweenEvictionRunsMillis pool v)
+    :min-evictable-idle-time-ms    (.setMinEvictableIdleTimeMillis pool v))
+  pool)
+
+(def pool-options-defaults
+  {:when-exhausted-action GenericKeyedObjectPool/WHEN_EXHAUSTED_GROW})
 
 (defn create-pool
   "Using the constructor with the most options here,
@@ -82,37 +89,7 @@
    clojure side without having to do java interop and I can control
    defaults if needed"
   ^GenericKeyedObjectPool
-  [host port keyspace
-   & {:keys [max-active exhausted-action max-wait max-idle max-total min-idle
-             test-on-borrow test-on-return time-between-eviction-runs-millis
-             num-tests-per-eviction-run min-evictable-idle-time-millis
-             test-while-idle lifo]
-      :or {max-active GenericKeyedObjectPool/DEFAULT_MAX_ACTIVE
-           exhausted-action :block
-           max-wait GenericKeyedObjectPool/DEFAULT_MAX_WAIT
-           max-idle GenericKeyedObjectPool/DEFAULT_MAX_IDLE
-           max-total GenericKeyedObjectPool/DEFAULT_MAX_TOTAL
-           min-idle GenericKeyedObjectPool/DEFAULT_MIN_IDLE
-           test-on-borrow GenericKeyedObjectPool/DEFAULT_TEST_ON_BORROW
-           test-on-return GenericKeyedObjectPool/DEFAULT_TEST_ON_RETURN
-           time-between-eviction-runs-millis GenericKeyedObjectPool/DEFAULT_TIME_BETWEEN_EVICTION_RUNS_MILLIS
-           num-tests-per-eviction-run GenericKeyedObjectPool/DEFAULT_NUM_TESTS_PER_EVICTION_RUN
-           min-evictable-idle-time-millis GenericKeyedObjectPool/DEFAULT_MIN_EVICTABLE_IDLE_TIME_MILLIS
-           test-while-idle GenericKeyedObjectPool/DEFAULT_TEST_WHILE_IDLE
-           lifo GenericKeyedObjectPool/DEFAULT_LIFO}
-      :as options}]
-
-  (GenericKeyedObjectPool. (make-factory port keyspace)
-                           max-active
-                           (exhausted-actions exhausted-action)
-                           max-wait
-                           max-idle
-                           max-total
-                           min-idle
-                           test-on-borrow
-                           test-on-return
-                           time-between-eviction-runs-millis
-                           num-tests-per-eviction-run
-                           min-evictable-idle-time-millis
-                           test-while-idle
-                           lifo))
+  [host port keyspace & pool-options]
+  (reduce set-pool-option
+          (GenericKeyedObjectPool. (make-factory port keyspace))
+          (merge pool-options-defaults (apply hash-map pool-options))))
