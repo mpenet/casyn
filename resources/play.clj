@@ -29,7 +29,7 @@
   {:default [:string :string]
    :exceptions {"age" :long}})
 
-(def cl (c/make-cluster "localhost" 9160 ks))
+(def cl (c/make-cluster "localhost" 9160 ks :auto-discovery false))
 
 (def client-x (c/client-fn cl))
 
@@ -50,8 +50,9 @@
 
 
 
-(prn @(client-x c/get-column
-            "1"
+(prn
+ @(client-x c/get-column
+           "1"
            [cf "col-name"]))
 
 
@@ -66,10 +67,10 @@
 ;;                    [cf "col-name"]))
 ;;  )
 
-(time
+;; (time
 
- (dotimes [d 1000]
-   (client-x c/insert-column
-             "1"
-             cf
-             (c/column "col-name" "col-value"))))
+;;  (dotimes [d 1000]
+;;    (client-x c/insert-column
+;;              "1"
+;;              cf
+;;              (c/column "col-name" "col-value"))))

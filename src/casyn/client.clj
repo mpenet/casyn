@@ -6,7 +6,10 @@
    [casyn.balancer :as b])
 
   (:import
-   [org.apache.cassandra.thrift Cassandra$AsyncClient Cassandra$AsyncClient$Factory]
+   [org.apache.cassandra.thrift Cassandra$AsyncClient Cassandra$AsyncClient$Factory
+    NotFoundException InvalidRequestException AuthenticationException
+    AuthorizationException SchemaDisagreementException
+    TimedOutException UnavailableException]
    [org.apache.thrift.transport TNonblockingSocket]
    [org.apache.thrift.protocol TBinaryProtocol$Factory]
    [org.apache.thrift.async TAsyncClient TAsyncClientManager]
@@ -66,69 +69,102 @@
 
   (kill [client]))
 
+(def dispose-pipeline
+   (lac/pipeline
+    (fn [state]
+      (let [{:keys [node-host client pool]} state]
+        (p/return-or-invalidate pool node-host client)))))
+
 (declare failover)
 
-(def error-pipeline
-  (lac/pipeline failover))
+(defmulti stage (fn [state value] state))
 
-(def dispose-pipeline
-  (lac/pipeline
-   (fn [state]
-     (let [{:keys [node-host client pool]} state]
-       (p/return-or-invalidate pool node-host client)))))
+(defmethod stage ::start [_ value]
+  (lac/run-pipeline
+   (c/select-node (:cluster value) (:avoid-node-set value))
+   {:error-handler (fn [e] (lac/complete [::failover (assoc value :error e)]))}
+   #(vector ::node-ready (assoc value :node-host %))))
 
-(defn assoc-stage
-  [stage-key stage & [error-handler]]
-  (fn [state]
-    (lac/run-pipeline
-     state
-     {:error-handler
-      (when error-handler
-        (fn [e]
-          (error-handler state e)))}
-     stage
-     #(assoc state stage-key %))))
+(defmethod stage ::node-ready [_ value]
+  (lac/run-pipeline
+   (c/get-pool (:cluster value))
+   {:error-handler (fn [e] (lac/complete [::failover (assoc value :error e)]))}
+   #(vector ::pool-ready (assoc value :pool %))))
 
-(def client-pipeline
-  (lac/pipeline
-   (assoc-stage :node-host #(c/select-node (:cluster %) (:avoid-node-set %)))
-   (assoc-stage :pool #(c/get-pool (:cluster %)) error-pipeline)
-   (assoc-stage :client #(p/borrow (:pool %) (:node-host %)) error-pipeline)
-   (assoc-stage :result (fn [state]
-                          (let [{:keys [f client args]} state]
-                            (when-let [timeout (:client-timeout state)]
-                              (set-timeout client timeout))
-                            (apply f client args)))
-                (fn [state e]
-                  (dispose-pipeline state)
-                  (error-pipeline state)))
-   (fn [state]
-     (dispose-pipeline state)
-     (:result state))))
+(defmethod stage ::pool-ready [_ value]
+  (lac/run-pipeline
+   (p/borrow (:pool value) (:node-host value))
+   {:error-handler (fn [e] (lac/complete [::failover (assoc value :error e)]))}
+   #(vector ::client-ready (assoc value :client %))))
 
-(defmulti failover :failover)
+(defmethod stage ::client-ready [_ value]
+  (lac/run-pipeline
+   nil
+   {:error-handler (fn [e]
+                     (dispose-pipeline value)
+                     (lac/complete
+                        ;; some errors type bypass failover
+                      (case (type e)
+                        (NotFoundException
+                         InvalidRequestException
+                         AuthenticationException
+                         AuthorizationException
+                         SchemaDisagreementException)
+                        [::error (assoc value :error e)]
+                        (TimedOutException
+                         UnavailableException
+                         TApplicationException)
+                        [::failover (assoc value :error e)])))}
+   (fn [_]
+     (let [{:keys [f client args]} value]
+       (when-let [timeout (:client-timeout value)]
+         (set-timeout client timeout))
+       (apply f client args)))
+   #(do
+      (dispose-pipeline value)
+      [::success %])))
 
-(defmethod failover :try-all [state]
-  (let [nodes (-> state :cluster c/get-balancer b/get-nodes)]
-    (when (< (count nodes) (count (:avoid-node-set state)))
-      (lac/redirect client-pipeline
-                    (update-in state [:avoid-node-set] conj (:node-host state))))))
+(defmethod stage ::failover [_ value]
+  (failover value))
 
-(defmethod failover :try-next [state]
-  (when (empty? (:avoid-node-set state))
-    (lac/redirect client-pipeline
-                  (assoc state :avoid-node-set #{(:node-host state)}))))
+(defmethod stage ::error [_ value]
+  (throw (:error value)))
 
-(defmethod failover :default identity)
+(defn run-command [initial-state exit-states initial-value]
+  (lac/run-pipeline
+   [initial-state initial-value]
+   (fn [[state value]]
+     (if (contains? exit-states state)
+       (lac/complete value)
+       (lac/restart (stage state value))))))
 
 (defn client-fn
   "Returns a fn that will execute its first arg against the
    rest of args handling the client borrow/return/sanity/timeouts checks"
   [cluster & {:keys [timeout failover]}]
   (fn [f & more]
-    (client-pipeline
+    (run-command
+     ::start
+     #{::success ::error}
      {:cluster cluster
       :client-timeout nil
       :failover failover
       :f f
       :args more})))
+
+
+(defmulti failover :failover)
+
+(defmethod failover :try-all [value]
+  (let [nodes (-> value :cluster c/get-balancer b/get-nodes)]
+    (if (< (count nodes) (count (:avoid-node-set value)))
+      [::start (update-in value [:avoid-node-set] conj (:node-host value))]
+      [::error value])))
+
+(defmethod failover :try-next [value]
+  (if (empty? (:avoid-node-set value))
+    [::start (assoc value :avoid-node-set #{(:node-host value)})]
+    [::error value]))
+
+(defmethod failover :default [v]
+  [::error v])
