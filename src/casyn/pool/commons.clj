@@ -2,9 +2,7 @@
   (:require
    [casyn.pool :refer [PPool returnable? return invalidate]]
    [casyn.client :as c]
-   [casyn.api :as api]
-   [casyn.ddl :as ddl]
-   [lamina.core :as lac])
+   [casyn.api :as api])
 
   (:import
    [org.apache.commons.pool KeyedPoolableObjectFactory]
