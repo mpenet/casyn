@@ -105,16 +105,11 @@
                      (lac/complete
                         ;; some errors type bypass failover
                       (case (type e)
-                        (NotFoundException
-                         InvalidRequestException
-                         AuthenticationException
-                         AuthorizationException
-                         SchemaDisagreementException)
-                        [::error (assoc value :error e)]
                         (TimedOutException
                          UnavailableException
                          TApplicationException)
-                        [::failover (assoc value :error e)])))}
+                        [::failover (assoc value :error e)]
+                        [::error (assoc value :error e)])))}
    (fn [_]
      (let [{:keys [f client args]} value]
        (when-let [timeout (:client-timeout value)]
