@@ -63,8 +63,9 @@ user> < ... >
    or since we want to play asynchronously register a callback
 
    ```clojure
-   (on-success (c get-row "1" "colFamily1")
-               #(println "It worked, row:" %))
+   (l/on-realized (c get-row "1" "colFamily1")
+               #(println "It worked, row:" %)
+               #(println "It failed, error:" %))
    ```
 
    or use a pipeline to compose async/sync operations.
