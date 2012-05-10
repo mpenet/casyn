@@ -82,10 +82,8 @@
   {:when-exhausted-action GenericKeyedObjectPool/WHEN_EXHAUSTED_GROW})
 
 (defn create-pool
-  "Using the constructor with the most options here,
-   it is not very pretty but at least everything is accessible from the
-   clojure side without having to do java interop and I can control
-   defaults if needed"
+  "Create a connection pool. For option documentation see
+  http://commons.apache.org/pool/apidocs/org/apache/commons/pool/impl/GenericKeyedObjectPool.html"
   ^GenericKeyedObjectPool
   [host port keyspace & pool-options]
   (reduce set-pool-option
