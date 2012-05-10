@@ -168,3 +168,7 @@
 
 (defmethod failover :default [v]
   [::error v])
+
+;; TODO: more failover strategies, retry on same host, count errors per
+;; node/interval, unregister/ban bad nodes from the
+;; balancer+cluster for amount of time
