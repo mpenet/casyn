@@ -63,34 +63,30 @@
 (use-fixtures
  :once
  (fn [test-runner]
+
    (try
-     (try
-       (println "trying to drop" ks)
-
-       @(drop-keyspace (make-client "127.0.0.1" 9160) ks)
-       (println "droped" ks)
-       (catch Exception e
-         (print-line)
-         (println "You can ignore this")))
-
+     (println "trying to drop" ks)
+     @(drop-keyspace (make-client "127.0.0.1" 9160) ks)
+     (println "droped" ks)
+     (catch Exception e
+       (print-line)
+       (println "You can ignore this")))
+   (try
      @(add-keyspace (make-client "127.0.0.1" 9160)
-                        ks
-                        "SimpleStrategy"
-                        [[cf
-                          :column-metadata [[:n0 :utf-8]
-                                            [:n1 :utf-8 :n1_index :utf-8]]]
-                         [ccf
-                          :default-validation-class :counter
-                          :replicate-on-write true]]
-                        :strategy-options {"replication_factor" "1"})
-
-
+                    ks
+                    "SimpleStrategy"
+                    [[cf
+                      :column-metadata [[:n0 :utf-8]
+                                        [:n1 :utf-8 :n1_index :utf-8]]]
+                     [ccf
+                      :default-validation-class :counter
+                      :replicate-on-write true]]
+                    :strategy-options {"replication_factor" "1"})
      (println  "Keyspace created, waiting for the change to propagate to other nodes")
      (print-line)
 
      (let [cl (make-cluster "127.0.0.1" 9160 ks)
            cx (client-fn cl)]
-       ;; (Thread/sleep 000)
        (alter-var-root #'c
                        (constantly cx)
                        (when (thread-bound? #'c)
