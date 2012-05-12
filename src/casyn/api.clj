@@ -50,12 +50,6 @@ http://javasourcecode.org/html/open-source/cassandra/cassandra-0.8.1/org/apache/
                    (lc/error result-ch# error#))))
        (lc/run-pipeline result-ch# codecs/thrift->clojure))))
 
-(defmacro defcommand [name args form]
-  (let [client (gensym)]
-    `(defn ~name [~(with-meta client {:tag "Cassandra$AsyncClient"})
-                  ~@args]
-       (wrap-result-channel (~(first form) ~client ~@(rest form))))))
-
 ;; Objects
 
 (defn column
@@ -339,6 +333,7 @@ http://javasourcecode.org/html/open-source/cassandra/cassandra-0.8.1/org/apache/
                     (consistency-level consistency))))
 
 (defn batch-mutate
+  ""
   [^Cassandra$AsyncClient client mutations
    & {:keys [consistency]}]
   (wrap-result-channel

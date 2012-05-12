@@ -5,15 +5,13 @@
                           PCluster PDiscoverable]]
    [clojure.set :refer [difference]]
    [clojure.tools.logging :as log]
-   [lamina.core :as lac]
    [casyn.utils :as u]
    [casyn.balancer :as b]
    [casyn.pool :as p]
    ;; [casyn.balancer.least-loaded :as bll]
    [casyn.balancer.round-robin :as brr]
    [casyn.auto-discovery :as discovery]
-
-   [casyn.pool.commons :as commons])
+   [casyn.pool.commons :as commons-pool])
 
   (:import [org.apache.commons.pool.impl GenericKeyedObjectPool]))
 
@@ -53,7 +51,7 @@
   (let [host (u/host->ip host)
         cluster (Cluster. host port keyspace
                           (b/balancer load-balancer-strategy host)
-                          (apply commons/create-pool host port keyspace
+                          (apply commons-pool/create-pool host port keyspace
                                  (mapcat (juxt key val) (:pool options)))
                           options)]
 

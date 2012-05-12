@@ -12,8 +12,7 @@
     TimedOutException UnavailableException]
    [org.apache.thrift.transport TNonblockingSocket]
    [org.apache.thrift.protocol TBinaryProtocol$Factory]
-   [org.apache.thrift.async TAsyncClient TAsyncClientManager]
-   [org.apache.commons.pool.impl GenericKeyedObjectPool]))
+   [org.apache.thrift.async TAsyncClient TAsyncClientManager]))
 
 (def client-factory (Cassandra$AsyncClient$Factory.
                      (TAsyncClientManager.)
@@ -45,7 +44,7 @@
 (defprotocol PClient
   (set-timeout [client timeout])
   (has-errors? [client])
-  (kill [client] "kill socket etc?"))
+  (kill [client]))
 
 (extend-type TAsyncClient
 

@@ -29,7 +29,9 @@
   {:default [:string :string]
    :exceptions {"age" :long}})
 
-(def cl (c/make-cluster "localhost" 9160 ks :auto-discovery false))
+(def cl (c/make-cluster "localhost" 9160 ks
+                        ;; :pool {:max-active 12 :max-idle 12 :max-total 12}
+                        ))
 
 (def client-x (c/client-fn cl))
 
@@ -67,10 +69,13 @@
 ;;                    [cf "col-name"]))
 ;;  )
 
-;; (time
+(time
+ (dotimes [d 1000]
+   (client-x c/insert-column
+             "1"
+             cf
+             (c/column "col-name" "col-value"))))
 
-;;  (dotimes [d 1000]
-;;    (client-x c/insert-column
-;;              "1"
-;;              cf
-;;              (c/column "col-name" "col-value"))))
+;; "Elapsed time: 1099.062598 msecs"
+;; "Elapsed time: 1109.065529 msecs"
+;; "Elapsed time: 1080.784861 msecs"

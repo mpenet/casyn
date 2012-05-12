@@ -79,7 +79,7 @@
   pool)
 
 (def pool-options-defaults
-  {:when-exhausted-action GenericKeyedObjectPool/WHEN_EXHAUSTED_GROW})
+  {:when-exhausted-action GenericKeyedObjectPool/WHEN_EXHAUSTED_BLOCK})
 
 (defn create-pool
   "Create a connection pool. For option documentation see
