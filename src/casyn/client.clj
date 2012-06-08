@@ -68,100 +68,96 @@
 
   (kill [client]))
 
+(declare select-node-stage)
+
+(defn error-stage
+  [state]
+  (throw (:error state)))
+
+(defmulti failover-stage :failover)
+
+(defmethod failover-stage :try-all [value]
+  (let [nodes (-> value :cluster c/get-balancer b/get-nodes)]
+    (if (< (count nodes) (count (:avoid-node-set value)))
+      [select-node-stage (update-in value [:avoid-node-set] conj (:node-host value))]
+      [error-stage value])))
+
+(defmethod failover-stage :try-next [value]
+  (if (empty? (:avoid-node-set value))
+    [select-node-stage (assoc value :avoid-node-set #{(:node-host value)})]
+    [error-stage value]))
+
+(defmethod failover-stage :default [v]
+  [error-stage v])
+
 (def dispose-pipeline
    (lac/pipeline
     (fn [state]
       (let [{:keys [node-host client pool]} state]
         (p/return-or-invalidate pool node-host client)))))
 
-(declare failover)
+(defn run-command-stage
+  [state]
+   (lac/run-pipeline
+    nil
+    {:error-handler (fn [e]
+                      (dispose-pipeline state)
+                      (lac/complete
+                       ;; some errors type bypass failover
+                       (case (type e)
+                         (TimedOutException
+                          UnavailableException
+                          TApplicationException)
+                         [failover-stage (assoc state :error e)]
+                         [error-stage (assoc state :error e)])))}
+    (fn [_]
+      (let [{:keys [f client args]} state]
+        (when-let [timeout (:client-timeout state)]
+          (set-timeout client timeout))
+        (apply f client args)))
+    #(do
+       (dispose-pipeline state)
+       [nil %])))
 
-(defmulti stage (fn [state value] state))
-
-(defmethod stage ::start [_ value]
+(defn select-client-stage
+  [state]
   (lac/run-pipeline
-   (c/select-node (:cluster value) (:avoid-node-set value))
-   {:error-handler (fn [e] (lac/complete [::failover (assoc value :error e)]))}
-   #(vector ::node-ready (assoc value :node-host %))))
+    (p/borrow (:pool state) (:node-host state))
+    {:error-handler (fn [e] (lac/complete [failover-stage (assoc state :error e)]))}
+    #(vector run-command-stage (assoc state :client %))))
 
-(defmethod stage ::node-ready [_ value]
+(defn select-pool-stage
+  [state]
   (lac/run-pipeline
-   (c/get-pool (:cluster value))
-   {:error-handler (fn [e] (lac/complete [::failover (assoc value :error e)]))}
-   #(vector ::pool-ready (assoc value :pool %))))
+   (c/get-pool (:cluster state))
+   {:error-handler (fn [e] (lac/complete [failover-stage (assoc state :error e)]))}
+   #(vector select-client-stage (assoc state :pool %))))
 
-(defmethod stage ::pool-ready [_ value]
+(defn select-node-stage ;; start
+  [state]
   (lac/run-pipeline
-   (p/borrow (:pool value) (:node-host value))
-   {:error-handler (fn [e] (lac/complete [::failover (assoc value :error e)]))}
-   #(vector ::client-ready (assoc value :client %))))
-
-(defmethod stage ::client-ready [_ value]
-  (lac/run-pipeline
-   nil
-   {:error-handler (fn [e]
-                     (dispose-pipeline value)
-                     (lac/complete
-                        ;; some errors type bypass failover
-                      (case (type e)
-                        (TimedOutException
-                         UnavailableException
-                         TApplicationException)
-                        [::failover (assoc value :error e)]
-                        [::error (assoc value :error e)])))}
-   (fn [_]
-     (let [{:keys [f client args]} value]
-       (when-let [timeout (:client-timeout value)]
-         (set-timeout client timeout))
-       (apply f client args)))
-   #(do
-      (dispose-pipeline value)
-      [::success %])))
-
-(defmethod stage ::failover [_ value]
-  (failover value))
-
-(defmethod stage ::error [_ value]
-  (throw (:error value)))
-
-(defn run-command [initial-state exit-states initial-value]
-  (lac/run-pipeline
-   [initial-state initial-value]
-   (fn [[state value]]
-     (if (contains? exit-states state)
-       (lac/complete value)
-       (lac/restart (stage state value))))))
+   (c/select-node (:cluster state) (:avoid-node-set state))
+   {:error-handler (fn [e] (lac/complete [failover-stage (assoc state :error e)]))}
+   #(vector select-pool-stage (assoc state :node-host %))))
 
 (defn client-fn
   "Returns a fn that will execute its first arg against the
    rest of args handling the client borrow/return/sanity/timeouts checks"
   [cluster & {:keys [timeout failover]}]
   (fn [f & more]
-    (run-command
-     ::start
-     #{::success ::error}
-     {:cluster cluster
-      :client-timeout nil
-      :failover failover
-      :f f
-      :args more})))
+    (lac/run-pipeline
+     (select-node-stage
+      {:cluster cluster
+       :client-timeout nil
+       :failover failover
+       :f f
+       :args more})
+     (fn [[next-stage state]]
+       (if next-stage
+         (lac/restart (next-stage state))
+         (lac/complete state))))))
 
 
-(defmulti failover :failover)
-
-(defmethod failover :try-all [value]
-  (let [nodes (-> value :cluster c/get-balancer b/get-nodes)]
-    (if (< (count nodes) (count (:avoid-node-set value)))
-      [::start (update-in value [:avoid-node-set] conj (:node-host value))]
-      [::error value])))
-
-(defmethod failover :try-next [value]
-  (if (empty? (:avoid-node-set value))
-    [::start (assoc value :avoid-node-set #{(:node-host value)})]
-    [::error value]))
-
-(defmethod failover :default [v]
-  [::error v])
 
 ;; TODO: more failover strategies, retry on same host, count errors per
 ;; node/interval, unregister/ban bad nodes from the
