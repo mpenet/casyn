@@ -114,10 +114,6 @@
   (clojure->byte-buffer [b]
     (ByteBufferUtil/bytes ^float b))
 
-  clojure.lang.Sequential
-  (clojure->byte-buffer [v]
-    (map clojure->byte-buffer v))
-
   Object
   (clojure->byte-buffer [b]
     ;; we asume it s a clojure data structure, if you want to escape

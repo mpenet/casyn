@@ -261,7 +261,7 @@ http://javasourcecode.org/html/open-source/cassandra/cassandra-0.8.1/org/apache/
    & {:keys [consistency]}]
   (wrap-result-channel
    (.multiget_slice client
-                    (codecs/clojure->byte-buffer row-keys)
+                    (map codecs/clojure->byte-buffer row-keys)
                     (column-parent-from-args column-parent-args)
                     slice-predicate
                     (consistency-level consistency))))
@@ -283,7 +283,7 @@ http://javasourcecode.org/html/open-source/cassandra/cassandra-0.8.1/org/apache/
    & {:keys [consistency]}]
   (wrap-result-channel
    (.multiget_count client
-                    (codecs/clojure->byte-buffer row-keys)
+                    (map codecs/clojure->byte-buffer row-keys)
                     (column-parent-from-args column-parent-args)
                     slice-predicate
                     (consistency-level consistency))))
