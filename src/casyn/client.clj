@@ -57,6 +57,8 @@
     (try (.hasError client)
          (catch IllegalStateException e true)))
 
+  (kill [client])
+
   p/PPoolableClient
   (borrowable? [client]
     "Health check client before borrow"
@@ -64,9 +66,7 @@
 
   (returnable? [client]
     "Health check client before it is returned"
-    (not (has-errors? client)))
-
-  (kill [client]))
+    (not (has-errors? client))))
 
 (declare select-node-stage)
 
@@ -156,9 +156,3 @@
        (if next-stage
          (lac/restart (next-stage state))
          (lac/complete state))))))
-
-
-
-;; TODO: more failover strategies, retry on same host, count errors per
-;; node/interval, unregister/ban bad nodes from the
-;; balancer+cluster for amount of time
