@@ -48,7 +48,10 @@ http://javasourcecode.org/html/open-source/cassandra/cassandra-0.8.1/org/apache/
                                 (.getResult ~(with-meta thrift-cmd-call {:tag result-hint}))))
                  (onError [_ error#]
                    (lc/error result-ch# error#))))
-       (lc/run-pipeline result-ch# codecs/thrift->clojure))))
+       (lc/run-pipeline
+        result-ch#
+        {:error-handler (fn [_#])}
+        codecs/thrift->clojure))))
 
 ;; Objects
 
