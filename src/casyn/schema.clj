@@ -71,8 +71,9 @@
       :row (codecs/bytes->clojure (:row s) (:row r))
       :columns (decode-result (:columns r) s)))
 
-
   nil
+  (decode-result [r s] nil)
+
   Object
   (decode-result [r s]
     r))
