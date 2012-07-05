@@ -9,7 +9,8 @@
    [org.apache.cassandra.thrift Cassandra$AsyncClient Cassandra$AsyncClient$Factory
     NotFoundException InvalidRequestException AuthenticationException
     AuthorizationException SchemaDisagreementException
-    TimedOutException UnavailableException]
+    TimedOutException UnavailableException ]
+   [org.apache.thrift TApplicationException]
    [org.apache.thrift.transport TNonblockingSocket]
    [org.apache.thrift.protocol TBinaryProtocol$Factory]
    [org.apache.thrift.async TAsyncClient TAsyncClientManager]))
@@ -91,40 +92,46 @@
   [error-stage v])
 
 (def dispose-pipeline
-   (lac/pipeline
-    (fn [state]
-      (let [{:keys [node-host client pool]} state]
-        (p/return-or-invalidate pool node-host client)))))
+  (lac/pipeline
+   (fn [state]
+     (let [{:keys [node-host client pool]} state]
+       (p/return-or-invalidate pool node-host client)))))
 
 (defn run-command-stage
   [state]
-   (lac/run-pipeline
-    nil
-    {:error-handler (fn [e]
-                      (dispose-pipeline state)
-                      (lac/complete
-                       ;; some errors type bypass failover
-                       (case (type e)
-                         (TimedOutException
-                          UnavailableException
-                          TApplicationException)
-                         [failover-stage (assoc state :error e)]
-                         [error-stage (assoc state :error e)])))}
-    (fn [_]
-      (let [{:keys [f client args]} state]
-        (when-let [timeout (:client-timeout state)]
-          (set-timeout client timeout))
-        (apply f client args)))
-    #(do
-       (dispose-pipeline state)
-       [nil %])))
+  (lac/run-pipeline
+   nil
+   {:error-handler
+    (fn [e]
+      (dispose-pipeline state)
+      (let [etype (type e)]
+        (lac/complete
+         (cond
+           (= NotFoundException etype)
+           [nil nil]
+           (contains? #{TimedOutException
+                        UnavailableException
+                        TApplicationException}
+                      etype)
+           [failover-stage (assoc state :error e)]
+
+           :else
+           [error-stage (assoc state :error e)]))))}
+   (fn [_]
+     (let [{:keys [f client args]} state]
+       (when-let [timeout (:client-timeout state)]
+         (set-timeout client timeout))
+       (apply f client args)))
+   #(do
+      (dispose-pipeline state)
+      [nil %])))
 
 (defn select-client-stage
   [state]
   (lac/run-pipeline
-    (p/borrow (:pool state) (:node-host state))
-    {:error-handler (fn [e] (lac/complete [failover-stage (assoc state :error e)]))}
-    #(vector run-command-stage (assoc state :client %))))
+   (p/borrow (:pool state) (:node-host state))
+   {:error-handler (fn [e] (lac/complete [failover-stage (assoc state :error e)]))}
+   #(vector run-command-stage (assoc state :client %))))
 
 (defn select-pool-stage
   [state]

@@ -102,6 +102,7 @@
  (fn [test-runner]
      (setup-test)
      (test-runner)
+
      (teardown-test)))
 
 (deftest test-set-keyspace
@@ -248,6 +249,23 @@
                      (columns-by-names "n1"))
            #(decode-result % test-schema)
            count))))
+
+
+(deftest error-handlers
+  (is (= nil @(lc/run-pipeline
+               (c get-indexed-slice
+                  1
+                  [[:eq? :n1 "v"]]
+                  (columns-by-names "n"))
+               {:error-handler (fn [_]
+                                 (lc/complete nil))}
+               #(decode-result % test-schema)
+               count)))
+  ;; not found returns nil
+  (is (= nil @(lc/run-pipeline
+               (c get-column "1" [cf "meh"])
+               :foo
+               :bar))))
 
 (deftest test-cql
   (is true))
