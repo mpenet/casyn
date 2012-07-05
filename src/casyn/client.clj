@@ -159,6 +159,7 @@
        :failover failover
        :f f
        :args more})
+     {:error-handler (fn [_])}
      (fn [[next-stage state]]
        (if next-stage
          (lac/restart (next-stage state))

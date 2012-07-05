@@ -253,14 +253,15 @@
 
 (deftest error-handlers
   (is (= nil @(lc/run-pipeline
-               (c get-indexed-slice
-                  1
-                  [[:eq? :n1 "v"]]
-                  (columns-by-names "n"))
-               {:error-handler (fn [_]
-                                 (lc/complete nil))}
-               #(decode-result % test-schema)
-               count)))
+               (c get-row "1" [cf "meh"])
+               {:error-handler
+                (fn [e]
+                  (if-not (instance? org.apache.cassandra.thrift.InvalidRequestException e)
+                    (throw (Exception. "meh"))
+                    (lc/complete nil))
+                  )}
+              #(decode-result % test-schema)
+              count)))
   ;; not found returns nil
   (is (= nil @(lc/run-pipeline
                (c get-column "1" [cf "meh"])
