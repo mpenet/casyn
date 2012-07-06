@@ -75,12 +75,12 @@ user> < ... >
 
    ```clojure
 
-(l/run-pipeline
+@(l/run-pipeline
   (c insert-column "1" "colFamily1" (column "n0" "value0"))
   {:error-handler (fn [_] (println "snap, something went wrong"))}
   (fn [_] (c get-row "1" "colFamily1")))
 
-user> < .. >
+
 user> #casyn.types.Column{:name #<byte[] [B@7cc09980>, :value #<byte[] [B@489de27c>, :ttl 0, :timestamp 1332535710069564}
   ```
 
@@ -104,7 +104,7 @@ user> #casyn.types.Column{:name #<byte[] [B@7cc09980>, :value #<byte[] [B@489de2
  ;; when a column with the age name is encountered it will overwrite the defaults for decoding
  :exceptions {"age" :long}})
 
-(l/run-pipeline
+@(l/run-pipeline
   (c insert-column "1" "colFamily1" (column "n0" "value0") :consistency :all)
   :error-handler (fn [_] (println "something went wrong"))
   (fn [_] (c get-row "1" "colFamily1"))
