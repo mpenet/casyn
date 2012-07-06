@@ -50,7 +50,7 @@
   (decode-result [r s]
     (update-in r
                [:name]
-               (partial (codecs/bytes->clojure (-> s :columns :default first)))))
+               (partial codecs/bytes->clojure (-> s :columns :default first))))
 
   CounterSuperColumn
   (decode-result [r s]
@@ -75,5 +75,4 @@
   (decode-result [r s] nil)
 
   Object
-  (decode-result [r s]
-    r))
+  (decode-result [r s] r))

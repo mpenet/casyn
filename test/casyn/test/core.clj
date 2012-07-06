@@ -21,6 +21,7 @@
   :columns
   {:default [:string :string]
    :exceptions {"age" :long
+                "c0" :long
                 "n2-nil" :long}})
 
 (defschema test-codec-schema
@@ -191,6 +192,12 @@
               (c get-column "5" [ccf "c0"])
               #(:value %))))
 
+  ;; keys must be decodable
+  (is (= "c0" @(lc/run-pipeline
+              (c get-column "5" [ccf "c0"])
+              #(decode-result % test-schema)
+              #(:name %))))
+
   (is (nil? @(c remove-counter "5" [ccf "c0"]))))
 
 (deftest test-mutation
@@ -267,6 +274,18 @@
                (c get-column "1" [cf "meh"])
                :foo
                :bar))))
+
+(deftest rw
+
+  (println @(lc/run-pipeline
+       (c put "fastput" cf
+           {:test-dwa1 "dwa1"
+            :test-dwa2 "dwa12"})
+       (fn [_]
+         (c get-row "fastput" cf))
+       #(decode-result % test-schema)))
+
+  (is true))
 
 (deftest test-cql
   (is true))
