@@ -18,7 +18,7 @@ http://javasourcecode.org/html/open-source/cassandra/cassandra-0.8.1/org/apache/
    [org.apache.thrift.async AsyncMethodCallback TAsyncClient]
    [java.nio ByteBuffer]))
 
-(def ^:dynamic consistency-default :all)
+(def ^:dynamic consistency-default :one)
 
 (defn consistency-level [c]
   ((or c consistency-default)
