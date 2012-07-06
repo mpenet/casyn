@@ -70,12 +70,19 @@
 ;;  )
 
 (time
- (dotimes [d 1000]
+ (dotimes [d 20000]
    (client-x c/insert-column
              "1"
              cf
              (c/column "col-name" "col-value"))))
 
-;; "Elapsed time: 1099.062598 msecs"
-;; "Elapsed time: 1109.065529 msecs"
-;; "Elapsed time: 1080.784861 msecs"
+;; "Elapsed time: 1365.107026 msecs"
+;; "Elapsed time: 1255.803791 msecs"
+;; "Elapsed time: 1231.108563 msecs"
+;; "Elapsed time: 1229.586674 msecs"
+;; "Elapsed time: 1233.15066 msecs"
+;; "Elapsed time: 1945.389424 msecs"
+;; "Elapsed time: 1893.17525 msecs"
+;; "Elapsed time: 1218.882871 msecs"
+;; "Elapsed time: 1222.487246 msecs"
+;; "Elapsed time: 1208.44207 msecs"
