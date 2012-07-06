@@ -275,17 +275,5 @@
                :foo
                :bar))))
 
-(deftest rw
-
-  (println @(lc/run-pipeline
-       (c put "fastput" cf
-           {:test-dwa1 "dwa1"
-            :test-dwa2 "dwa12"})
-       (fn [_]
-         (c get-row "fastput" cf))
-       #(decode-result % test-schema)))
-
-  (is true))
-
 (deftest test-cql
   (is true))
