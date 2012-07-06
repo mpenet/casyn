@@ -106,7 +106,7 @@ user> #casyn.types.Column{:name #<byte[] [B@7cc09980>, :value #<byte[] [B@489de2
 
 (l/run-pipeline
   (c insert-column "1" "colFamily1" (column "n0" "value0") :consistency :all)
-  :on-error (fn [_] (println "something went wrong"))
+  :error-handler (fn [_] (println "something went wrong"))
   (fn [_] (c get-row "1" "colFamily1"))
   #(decode-result % test-schema))
 
