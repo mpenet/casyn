@@ -7,55 +7,6 @@
     SuperColumn KeySlice]
    [java.nio ByteBuffer]))
 
-;; /*
-;;  * The encoding of a CompositeType column name should be:
-;;  *   <component><component><component> ...
-;;  * where <component> is:
-;;  *   <length of value><value><'end-of-component' byte>
-;;  * where <length of value> is a 2 bytes unsigned short the and the
-;;  * 'end-of-component' byte should always be 0 for actual column name.
-
-;;  * However, it can set to 1 for query bounds. This allows to query for the
-;;  * equivalent of 'give me the full super-column'. That is, if during a slice
-;;  * query uses:
-;;  *   start = <3><"foo".getBytes()><0>
-;;  *   end   = <3><"foo".getBytes()><1>
-;;  * then he will be sure to get *all* the columns whose first component is "foo".
-
-;;  * If for a component, the 'end-of-component' is != 0, there should not be any
-;;  * following component. The end-of-component can also be -1 to allow
-;;  * non-inclusive query. For instance:
-;;  *   start = <3><"foo".getBytes()><-1>
-;;  * allows to query everything that is greater than <3><"foo".getBytes()>, but
-;;  * not <3><"foo".getBytes()> itself.
-;;  */
-
-(def eoc   0x00)
-(def eoc-> 0x01)
-(def eoc-< 0xFF)
-
-(defn encode-composite-value
-  [raw-value suffix]
-  (let [value-bb ^ByteBuffer (clojure->byte-buffer raw-value)
-        ;; we need a new hbb of capacity 2+(size value)+1
-        bb (ByteBuffer/allocate (+ 3 (.capacity value-bb)))]
-    (.putShort bb (short (.capacity value-bb)))
-    (.put bb ^byte suffix)
-    (.position bb 0)))
-
-(defn decode-composite-column
-  "Takes a composite value as byte-array and transforms it to a collection of byte-arrays individual values"
-  [ba]
-  (let [bb (ByteBuffer/wrap ba)]
-    (loop [bb bb
-           values (list)]
-      (if (> (.remaining bb) 0)
-        (let [dest (byte-array (.getShort bb))]
-          (.get bb dest)
-          (.position bb (inc (.position bb)))
-          (recur bb (conj values dest)))
-        values))))
-
 (defprotocol ThriftDecodable
   (thrift->clojure [v] "Transforms a thrift type to clojure friendly type"))
 
@@ -130,6 +81,9 @@
   (clojure->byte-buffer [b]
     (ByteBuffer/wrap b))
 
+  ByteBuffer
+  (clojure->byte-buffer [b] b)
+
   String
   (clojure->byte-buffer [s]
     (ByteBuffer/wrap (.getBytes s "utf-8")))
@@ -176,7 +130,10 @@
 
 (defmulti bytes->clojure
   ""
-  (fn [type-key v] type-key))
+  (fn [val-type v]
+    (if (keyword? val-type)
+      val-type
+      :composite)))
 
 (defmethod bytes->clojure :string [_  v]
   (ByteBufferUtil/string (ByteBuffer/wrap v)))
@@ -211,3 +168,77 @@
   "Turns a collection of columns into an array-map with column name mapped to key"
   [cols]
   (apply array-map (mapcat (juxt :name :value) cols)))
+
+;; Composite
+
+;; /*
+;;  * The encoding of a CompositeType column name should be:
+;;  *   <component><component><component> ...
+;;  * where <component> is:
+;;  *   <length of value><value><'end-of-component' byte>
+;;  * where <length of value> is a 2 bytes unsigned short the and the
+;;  * 'end-of-component' byte should always be 0 for actual column name.
+
+;;  * However, it can set to 1 for query bounds. This allows to query for the
+;;  * equivalent of 'give me the full super-column'. That is, if during a slice
+;;  * query uses:
+;;  *   start = <3><"foo".getBytes()><0>
+;;  *   end   = <3><"foo".getBytes()><1>
+;;  * then he will be sure to get *all* the columns whose first component is "foo".
+
+;;  * If for a component, the 'end-of-component' is != 0, there should not be any
+;;  * following component. The end-of-component can also be -1 to allow
+;;  * non-inclusive query. For instance:
+;;  *   start = <3><"foo".getBytes()><-1>
+;;  * allows to query everything that is greater than <3><"foo".getBytes()>, but
+;;  * not <3><"foo".getBytes()> itself.
+;;  */
+
+(def eoc   (byte 0))
+(def eoc-> (byte 1))
+(def eoc-< (byte -1))
+
+(defn encode-composite-value
+  [raw-value suffix]
+  (let [value-bb ^ByteBuffer (clojure->byte-buffer raw-value)
+        ;; we need a new bb of capacity 2+(size value)+1
+        bb (ByteBuffer/allocate (+ 3 (.capacity value-bb)))]
+    (.putShort bb (short (.capacity value-bb))) ;; prefix
+    (.put bb value-bb) ;; actual value
+    (.put bb ^byte suffix) ;; eoc suffix
+    (.rewind bb)))
+
+(defn decode-composite-column
+  "Takes a composite value as byte-array and transforms it to a collection of
+byte-arrays individual values"
+  [ba]
+  (let [bb (ByteBuffer/wrap ba)]
+    (loop [bb bb
+           values []]
+      (if (> (.remaining bb) 0)
+        (let [dest (byte-array (.getShort bb))] ;; create the output buffer for the value
+          (.get bb dest) ;; fill it
+          (.position bb (inc (.position bb))) ;; skip the last eoc byte
+          (recur bb (conj values dest)))
+        values))))
+
+(defmethod bytes->clojure :composite [composite-types vs]
+  (map #(bytes->clojure %1 %2)
+       composite-types
+       (decode-composite-column vs)))
+
+(defn composite-encoder-generator [eoc]
+  (fn [& values]
+    (let [bbv (map #(encode-composite-value % eoc) values)
+          bb-size (reduce (fn [s bb]
+                            (+ s (.capacity ^ByteBuffer bb)))
+                          0
+                          bbv)
+          bb (ByteBuffer/allocate bb-size)]
+      (doseq [v bbv]
+        (.put bb ^ByteBuffer v))
+      (.rewind bb))))
+
+(def composite (composite-encoder-generator eoc))
+(def composite-< (composite-encoder-generator eoc-<))
+(def composite-< (composite-encoder-generator eoc->))
