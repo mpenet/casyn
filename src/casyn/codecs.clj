@@ -241,7 +241,7 @@ byte-arrays individual values"
 
 (defn composite-query
   "Takes a sequence of values pairs holding operator and actual clojure value to
-be encoded as a composite type
+be encoded as a composite type. Returns a ByteBuffer
 ex: (composite-query [:eq? 12] [:gt? \"meh\"] [:lt? 12])"
   [& values]
   (let [bbv (map (fn [[op v]]
@@ -254,13 +254,12 @@ ex: (composite-query [:eq? 12] [:gt? \"meh\"] [:lt? 12])"
     (doseq [v bbv]
       (.put bb ^ByteBuffer v))
 
-    (.rewind bb)
-
-    (vary-meta (map second values) assoc :composite bb)))
+    (.rewind bb)))
 
 (defn composite
   "takes a collection and encodes it to composite with :eq? operator"
   [& values]
-  (apply composite-query (map #(vector :eq? %) values)))
+  (let [q (apply composite-query (map #(vector :eq? %) values))]
+    (vary-meta values assoc :composite q)))
 
 ;; (composite-query [:eq? 12] [:gt? "meh"] [:lt? 12])
