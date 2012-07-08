@@ -38,6 +38,7 @@
                 :kw :keyword
                 :boo :boolean
                 :clj :clojure
+                :clj2 :clojure
                 :comp [:string :long :double]}})
 
 (def test-coerce-data
@@ -50,6 +51,7 @@
    :kw :keyword
    :boo true
    :clj {:foo "bar"}
+   :clj2 [1 2 3]
    :comp (composite "dwa" (long 216) (double 3.14))
    })
 

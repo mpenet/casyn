@@ -120,11 +120,11 @@
   clojure.lang.Sequential
   (clojure->byte-buffer [b]
     ;; it it s a vector and it has meta:composite present use this value
-    ;; else forward to next possible encoder
+    ;; else it must be handled clojure data
     (let [m (meta b)]
-      (if-let [composite-value (:composite m)]
+      (if-let [composite-value (and m (:composite m))]
         composite-value
-        (clojure->byte-buffer b))))
+        (ByteBufferUtil/bytes (prn-str b)))))
 
   Object
   (clojure->byte-buffer [b]
