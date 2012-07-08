@@ -117,6 +117,15 @@
   (clojure->byte-buffer [b]
     (ByteBufferUtil/bytes ^float b))
 
+  clojure.lang.Sequential
+  (clojure->byte-buffer [b]
+    ;; it it s a vector and it has meta:composite present use this value
+    ;; else forward to next possible encoder
+    (let [m (meta b)]
+      (if-let [composite-value (:composite m)]
+        composite-value
+        (clojure->byte-buffer b))))
+
   Object
   (clojure->byte-buffer [b]
     ;; we asume it s a clojure data structure, if you want to escape
@@ -227,7 +236,12 @@ byte-arrays individual values"
        composite-types
        (decode-composite-column vs)))
 
-(defn composite-encoder-generator [eoc]
+(defn composite-encoder-generator
+  "Takes a collection of values and adds the composite bytebuffer value as
+metadata.
+This allows to have similar values between encoded/decoded, minus the
+composite metadata"
+  [eoc]
   (fn [& values]
     (let [bbv (map #(encode-composite-value % eoc) values)
           bb (ByteBuffer/allocate (reduce (fn [s bb]
@@ -236,7 +250,10 @@ byte-arrays individual values"
                                           bbv))]
       (doseq [v bbv]
         (.put bb ^ByteBuffer v))
-      (.rewind bb))))
+
+      (.rewind bb)
+
+      (vary-meta values assoc :composite bb))))
 
 (def composite (composite-encoder-generator eoc))
 (def composite-< (composite-encoder-generator eoc-<))

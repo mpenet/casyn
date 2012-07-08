@@ -40,7 +40,7 @@
                 :clj :clojure
                 :comp [:string :long :double]}})
 
-(def test-coerce-data-in
+(def test-coerce-data
   {:long 1
    :int (int 1)
    :float (float 0.2)
@@ -53,18 +53,13 @@
    :comp (composite "dwa" (long 216) (double 3.14))
    })
 
-(def test-coerce-data-out
-  (assoc test-coerce-data-in
-    :comp ["dwa" (long 216) (double 3.14)]))
-
-
 
 (defn setup-test []
   @(c insert-column "0" cf (column "n0" "value0"))
   @(c insert-column "0" cf (column "n00" "value00"))
   @(c insert-column "1" cf (column "n1" "value1"))
   @(c insert-column "1" cf (column "n2-nil" nil))
-  @(c put "2" cf test-coerce-data-in)
+  @(c put "2" cf test-coerce-data)
   @(c add "5" ccf "c0" 2))
 
 (defn teardown-test []
@@ -253,7 +248,7 @@
   ;; FIXME : -in and -out should be identical
   ;; probably wrapping composite in a type that looks like a list would do.
   ;; or using meta
-  (is (= test-coerce-data-out
+  (is (= test-coerce-data
          @(lc/run-pipeline
           (c get-row "2" cf)
           #(decode-result % test-codec-schema)

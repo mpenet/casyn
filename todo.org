@@ -1,4 +1,2 @@
-* TODO composite col support
-* TODO more sugar (put etc)
 * TODO improve schema with cf/ks definitions sync and related meta data
 * TODO test cluster management with ccm (failover, balancing)
