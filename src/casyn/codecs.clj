@@ -241,4 +241,4 @@ byte-arrays individual values"
 
 (def composite (composite-encoder-generator eoc))
 (def composite-< (composite-encoder-generator eoc-<))
-(def composite-< (composite-encoder-generator eoc->))
+(def composite-> (composite-encoder-generator eoc->))
