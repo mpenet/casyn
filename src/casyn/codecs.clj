@@ -230,11 +230,10 @@ byte-arrays individual values"
 (defn composite-encoder-generator [eoc]
   (fn [& values]
     (let [bbv (map #(encode-composite-value % eoc) values)
-          bb-size (reduce (fn [s bb]
-                            (+ s (.capacity ^ByteBuffer bb)))
-                          0
-                          bbv)
-          bb (ByteBuffer/allocate bb-size)]
+          bb (ByteBuffer/allocate (reduce (fn [s bb]
+                                            (+ s (.capacity ^ByteBuffer bb)))
+                                          0
+                                          bbv))]
       (doseq [v bbv]
         (.put bb ^ByteBuffer v))
       (.rewind bb))))
