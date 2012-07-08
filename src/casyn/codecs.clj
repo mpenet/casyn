@@ -119,7 +119,7 @@
 
   clojure.lang.Sequential
   (clojure->byte-buffer [b]
-    ;; it it s a vector and it has meta:composite present use this value
+    ;; if it s a vector and it has meta:composite present use this value
     ;; else it must be handled clojure data
     (let [m (meta b)]
       (if-let [composite-value (and m (:composite m))]
@@ -203,9 +203,12 @@
 ;;  * not <3><"foo".getBytes()> itself.
 ;;  */
 
-(def eoc   (byte 0))
-(def eoc-> (byte 1))
-(def eoc-< (byte -1))
+
+(def composite-operators
+  {:eq? (byte 0)
+   :lt? (byte -1)
+   :gt? (byte 1)})
+
 
 (defn encode-composite-value
   [raw-value suffix]
@@ -236,25 +239,28 @@ byte-arrays individual values"
        composite-types
        (decode-composite-column vs)))
 
-(defn composite-encoder-generator
-  "Takes a collection of values and adds the composite bytebuffer value as
-metadata.
-This allows to have similar values between encoded/decoded, minus the
-composite metadata"
-  [eoc]
-  (fn [& values]
-    (let [bbv (map #(encode-composite-value % eoc) values)
-          bb (ByteBuffer/allocate (reduce (fn [s bb]
-                                            (+ s (.capacity ^ByteBuffer bb)))
-                                          0
-                                          bbv))]
-      (doseq [v bbv]
-        (.put bb ^ByteBuffer v))
+(defn composite-query
+  "Takes a sequence of values pairs holding operator and actual clojure value to
+be encoded as a composite type
+ex: (composite-query [:eq? 12] [:gt? \"meh\"] [:lt? 12])"
+  [& values]
+  (let [bbv (map (fn [[op v]]
+                   (encode-composite-value v (get composite-operators op)))
+                 values)
+        bb (ByteBuffer/allocate (reduce (fn [s bb]
+                                          (+ s (.capacity ^ByteBuffer bb)))
+                                        0
+                                        bbv))]
+    (doseq [v bbv]
+      (.put bb ^ByteBuffer v))
 
-      (.rewind bb)
+    (.rewind bb)
 
-      (vary-meta values assoc :composite bb))))
+    (vary-meta (map second values) assoc :composite bb)))
 
-(def composite (composite-encoder-generator eoc))
-(def composite-< (composite-encoder-generator eoc-<))
-(def composite-> (composite-encoder-generator eoc->))
+(defn composite
+  "takes a collection and encodes it to composite with :eq? operator"
+  [& values]
+  (apply composite-query (map #(vector :eq? %) values)))
+
+;; (composite-query [:eq? 12] [:gt? "meh"] [:lt? 12])
