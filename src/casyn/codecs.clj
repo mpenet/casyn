@@ -259,7 +259,9 @@ ex: (composite-query [:eq? 12] [:gt? \"meh\"] [:lt? 12])"
 (defn composite
   "takes a collection and encodes it to composite with :eq? operator"
   [& values]
-  (let [q (apply composite-query (map #(vector :eq? %) values))]
-    (vary-meta values assoc :composite q)))
+  (vary-meta values
+             assoc
+             :composite
+             (apply composite-query (map #(vector :eq? %) values))))
 
 ;; (composite-query [:eq? 12] [:gt? "meh"] [:lt? 12])
