@@ -1,6 +1,6 @@
 (ns casyn.client
   (:require
-   [lamina.core :as lac]
+   [lamina.core :as lc]
    [casyn.cluster :as c]
    [casyn.pool :as p]
    [casyn.balancer :as b])
@@ -92,20 +92,20 @@
   [error-stage v])
 
 (def dispose-pipeline
-  (lac/pipeline
+  (lc/pipeline
    (fn [state]
      (let [{:keys [node-host client pool]} state]
        (p/return-or-invalidate pool node-host client)))))
 
 (defn run-command-stage
   [state]
-  (lac/run-pipeline
+  (lc/run-pipeline
    nil
    {:error-handler
     (fn [e]
       (dispose-pipeline state)
       (let [etype (type e)]
-        (lac/complete
+        (lc/complete
          (cond
            (= NotFoundException etype)
            [nil nil]
@@ -128,39 +128,43 @@
 
 (defn select-client-stage
   [state]
-  (lac/run-pipeline
+  (lc/run-pipeline
    (p/borrow (:pool state) (:node-host state))
-   {:error-handler (fn [e] (lac/complete [failover-stage (assoc state :error e)]))}
+   {:error-handler (fn [e] (lc/complete [failover-stage (assoc state :error e)]))}
    #(vector run-command-stage (assoc state :client %))))
 
 (defn select-pool-stage
   [state]
-  (lac/run-pipeline
+  (lc/run-pipeline
    (c/get-pool (:cluster state))
-   {:error-handler (fn [e] (lac/complete [failover-stage (assoc state :error e)]))}
+   {:error-handler (fn [e] (lc/complete [failover-stage (assoc state :error e)]))}
    #(vector select-client-stage (assoc state :pool %))))
 
 (defn select-node-stage ;; start
   [state]
-  (lac/run-pipeline
+  (lc/run-pipeline
    (c/select-node (:cluster state) (:avoid-node-set state))
-   {:error-handler (fn [e] (lac/complete [failover-stage (assoc state :error e)]))}
+   {:error-handler (fn [e] (lc/complete [failover-stage (assoc state :error e)]))}
    #(vector select-pool-stage (assoc state :node-host %))))
 
 (defn client-fn
   "Returns a fn that will execute its first arg against the
    rest of args handling the client borrow/return/sanity/timeouts checks"
-  [cluster & {:keys [timeout failover]}]
+  [cluster & {:keys [timeout failover ;; thread-pool-size
+                     ]
+              ;; :or {thread-pool-size 100}
+              }]
   (fn [f & more]
-    (lac/run-pipeline
+    (lc/run-pipeline
      (select-node-stage
       {:cluster cluster
        :client-timeout nil
        :failover failover
+       ;; :thread-pool (lx/executaor)
        :f f
        :args more})
      {:error-handler (fn [_])}
      (fn [[next-stage state]]
        (if next-stage
-         (lac/restart (next-stage state))
-         (lac/complete state))))))
+         (lc/restart (next-stage state))
+         (lc/complete state))))))
