@@ -5,21 +5,16 @@ Clojure client library for Cassandra based on Thrift AsyncClient
 It is a work in progress and a very early release.
 It relies on the perf Lamina branch that hasnt been officialy released yet.
 
-See clj-hector or some of the very mature java clients available for real world use.
-
-At the moment the api is relatively low level, it will be improved.
-
 The majority of the [Cassandra Api](http://wiki.apache.org/cassandra/API) is
-supported though.
+supported.
 
 Pooling is using Apache commons pools, but it is open to other
 implementations from clojure Protocols/multimethods, the same is true for almost
 every part of the library (cluster, balancer, codecs, failover).
 
-Some stuff is still in a very early stage such node discovery, and
-error handling, I am still figuring this out from advanced clients out there.
-
 Contributions and suggestions are welcome.
+
+See clj-hector or some of the very mature java clients available if you need a production ready library.
 
 ## Usage
 
@@ -57,13 +52,13 @@ user> < ... >
    you can just have the call block and wait for a result/error by dereferencing it
 
    ```clojure
-   @(c get-row "1" "colFamily1")
+   @(c get-row "colFamily1" "1")
    ```
 
    or since we want to play asynchronously register a callback
 
    ```clojure
-   (l/on-realized (c get-row "1" "colFamily1")
+   (l/on-realized (c get-row "colFamily1" "1")
                #(println "It worked, row:" %)
                #(println "It failed, error:" %))
    ```
@@ -76,9 +71,9 @@ user> < ... >
    ```clojure
 
 @(l/run-pipeline
-  (c insert-column "1" "colFamily1" (column "n0" "value0"))
+  (c insert-column "colFamily1" "1" (column "n0" "value0"))
   {:error-handler (fn [_] (println "snap, something went wrong"))}
-  (fn [_] (c get-row "1" "colFamily1")))
+  (fn [_] (c get-row "colFamily1" "1")))
 
 
 user> #casyn.types.Column{:name #<byte[] [B@7cc09980>, :value #<byte[] [B@489de27c>, :ttl 0, :timestamp 1332535710069564}
@@ -105,15 +100,29 @@ user> #casyn.types.Column{:name #<byte[] [B@7cc09980>, :value #<byte[] [B@489de2
  :exceptions {"age" :long}})
 
 @(l/run-pipeline
-  (c insert-column "1" "colFamily1" (column "n0" "value0") :consistency :all)
+  (c insert-column "colFamily1" "1" (column "n0" "value0") :consistency :all)  ;; consistency is tunable per query
   :error-handler (fn [_] (println "something went wrong"))
-  (fn [_] (c get-row "1" "colFamily1"))
+  (fn [_] (c get-row "colFamily1" "1"))
   #(decode-result % test-schema))
 
  user> #casyn.types.Column{:name "n0", :value "value0", :ttl 0, :timestamp 1332536503948650}
    ```
 
    Schema supports `:string` `:long`  `:float`  `:double` `:int` `:boolean` `:keyword` `:clojure` `:symbol` `:bytes`
+
+   Composite types are also supported, use the same type definitions but in a vector (they can be used as keys, names, values):
+
+    ```clojure
+(defschema test-schema
+  :row :string
+  :super :string
+  :columns
+{:default [:string :string]
+ ;; when a column with the age name is encountered it will overwrite the defaults for decoding
+ :exceptions {"age" :long
+              "test-composite-type": [:string :clojure :int]}})
+ ```
+
    These are also extendable from a multimethod.
 
    If you want a collection of columns to be turned into a regular map
