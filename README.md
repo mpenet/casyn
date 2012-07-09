@@ -111,6 +111,8 @@ user> #casyn.types.Column{:name #<byte[] [B@7cc09980>, :value #<byte[] [B@489de2
    ```
 
    Schema supports `:string` `:long`  `:float`  `:double` `:int` `:boolean` `:keyword` `:clojure` `:symbol` `:bytes`
+   
+   These are also extendable from a multimethod.
 
    Composite types are also supported, use the same type definitions but in a vector (they can be used as keys, names, values):
 
@@ -127,12 +129,10 @@ user> #casyn.types.Column{:name #<byte[] [B@7cc09980>, :value #<byte[] [B@489de2
    To create composite values just use the `composite function, it will just mark the collection as composite in its metadata, and encode it when you execute the query.
    That means you could also create this composite collection beforehand, modify it without having to worry about anything (as long as the metadata is perserved).
 
-   ```clojure
-   (c insert-column "colFamily1" "1" (column (composite ["meh" 1 :something 3.14 {:foo "bar"}]) "value0"))
+```clojure
+(c insert-column "colFamily1" "1" (column (composite ["meh" 1 :something 3.14 {:foo "bar"}]) "value0"))
+```
 
-
-
-   These are also extendable from a multimethod.
 
    If you want a collection of columns to be turned into a regular map
    you can use `cols->map` , :name and :value are then mapped to
