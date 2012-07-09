@@ -7,6 +7,8 @@
     SuperColumn KeySlice]
    [java.nio ByteBuffer]))
 
+(declare composite-query)
+
 (defprotocol ThriftDecodable
   (thrift->clojure [v] "Transforms a thrift type to clojure friendly type"))
 
@@ -119,11 +121,9 @@
 
   clojure.lang.Sequential
   (clojure->byte-buffer [b]
-    ;; if it s a vector and it has meta:composite present use this value
-    ;; else it must be handled clojure data
     (let [m (meta b)]
-      (if-let [composite-value (and m (:composite m))]
-        composite-value
+      (if (and m (:composite m))
+        (apply composite-query (map #(vector :eq? %) b))
         (ByteBufferUtil/bytes (prn-str b)))))
 
   Object
@@ -209,7 +209,6 @@
    :lt? (byte -1)
    :gt? (byte 1)})
 
-
 (defn encode-composite-value
   [raw-value suffix]
   (let [value-bb ^ByteBuffer (clojure->byte-buffer raw-value)
@@ -257,11 +256,8 @@ ex: (composite-query [:eq? 12] [:gt? \"meh\"] [:lt? 12])"
     (.rewind bb)))
 
 (defn composite
-  "takes a collection and encodes it to composite with :eq? operator"
+  "Mark a value as composite"
   [& values]
-  (vary-meta values
-             assoc
-             :composite
-             (apply composite-query (map #(vector :eq? %) values))))
+  (vary-meta values assoc :composite true))
 
 ;; (composite-query [:eq? 12] [:gt? "meh"] [:lt? 12])
