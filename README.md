@@ -14,6 +14,8 @@ every part of the library (cluster, balancer, codecs, failover).
 
 Contributions and suggestions are welcome.
 
+[![Build Status](https://secure.travis-ci.org/mpenet/casyn.png?branch=master)](http://travis-ci.org/mpenet/casyn)
+
 See clj-hector or some of the very mature java clients available if you need a production ready library.
 
 ## Usage
@@ -122,7 +124,7 @@ user> #casyn.types.Column{:name #<byte[] [B@7cc09980>, :value #<byte[] [B@489de2
  :exceptions {"age" :long
               "test-composite-type" [:string :clojure :int]}})
 ```
-              
+
    These are also extendable from a multimethod.
 
    If you want a collection of columns to be turned into a regular map
