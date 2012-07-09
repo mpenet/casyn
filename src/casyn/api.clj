@@ -350,13 +350,13 @@ http://javasourcecode.org/html/open-source/cassandra/cassandra-0.8.1/org/apache/
 
 (defn insert-super-column
   ""
-  [^Cassandra$AsyncClient client cf row-key c sc
+  [^Cassandra$AsyncClient client cf row-key sc cols
    & {:keys [consistency]}]
   (wrap-result-channel
    (.insert client
             (codecs/clojure->byte-buffer row-key)
             (column-parent cf sc)
-            (super-column sc)
+            (super-column sc cols)
             (consistency-level consistency))))
 
 (defn increment
