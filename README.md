@@ -1,6 +1,8 @@
 # casyn
 
-Clojure client library for Cassandra based on Thrift AsyncClient
+Clojure client library for Cassandra based on Thrift AsyncClient.
+
+[![Build Status](https://secure.travis-ci.org/mpenet/casyn.png?branch=master)](http://travis-ci.org/mpenet/casyn)
 
 It is a work in progress and a very early release.
 It relies on the perf Lamina branch that hasnt been officialy released yet.
@@ -13,8 +15,6 @@ implementations from clojure Protocols/multimethods, the same is true for almost
 every part of the library (cluster, balancer, codecs, failover).
 
 Contributions and suggestions are welcome.
-
-[![Build Status](https://secure.travis-ci.org/mpenet/casyn.png?branch=master)](http://travis-ci.org/mpenet/casyn)
 
 See clj-hector or some of the very mature java clients available if you need a production ready library.
 
