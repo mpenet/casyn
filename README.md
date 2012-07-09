@@ -112,18 +112,17 @@ user> #casyn.types.Column{:name #<byte[] [B@7cc09980>, :value #<byte[] [B@489de2
 
    Composite types are also supported, use the same type definitions but in a vector (they can be used as keys, names, values):
 
-    ```clojure
 
-    (defschema test-schema
-      :row :string
-      :super :string
-      :columns
-    {:default [:string :string]
-     ;; when a column with the age name is encountered it will overwrite the defaults for decoding
-     :exceptions {"age" :long
-                  "test-composite-type": [:string :clojure :int]}})
-     ```
-
+```clojure
+(defschema test-schema
+  :row :string
+  :super :string
+  :columns
+{:default [:string :string]
+ :exceptions {"age" :long
+              "test-composite-type" [:string :clojure :int]}})
+```
+              
    These are also extendable from a multimethod.
 
    If you want a collection of columns to be turned into a regular map
