@@ -46,16 +46,17 @@
 ;; ;; (connection/close  client-pool)
 
 (prn @(client-x c/insert-column
-            "1"
-            cf
-            (c/column "col-name" "col-value")))
+                cf
+                "1"
+                (c/column "col-name" "col-value")))
 
 
 
 (prn
  @(client-x c/get-column
-           "1"
-           [cf "col-name"]))
+            cf
+            "1"
+            "col-name"))
 
 
 ;; @(lac/run-pipeline
@@ -70,10 +71,10 @@
 ;;  )
 
 (time
- (dotimes [d 20000]
+ (dotimes [d 1000]
    (client-x c/insert-column
-             "1"
              cf
+             "1"
              (c/column "col-name" "col-value"))))
 
 ;; "Elapsed time: 1365.107026 msecs"
