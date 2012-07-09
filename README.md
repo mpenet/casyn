@@ -16,7 +16,7 @@ every part of the library (cluster, balancer, codecs, failover).
 
 Contributions and suggestions are welcome.
 
-See clj-hector or some of the very mature java clients available if you need a production ready library.
+See clj-hector or some of the very mature java clients available if you need a production ready library right now.
 
 ## Usage
 
@@ -51,7 +51,7 @@ user> < ... >
 
    API calls return result-channels.
    This is an example of this. From there you have multiple choices
-   you can just have the call block and wait for a result/error by dereferencing it
+   you can just have the call block and wait for a result/error by dereferencing it.
 
    ```clojure
    @(c get-row "colFamily1" "1")
@@ -81,13 +81,13 @@ user> < ... >
 user> #casyn.types.Column{:name #<byte[] [B@7cc09980>, :value #<byte[] [B@489de27c>, :ttl 0, :timestamp 1332535710069564}
   ```
 
-  [Lamina](https://github.com/ztellman/lamina) offers a lot of possibilities, I encourage you to check what is possible with it.
+  [Lamina](https://github.com/ztellman/lamina) offers a lot of possibilities. I encourage you to check what is possible with it.
 
 
   Cassandra/Thrift column name/values are returned as bytes, but you can supply a schema for
   decoding.
   Encoding of clojure data is automatic.
-  Encoding and decoding open and extendable, see codecs.clj.
+  Encoding and decoding is open and extendable, see codecs.clj.
 
   The same example as before with a simple schema:
 
@@ -114,7 +114,6 @@ user> #casyn.types.Column{:name #<byte[] [B@7cc09980>, :value #<byte[] [B@489de2
 
    Composite types are also supported, use the same type definitions but in a vector (they can be used as keys, names, values):
 
-
 ```clojure
 (defschema test-schema
   :row :string
@@ -125,12 +124,20 @@ user> #casyn.types.Column{:name #<byte[] [B@7cc09980>, :value #<byte[] [B@489de2
               "test-composite-type" [:string :clojure :int]}})
 ```
 
+   To create composite values just use the `composite function, it will just mark the collection as composite in its metadata, and encode it when you execute the query.
+   That means you could also create this composite collection beforehand, modify it without having to worry about anything (as long as the metadata is perserved).
+
+   ```clojure
+   (c insert-column "colFamily1" "1" (column (composite ["meh" 1 :something 3.14 {:foo "bar"}]) "value0"))
+
+
+
    These are also extendable from a multimethod.
 
    If you want a collection of columns to be turned into a regular map
    you can use `cols->map` , :name and :value are then mapped to
-   key/value. You have no longer access to the additional data such as
-   ttl or timestamp on the column though.
+   key/value. You would no longer have access to the additional data such as
+   ttl or timestamp on the column.
 
    See See [tests](https://github.com/mpenet/casyn/blob/master/test/casyn/test/core.clj),  [api.clj](https://github.com/mpenet/casyn/blob/master/src/casyn/api.clj) and [codox doc](http://mpenet.github.com/casyn/) for more details.
 
