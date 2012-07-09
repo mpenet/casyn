@@ -57,11 +57,10 @@ http://javasourcecode.org/html/open-source/cassandra/cassandra-0.8.1/org/apache/
 
 (defn column
   "Returns a Thrift Column instance"
-  [name value & {:keys [ttl timestamp]
-                 :or {timestamp (utils/ts)}}]
+  [name value & {:keys [ttl timestamp]}]
   (let [col (Column. ^ByteBuffer (codecs/clojure->byte-buffer name))]
     (.setValue col ^ByteBuffer (codecs/clojure->byte-buffer value))
-    (.setTimestamp col timestamp)
+    (.setTimestamp col (or timestamp (utils/ts)))
     (when ttl (.setTtl col (int ttl)))
     col))
 
@@ -338,13 +337,15 @@ http://javasourcecode.org/html/open-source/cassandra/cassandra-0.8.1/org/apache/
 
 (defn insert-column
   ""
-  [^Cassandra$AsyncClient client cf row-key c
-   & {:keys [consistency]}]
+  [^Cassandra$AsyncClient client cf row-key name value
+   & {:keys [consistency counter ttl timestamp]}]
   (wrap-result-channel
    (.insert client
             (codecs/clojure->byte-buffer row-key)
             (column-parent cf)
-            c
+            (if counter
+              (counter-column name value)
+              (column name value :ttl ttl :timestamp timestamp))
             (consistency-level consistency))))
 
 (defn insert-super-column
@@ -355,7 +356,7 @@ http://javasourcecode.org/html/open-source/cassandra/cassandra-0.8.1/org/apache/
    (.insert client
             (codecs/clojure->byte-buffer row-key)
             (column-parent cf sc)
-            c
+            (super-column sc)
             (consistency-level consistency))))
 
 (defn increment

@@ -57,10 +57,10 @@
 
 
 (defn setup-test []
-  @(c insert-column cf "0" (column "n0" "value0"))
-  @(c insert-column cf "0" (column "n00" "value00"))
-  @(c insert-column cf "1" (column "n1" "value1"))
-  @(c insert-column cf "1" (column "n2-nil" nil))
+  @(c insert-column cf "0" "n0" "value0")
+  @(c insert-column cf "0" "n00" "value00")
+  @(c insert-column cf "1" "n1" "value1")
+  @(c insert-column cf "1" "n2-nil" nil)
   @(c put cf "2" test-coerce-data)
   @(c increment ccf "5" "c0" 2))
 
@@ -118,7 +118,7 @@
 (deftest test-insert-and-read
   (is (= casyn.types.Column
          @(lc/run-pipeline
-           (c insert-column cf "4"  (column "col-name" "col-value"))
+           (c insert-column cf "4" "col-name" "col-value")
            (fn [_] (c get-column cf "4" "col-name"))
            type))))
 

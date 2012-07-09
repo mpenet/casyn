@@ -73,7 +73,7 @@ user> < ... >
    ```clojure
 
 @(l/run-pipeline
-  (c insert-column "colFamily1" "1" (column "n0" "value0"))
+  (c insert-column "colFamily1" "1" "n0" "value0")
   {:error-handler (fn [_] (println "snap, something went wrong"))}
   (fn [_] (c get-row "colFamily1" "1")))
 
@@ -102,7 +102,7 @@ user> #casyn.types.Column{:name #<byte[] [B@7cc09980>, :value #<byte[] [B@489de2
  :exceptions {"age" :long}})
 
 @(l/run-pipeline
-  (c insert-column "colFamily1" "1" (column "n0" "value0") :consistency :all)  ;; consistency is tunable per query
+  (c insert-column "colFamily1" "1" "n0" "value0" :consistency :all)  ;; consistency is tunable per query
   :error-handler (fn [_] (println "something went wrong"))
   (fn [_] (c get-row "colFamily1" "1"))
   #(decode-result % test-schema))
@@ -111,7 +111,7 @@ user> #casyn.types.Column{:name #<byte[] [B@7cc09980>, :value #<byte[] [B@489de2
    ```
 
    Schema supports `:string` `:long`  `:float`  `:double` `:int` `:boolean` `:keyword` `:clojure` `:symbol` `:bytes`
-   
+
    These are also extendable from a multimethod.
 
    Composite types are also supported, use the same type definitions but in a vector (they can be used as keys, names, values):
@@ -130,7 +130,7 @@ user> #casyn.types.Column{:name #<byte[] [B@7cc09980>, :value #<byte[] [B@489de2
    That means you could also create this composite collection beforehand, modify it without having to worry about anything (as long as the metadata is perserved).
 
 ```clojure
-(c insert-column "colFamily1" "1" (column (composite ["meh" 1 :something 3.14 {:foo "bar"}]) "value0"))
+(c insert-column "colFamily1" "1" (composite ["meh" 1 :something 3.14 {:foo "bar"}] "value0"))
 ```
 
 
