@@ -1,6 +1,5 @@
-*** TODO integrate with travis-ci
 *** TODO extend test coverage
 *** TODO improve schema with cf/ks definitions sync and related meta data
 *** TODO test cluster management with ccm (failover, balancing)
 *** TODO benchmark suite
-*** TODO check if it is really worth supporting super-cols, this could simplify the api quite a bit
+*** TODO check different options for clj serialisation alternatives to the reader (carbonite, nippy)

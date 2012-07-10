@@ -119,6 +119,10 @@
   (clojure->byte-buffer [b]
     (ByteBufferUtil/bytes ^float b))
 
+  java.util.Date
+  (clojure->byte-buffer [b]
+    (clojure->byte-buffer (.getTime b)))
+
   Object
   (clojure->byte-buffer [b]
     ;; check for a composite
@@ -159,6 +163,9 @@
 
 (defmethod bytes->clojure :boolean [_ v]
   (= 1 (bytes->clojure :int v)))
+
+(defmethod bytes->clojure :date [_ v]
+  (java.util.Date. ^long (bytes->clojure :long v)))
 
 (defmethod bytes->clojure :symbol [_ v]
   (symbol (bytes->clojure :string v)))

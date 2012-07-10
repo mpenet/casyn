@@ -110,7 +110,7 @@ user> #casyn.types.Column{:name #<byte[] [B@7cc09980>, :value #<byte[] [B@489de2
  user> #casyn.types.Column{:name "n0", :value "value0", :ttl 0, :timestamp 1332536503948650}
    ```
 
-   Schema supports `:string` `:long`  `:float`  `:double` `:int` `:boolean` `:keyword` `:clojure` `:symbol` `:bytes`
+   Schema supports `:string` `:long`  `:float`  `:double` `:int` `:boolean` `:keyword` `:clojure` `:symbol` `:bytes` `:date`
 
    These are also extendable from a multimethod.
 
@@ -126,7 +126,7 @@ user> #casyn.types.Column{:name #<byte[] [B@7cc09980>, :value #<byte[] [B@489de2
               "test-composite-type" [:string :clojure :int]}})
 ```
 
-   To create composite values just use the `composite function, it will just mark the collection as composite in its metadata, and encode it when you execute the query.
+   To create composite values just use the `composite` function, it will just mark the collection as composite in its metadata, and encode it when you execute the query.
    That means you could also create this composite collection beforehand, modify it without having to worry about anything (as long as the metadata is perserved).
 
 ```clojure

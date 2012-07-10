@@ -35,6 +35,7 @@
                 :float :float
                 :str :string
                 :symbol :symbol
+                :date :date
                 :kw :keyword
                 :boo :boolean
                 :clj :clojure
@@ -46,6 +47,7 @@
    :int (int 1)
    :float (float 0.2)
    :double 0.3
+   :date (java.util.Date.)
    :str "meh"
    :symbol 'sym
    :kw :keyword
