@@ -119,18 +119,13 @@
   (clojure->byte-buffer [b]
     (ByteBufferUtil/bytes ^float b))
 
-  clojure.lang.Sequential
-  (clojure->byte-buffer [b]
-    (let [m (meta b)]
-      (if (and m (:composite m))
-        (apply composite-query (map #(vector :eq? %) b))
-        (ByteBufferUtil/bytes (prn-str b)))))
-
   Object
   (clojure->byte-buffer [b]
-    ;; we asume it s a clojure data structure, if you want to escape
-    ;; this for other types extend this protocol to do so
-    (ByteBufferUtil/bytes (prn-str b)))
+    ;; check for a composite
+    (if (and (sequential? b)
+             (:composite (meta b)))
+      (apply composite-query (map #(vector :eq? %) b))
+      (ByteBufferUtil/bytes (prn-str b))))
 
   nil
   (clojure->byte-buffer [b]
@@ -138,7 +133,7 @@
 
 
 (defmulti bytes->clojure
-  ""
+  "Decode byte arrays"
   (fn [val-type v]
     (if (keyword? val-type)
       val-type
@@ -203,7 +198,6 @@
 ;;  * not <3><"foo".getBytes()> itself.
 ;;  */
 
-
 (def composite-operators
   {:eq? (byte 0)
    :lt? (byte -1)
@@ -259,5 +253,3 @@ ex: (composite-query [:eq? 12] [:gt? \"meh\"] [:lt? 12])"
   "Mark a value as composite"
   [& values]
   (vary-meta values assoc :composite true))
-
-;; (composite-query [:eq? 12] [:gt? "meh"] [:lt? 12])
