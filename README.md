@@ -78,7 +78,7 @@ user> < ... >
   (fn [_] (c get-row "colFamily1" "1")))
 
 
-user> #casyn.types.Column{:name #<byte[] [B@7cc09980>, :value #<byte[] [B@489de27c>, :ttl 0, :timestamp 1332535710069564}
+user> (#casyn.types.Column{:name #<byte[] [B@7cc09980>, :value #<byte[] [B@489de27c>, :ttl 0, :timestamp 1332535710069564})
   ```
 
   [Lamina](https://github.com/ztellman/lamina) offers a lot of possibilities. I encourage you to check what is possible with it.
@@ -107,7 +107,7 @@ user> #casyn.types.Column{:name #<byte[] [B@7cc09980>, :value #<byte[] [B@489de2
   (fn [_] (c get-row "colFamily1" "1"))
   #(decode-result % test-schema))
 
- user> #casyn.types.Column{:name "n0", :value "value0", :ttl 0, :timestamp 1332536503948650}
+ user> (#casyn.types.Column{:name "n0", :value "value0", :ttl 0, :timestamp 1332536503948650})
    ```
 
    Schema supports `:string` `:long`  `:float`  `:double` `:int` `:boolean` `:keyword` `:clojure` `:symbol` `:bytes` `:date`
