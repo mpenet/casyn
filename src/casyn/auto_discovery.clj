@@ -16,7 +16,7 @@
        (fn [nodes ^KsDef ks]
          (let [ks-name (.getName ks)]
            (if (= ks-name  "system")
-             nodes ;; explude system keyspace
+             nodes ;; exclude system keyspace
              @(lc/run-pipeline
                (cx api/describe-ring ks)
                {:error-handler (fn [_] (lc/complete nodes))} ;; next ks
