@@ -150,17 +150,13 @@
 (defn client-fn
   "Returns a fn that will execute its first arg against the
    rest of args handling the client borrow/return/sanity/timeouts checks"
-  [cluster & {:keys [timeout failover ;; thread-pool-size
-                     ]
-              ;; :or {thread-pool-size 100}
-              }]
+  [cluster & {:keys [timeout failover]}]
   (fn [f & more]
     (lc/run-pipeline
      (select-node-stage
       {:cluster cluster
        :client-timeout nil
        :failover failover
-       ;; :thread-pool (lx/executaor)
        :f f
        :args more})
      {:error-handler (fn [_])}
