@@ -40,7 +40,9 @@
                 :boo :boolean
                 :clj :clojure
                 :clj2 :clojure
-                :comp [:string :long :double]}})
+                :comp [:string :long :double]
+                :crazy-nested-comp [:string :long [:string [:string :long :double] :double]]
+                }})
 
 (def test-coerce-data
   {:long 1
@@ -55,6 +57,13 @@
    :clj {:foo "bar"}
    :clj2 [1 2 3]
    :comp (composite "dwa" (long 216) (double 3.14))
+   :crazy-nested-comp (composite "dwa1"
+                                 (long 216)
+                                 (composite "dwa2"
+                                            (composite "dwa3"
+                                                       (long 217)
+                                                       (double 3.141))
+                                            (double 3.1415)))
    })
 
 
