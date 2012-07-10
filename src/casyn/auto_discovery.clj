@@ -1,40 +1,40 @@
 (ns casyn.auto-discovery
   (:require
-   [clojure.core.incubator :refer [-?>>]]
    [casyn.api :as api]
-   [casyn.client :as cl]
    [casyn.cluster :as clu]
-   tron))
+   [casyn.client :as c]
+   [lamina.core :as lc]
+   tron)
+  (:import [org.apache.cassandra.thrift KsDef TokenRange EndpointDetails]))
 
 (defn discover
   [cluster]
   (try
-    (let [cx (cl/client-fn cluster :failover :try-all)]
-      (-?>> @(cx api/describe-keyspaces)
-            (map #(.getName %))
-            (remove #{"system"})
-            (map (fn [ks] (try
-                            @(cx api/describe-ring ks)
-                            (catch Exception e
-                              (println e) nil))))
-            (filter identity)
-            ((fn [r]
-               (for [ranges r
-                     range ranges
-                     endpoint (.getEndpoint_details range)]
-                 (.getHost endpoint))))
-            set))
+    (let [cx (c/client-fn cluster :failover :try-all)
+          keyspaces @(cx api/describe-keyspaces)]
+      (reduce
+       (fn [nodes ^KsDef ks]
+         (let [ks-name (.getName ks)]
+           (if (= ks-name  "system")
+             nodes ;; explude system keyspace
+             @(lc/run-pipeline
+               (cx api/describe-ring ks)
+               {:error-handler (fn [_] (lc/complete nodes))} ;; next ks
+               (fn [token-ranges]
+                 (concat nodes (for [^TokenRange range token-ranges
+                                     ^EndpointDetails endpoint (.getEndpoint_details range)]
+                                 (.getHost endpoint))))))))
+       #{}
+       keyspaces))
     (catch Exception e
-      (.printStackTrace e)
-      nil)))
+      (.printStackTrace e))))
 
 (defn start-worker
   ([cluster interval]
      (tron/periodically
-      :casyn.auto-discover.worker
+      :casyn.auto-discovery.worker
       #(when-let [nodes (discover cluster)]
          (clu/refresh cluster nodes))
       interval))
-
   ([cluster]
      (start-worker cluster 100)))
