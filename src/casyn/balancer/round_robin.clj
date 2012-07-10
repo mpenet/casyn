@@ -3,7 +3,7 @@
   (:import [java.util.concurrent LinkedBlockingQueue]
            [java.util Collection]))
 
-(deftype LinkedBlockingQueueRoundRobinBalancer [^LinkedBlockingQueue nodes]
+(deftype RoundRobinBalancer [^LinkedBlockingQueue nodes]
 
   PBalancer
 
@@ -25,5 +25,5 @@
 
 
 (defmethod balancer :round-robin [_ & initial-nodes]
-  (LinkedBlockingQueueRoundRobinBalancer.
+  (RoundRobinBalancer.
    (LinkedBlockingQueue. ^Collection initial-nodes)))
