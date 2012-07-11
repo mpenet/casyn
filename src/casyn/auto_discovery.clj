@@ -4,6 +4,8 @@
    [casyn.cluster :as clu]
    [casyn.client :as c]
    [lamina.core :as lc]
+   [useful.exception :as uex]
+   [clojure.tools.logging :as log]
    tron)
   (:import [org.apache.cassandra.thrift KsDef TokenRange EndpointDetails]))
 
@@ -28,7 +30,7 @@
        #{}
        keyspaces))
     (catch Exception e
-      (.printStackTrace e))))
+      (log/error (uex/exception-map e)))))
 
 (defn start-worker
   ([cluster interval]
