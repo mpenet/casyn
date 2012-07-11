@@ -1,6 +1,6 @@
 (ns playground
   (:require [casyn.core :as c]
-            [lamina.core :as lac]))
+            [lamina.core :as lc]))
 
 (def ks "casyn_test_ks")
 (def cf "test_cf")
@@ -46,9 +46,10 @@
 ;; ;; (connection/close  client-pool)
 
 (prn @(client-x c/insert-column
+
                 cf
                 "1"
-                (c/column "col-name" "col-value")))
+                "col-name" "col-value"))
 
 
 
@@ -75,7 +76,24 @@
    (client-x c/insert-column
              cf
              "1"
-             (c/column "col-name" "col-value"))))
+             "col-name" "col-value")))
+
+
+;; (println @(lc/run-pipeline
+;;   (client-x c/insert-column
+;;             cf
+;;             "1"
+;;             "col-name" "col-value")
+;;   (fn [asdf]
+;;     (println @(client-x c/insert-column
+;;                         cf
+;;                         "1"
+;;                         "col-name" "col-value"))0
+
+
+
+;;     )
+;;   ))
 
 ;; "Elapsed time: 1365.107026 msecs"
 ;; "Elapsed time: 1255.803791 msecs"
