@@ -7,7 +7,7 @@
     SuperColumn KeySlice]
    [java.nio ByteBuffer]))
 
-(declare composite-query)
+(declare composite-expression)
 
 (defprotocol ThriftDecodable
   (thrift->clojure [v] "Transforms a thrift type to clojure friendly type"))
@@ -128,7 +128,7 @@
     ;; check for a composite
     (if (and (sequential? b)
              (:composite (meta b)))
-      (apply composite-query (map #(vector :eq? %) b))
+      (apply composite-expression (map #(vector :eq? %) b))
       (ByteBufferUtil/bytes (prn-str b))))
 
   nil
@@ -137,7 +137,8 @@
 
 
 (defmulti bytes->clojure
-  "Decode byte arrays"
+  "Decode byte arrays
+   TODO: use isa? protocol maybe"
   (fn [val-type v]
     (if (keyword? val-type)
       val-type
@@ -210,7 +211,7 @@
    :lt? (byte -1)
    :gt? (byte 1)})
 
-(defn encode-composite-value
+(defn composite-value
   [raw-value suffix]
   (let [value-bb ^ByteBuffer (clojure->byte-buffer raw-value)
         ;; we need a new bb of capacity 2+(size value)+1
@@ -220,7 +221,24 @@
     (.put bb ^byte suffix) ;; eoc suffix
     (.rewind bb)))
 
-(defn decode-composite-column
+(defn composite-expression
+  "Takes a sequence of values pairs holding operator and actual clojure value to
+be encoded as a composite type. Returns a ByteBuffer
+ex: (composite-expression [:eq? 12] [:gt? \"meh\"] [:lt? 12])"
+  [& values]
+  (let [bbv (map (fn [[op v]]
+                   (composite-value v (get composite-operators op)))
+                 values)
+        bb (ByteBuffer/allocate (reduce (fn [s bb]
+                                          (+ s (.capacity ^ByteBuffer bb)))
+                                        0
+                                        bbv))]
+    (doseq [v bbv]
+      (.put bb ^ByteBuffer v))
+
+    (.rewind bb)))
+
+(defn composite-column->clojure
   "Takes a composite value as byte-array and transforms it to a collection of
 byte-arrays individual values"
   [ba]
@@ -237,26 +255,9 @@ byte-arrays individual values"
 (defmethod bytes->clojure :composite [composite-types vs]
   (map #(bytes->clojure %1 %2)
        composite-types
-       (decode-composite-column vs)))
-
-(defn composite-query
-  "Takes a sequence of values pairs holding operator and actual clojure value to
-be encoded as a composite type. Returns a ByteBuffer
-ex: (composite-query [:eq? 12] [:gt? \"meh\"] [:lt? 12])"
-  [& values]
-  (let [bbv (map (fn [[op v]]
-                   (encode-composite-value v (get composite-operators op)))
-                 values)
-        bb (ByteBuffer/allocate (reduce (fn [s bb]
-                                          (+ s (.capacity ^ByteBuffer bb)))
-                                        0
-                                        bbv))]
-    (doseq [v bbv]
-      (.put bb ^ByteBuffer v))
-
-    (.rewind bb)))
+       (composite-column->clojure vs)))
 
 (defn composite
-  "Mark a value as composite"
+  "Mark a column value|name|key value as composite"
   [& values]
   (vary-meta values assoc :composite true))
