@@ -5,7 +5,6 @@
    [org.apache.cassandra.thrift
     ColumnOrSuperColumn Column CounterColumn CounterSuperColumn
     SuperColumn KeySlice]
-   [org.apache.cassandra.thrift.ColumnOrSuperColumn]
    [java.nio ByteBuffer]))
 
 (declare composite-expression)
