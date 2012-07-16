@@ -274,6 +274,14 @@
            #(decode-result % test-schema true)))))
 
 (deftest test-index
+  (is (= '({"1" {"n1" "value1"}})
+       @(lc/run-pipeline
+           (c get-indexed-slice
+                     [cf]
+                     [[:eq? :n1 "value1"]]
+                     (columns-by-names "n1"))
+           #(decode-result % test-schema true))))
+
   (is (= 1
          @(lc/run-pipeline
            (c get-indexed-slice

@@ -5,4 +5,3 @@
 (defrecord CounterColumn [name value])
 (defrecord SuperColumn [name columns])
 (defrecord CounterSuperColumn [name columns])
-(defrecord KeySlice [row columns])

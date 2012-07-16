@@ -5,6 +5,7 @@
    [org.apache.cassandra.thrift
     ColumnOrSuperColumn Column CounterColumn CounterSuperColumn
     SuperColumn KeySlice]
+   [org.apache.cassandra.thrift.ColumnOrSuperColumn]
    [java.nio ByteBuffer]))
 
 (declare composite-expression)
@@ -15,6 +16,17 @@
 (defprotocol ByteBufferEncodable
   (clojure->byte-buffer [v] "Converts from clojure types to byte-buffers"))
 
+;; extend-protocol messes things up during expansion
+(extend-type (Class/forName "[Lorg.apache.cassandra.thrift.ColumnOrSuperColumn;")
+  ThriftDecodable
+  (thrift->clojure [kss]
+    (map thrift->clojure kss)))
+
+(extend-type (Class/forName "[Lorg.apache.cassandra.thrift.KeySlice;")
+  ThriftDecodable
+  (thrift->clojure [kss]
+    (mapv thrift->clojure kss)))
+
 (extend-protocol ThriftDecodable
 
   ByteBuffer
@@ -23,13 +35,15 @@
 
   java.util.ArrayList
   (thrift->clojure [a]
-    (map thrift->clojure a))
+    (thrift->clojure (into-array a)))
 
   java.util.Map
   (thrift->clojure [a]
     (reduce
      (fn [m [k v]]
-       (assoc m (thrift->clojure k) (thrift->clojure v)))
+       (assoc m
+         (thrift->clojure k)
+         (thrift->clojure v)))
      (array-map)
      a))
 
@@ -56,26 +70,26 @@
   (thrift->clojure [sc]
     (casyn.types.SuperColumn.
      (.getName sc)
-     (map thrift->clojure (.getColumns sc))))
+     (thrift->clojure (.getColumns sc))))
 
 
   CounterSuperColumn
   (thrift->clojure [sc]
     (casyn.types/CounterSuperColumn.
      (.getName sc)
-     (map thrift->clojure (.getColumns sc))))
+     (thrift->clojure (.getColumns sc))))
+
 
   KeySlice
   (thrift->clojure [ks]
-    (casyn.types.KeySlice. (.getKey ks)
-                           (thrift->clojure (.getColumns ks))))
+    {(.getKey ks)
+     (thrift->clojure (.getColumns ks))})
 
   Object
   (thrift->clojure [v] v)
 
   nil
   (thrift->clojure [v] v))
-
 
 (extend-protocol ByteBufferEncodable
 

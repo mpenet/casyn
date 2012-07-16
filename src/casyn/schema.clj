@@ -4,8 +4,7 @@
             Column
             CounterColumn
             SuperColumn
-            CounterSuperColumn
-            KeySlice]))
+            CounterSuperColumn]))
 
 (defn cols->map
   "Turns a collection of columns into an array-map with column name mapped to key"
@@ -31,7 +30,16 @@
     ([r s]
        (map #(decode-result % s) r))
     ([r s m]
-       (cols->map (decode-result r s))))
+       (if m
+         (cols->map (decode-result r s))
+         (decode-result r s))))
+
+  clojure.lang.IPersistentVector
+  (decode-result
+    ([r s]
+       (map #(decode-result % s) r))
+    ([r s m]
+       (map #(decode-result % s m) r)))
 
   clojure.lang.IPersistentMap
   (decode-result
@@ -79,11 +87,6 @@
       :row (codecs/bytes->clojure (:name s) (:name r))
       :columns (decode-result (:columns r) s)))
 
-  KeySlice
-  (decode-result [r s]
-    (assoc r
-      :row (codecs/bytes->clojure (:row s) (:row r))
-      :columns (decode-result (:columns r) s)))
 
   nil
   (decode-result
