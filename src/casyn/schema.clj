@@ -78,13 +78,13 @@
   CounterSuperColumn
   (decode-result [r s]
     (assoc r
-      :row (codecs/bytes->clojure (:name s) (:name r))
+      :name (codecs/bytes->clojure (:name s) (:name r))
       :columns (decode-result (:columns r) s)))
 
   SuperColumn
   (decode-result [r s]
     (assoc r
-      :row (codecs/bytes->clojure (:name s) (:name r))
+      :name (codecs/bytes->clojure (:name s) (:name r))
       :columns (decode-result (:columns r) s)))
 
 
