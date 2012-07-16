@@ -7,6 +7,11 @@
             CounterSuperColumn
             KeySlice]))
 
+(defn cols->map
+  "Turns a collection of columns into an array-map with column name mapped to key"
+  [cols]
+  (apply array-map (mapcat (juxt :name :value) cols)))
+
 ;; probably overkill, but we could imagine having different schema later
 (defrecord Schema [name row super columns])
 (defmacro defschema
@@ -16,23 +21,30 @@
   `(def ~name (Schema. ~(keyword name) ~row ~super ~columns)))
 
 (defprotocol SchemaDecodable
-  (decode-result [r s] "Decodes a result according to supplied schema"))
+  (decode-result [result schema] [result schema as-map]
+    "Decodes a result according to supplied schema"))
 
 (extend-protocol SchemaDecodable
 
   clojure.lang.Sequential
-  (decode-result [r s]
-    (map #(decode-result % s) r))
+  (decode-result
+    ([r s]
+       (map #(decode-result % s) r))
+    ([r s m]
+       (cols->map (decode-result r s))))
 
   clojure.lang.IPersistentMap
-  (decode-result [r s]
-    (reduce-kv
-     (fn [m k v]
-       (assoc m
-         (codecs/bytes->clojure (:row s) k)
-         (decode-result v s)))
-     (array-map)
-     r))
+  (decode-result
+    ([r s]
+       (reduce-kv
+        (fn [m k v]
+          (assoc m
+            (codecs/bytes->clojure (:row s) k)
+            (decode-result v s)))
+        (array-map)
+        r))
+    ([r s m]
+       (cols->map (decode-result r s))))
 
   Column
   (decode-result [r s]
@@ -64,15 +76,22 @@
       :row (codecs/bytes->clojure (:name s) (:name r))
       :columns (decode-result (:columns r) s)))
 
-
   KeySlice
-  (decode-result [r s]
-    (assoc r
-      :row (codecs/bytes->clojure (:row s) (:row r))
-      :columns (decode-result (:columns r) s)))
+  (decode-result
+    ([r s]
+       (assoc r
+         :row (codecs/bytes->clojure (:row s) (:row r))
+         :columns (decode-result (:columns r) s)))
+    ([r s m]
+       (cols->map (decode-result r s))))
+
 
   nil
-  (decode-result [r s] nil)
+  (decode-result
+    ([r s] nil)
+    ([r s m] nil))
 
   Object
-  (decode-result [r s] r))
+  (decode-result
+    ([r s] r)
+    ([r s m] r)))

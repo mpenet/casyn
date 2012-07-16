@@ -138,6 +138,18 @@ user> (#casyn.types.Column{:name #<byte[] [B@7cc09980>, :value #<byte[] [B@489de
    you can use `cols->map` , :name and :value are then mapped to
    key/value. You would no longer have access to the additional data such as
    ttl or timestamp on the column.
+   Or you can just pass `true` as a third parameter to decode-result.
+
+```clojure
+@(l/run-pipeline
+  (c get-row "colFamily1" "1")
+  #(decode-result % test-schema true))
+
+user> {"foo" "bar", "baz" "quux"}
+```
+
+
+
 
    See See [tests](https://github.com/mpenet/casyn/blob/master/test/casyn/test/core.clj),  [api.clj](https://github.com/mpenet/casyn/blob/master/src/casyn/api.clj) and [codox doc](http://mpenet.github.com/casyn/) for more details.
 

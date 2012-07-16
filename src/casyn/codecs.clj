@@ -176,10 +176,6 @@
 
 (defmethod bytes->clojure :default [_ v] v)
 
-(defn cols->map
-  "Turns a collection of columns into an array-map with column name mapped to key"
-  [cols]
-  (apply array-map (mapcat (juxt :name :value) cols)))
 
 ;; Composite
 

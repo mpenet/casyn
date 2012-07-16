@@ -257,7 +257,13 @@
          @(lc/run-pipeline
           (c get-row cf "2")
           #(decode-result % test-codec-schema)
-          cols->map))))
+          cols->map)))
+
+  (is (= {"n0" "value0"
+          "n00" "value00"}
+         @(lc/run-pipeline
+           (c get-row cf "0")
+           #(decode-result % test-schema true)))))
 
 (deftest test-index
   (is (= 1
