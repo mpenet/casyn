@@ -44,7 +44,10 @@
         (array-map)
         r))
     ([r s m]
-       (cols->map (decode-result r s))))
+       (reduce-kv (fn [m k v]
+                    (assoc m k (cols->map v)))
+                   (array-map)
+                   (decode-result r s))))
 
   Column
   (decode-result [r s]
@@ -77,14 +80,10 @@
       :columns (decode-result (:columns r) s)))
 
   KeySlice
-  (decode-result
-    ([r s]
-       (assoc r
-         :row (codecs/bytes->clojure (:row s) (:row r))
-         :columns (decode-result (:columns r) s)))
-    ([r s m]
-       (cols->map (decode-result r s))))
-
+  (decode-result [r s]
+    (assoc r
+      :row (codecs/bytes->clojure (:row s) (:row r))
+      :columns (decode-result (:columns r) s)))
 
   nil
   (decode-result

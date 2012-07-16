@@ -134,6 +134,7 @@
            type))))
 
 (deftest test-get-slice
+
   (is (= 2
          @(lc/run-pipeline
            (c get-slice cf "0" (columns-by-names "n0" "n00"))
@@ -152,6 +153,7 @@
          )))
 
 (deftest test-mget-slice
+
   (is (= 2
          @(lc/run-pipeline
            (c mget-slice cf ["0" "1"] (columns-by-names "n0" "n1" "n00"))
@@ -263,6 +265,12 @@
           "n00" "value00"}
          @(lc/run-pipeline
            (c get-row cf "0")
+           #(decode-result % test-schema true))))
+
+
+(is (= {"0" {"n0" "value0", "n00" "value00"}, "1" {"n1" "value1", "n2-nil" nil}}
+         @(lc/run-pipeline
+           (c get-rows cf ["0" "1"])
            #(decode-result % test-schema true)))))
 
 (deftest test-index
