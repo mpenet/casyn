@@ -18,11 +18,21 @@ Contributions and suggestions are welcome.
 
 See clj-hector or some of the very mature java clients available if you need a production ready library right now.
 
+## Installation
+
+Casyn uses Leinigen 2,  but it should be backward compatible with 1.x
+
+Add the following dependency on your project.clj:
+
+```clojure
+[cc.qbits/casyn "0.1.3"]
+```
+
 ## Usage
 
-   Start by creating a playground for this introduction:
+Start by creating a playground for this introduction:
 
-   ```clojure
+```clojure
 (use 'casyn.core)
 
 (add-keyspace (make-client)
@@ -34,9 +44,9 @@ See clj-hector or some of the very mature java clients available if you need a p
                :replicate-on-write true]]
                :strategy-options {"replication_factor" "1"})
 user> < ... >
-   ```
+```
 
-   ```clojure
+```clojure
 (require '[lamina.core :as l])
 
 (def cl (make-cluster "localhost" 9160 "Keyspace1"))
@@ -49,28 +59,28 @@ user> < ... >
 (def c (client-fn cl))
 ```
 
-   API calls return result-channels.
-   This is an example of this. From there you have multiple choices
-   you can just have the call block and wait for a result/error by dereferencing it.
+API calls return result-channels.
+This is an example of this. From there you have multiple choices
+you can just have the call block and wait for a result/error by dereferencing it.
 
-   ```clojure
-   @(c get-row "colFamily1" "1")
-   ```
+```clojure
+@(c get-row "colFamily1" "1")
+```
 
-   or since we want to play asynchronously register a callback
+or since we want to play asynchronously register a callback
 
-   ```clojure
-   (l/on-realized (c get-row "colFamily1" "1")
-               #(println "It worked, row:" %)
-               #(println "It failed, error:" %))
-   ```
+```clojure
+(l/on-realized (c get-row "colFamily1" "1")
+           #(println "It worked, row:" %)
+           #(println "It failed, error:" %))
+```
 
-   or use a pipeline to compose async/sync operations.
-   Here a write then reading the entire row.
-   A pipeline also returns a result-channel and can be nested with other
-   pipelines, making async workflow easier to deal with.
+or use a pipeline to compose async/sync operations.
+Here a write then reading the entire row.
+A pipeline also returns a result-channel and can be nested with other
+pipelines, making async workflow easier to deal with.
 
-   ```clojure
+```clojure
 
 @(l/run-pipeline
   (c insert-column "colFamily1" "1" "n0" "value0")
@@ -81,18 +91,17 @@ user> < ... >
 user> (#casyn.types.Column{:name #<byte[] [B@7cc09980>, :value #<byte[] [B@489de27c>, :ttl 0, :timestamp 1332535710069564})
   ```
 
-  [Lamina](https://github.com/ztellman/lamina) offers a lot of possibilities. I encourage you to check what is possible with it.
+[Lamina](https://github.com/ztellman/lamina) offers a lot of possibilities. I encourage you to check what is possible with it.
 
 
-  Cassandra/Thrift column name/values are returned as bytes, but you can supply a schema for
-  decoding.
-  Encoding of clojure data is automatic.
-  Encoding and decoding is open and extendable, see codecs.clj.
+Cassandra/Thrift column name/values are returned as bytes, but you can supply a schema for
+decoding.
+Encoding of clojure data is automatic.
+Encoding and decoding is open and extendable, see codecs.clj.
 
-  The same example as before with a simple schema:
+The same example as before with a simple schema:
 
-  ```clojure
-
+```clojure
 (defschema test-schema
   :row :string
   :super :string
@@ -107,14 +116,14 @@ user> (#casyn.types.Column{:name #<byte[] [B@7cc09980>, :value #<byte[] [B@489de
   (fn [_] (c get-row "colFamily1" "1"))
   #(decode-result % test-schema))
 
- user> (#casyn.types.Column{:name "n0", :value "value0", :ttl 0, :timestamp 1332536503948650})
-   ```
+user> (#casyn.types.Column{:name "n0", :value "value0", :ttl 0, :timestamp 1332536503948650})
+```
 
-   Schema supports `:string` `:long`  `:float`  `:double` `:int` `:boolean` `:keyword` `:clojure` `:symbol` `:bytes` `:date`
+Schema supports `:string` `:long`  `:float`  `:double` `:int` `:boolean` `:keyword` `:clojure` `:symbol` `:bytes` `:date`
 
-   These are also extendable from a multimethod.
+These are also extendable from a multimethod.
 
-   Composite types are also supported, use the same type definitions but in a vector (they can be used as keys, names, values):
+Composite types are also supported, use the same type definitions but in a vector (they can be used as keys, names, values):
 
 ```clojure
 (defschema test-schema
@@ -126,19 +135,19 @@ user> (#casyn.types.Column{:name #<byte[] [B@7cc09980>, :value #<byte[] [B@489de
               "test-composite-type" [:string :clojure :int]}})
 ```
 
-   To create composite values just use the `composite` function, it will just mark the collection as composite in its metadata, and encode it when you execute the query.
-   That means you could also create this composite collection beforehand, modify it without having to worry about anything (as long as the metadata is perserved).
+To create composite values just use the `composite` function, it will just mark the collection as composite in its metadata, and encode it when you execute the query.
+That means you could also create this composite collection beforehand, modify it without having to worry about anything (as long as the metadata is perserved).
 
 ```clojure
 (c insert-column "colFamily1" "1" (composite ["meh" 1 :something 3.14 {:foo "bar"}] "value0"))
 ```
 
+If you want a collection of columns to be turned into a regular map
+you can use `cols->map` , :name and :value are then mapped to
+key/value. You would no longer have access to the additional data such as
+ttl or timestamp on the column.
+Or you can just pass `true` as a third parameter to decode-result.
 
-   If you want a collection of columns to be turned into a regular map
-   you can use `cols->map` , :name and :value are then mapped to
-   key/value. You would no longer have access to the additional data such as
-   ttl or timestamp on the column.
-   Or you can just pass `true` as a third parameter to decode-result.
 
 ```clojure
 @(l/run-pipeline
@@ -151,7 +160,7 @@ user> {"foo" "bar", "baz" "quux"}
 
 
 
-   See See [tests](https://github.com/mpenet/casyn/blob/master/test/casyn/test/core.clj),  [api.clj](https://github.com/mpenet/casyn/blob/master/src/casyn/api.clj) and [codox doc](http://mpenet.github.com/casyn/) for more details.
+See See [tests](https://github.com/mpenet/casyn/blob/master/test/casyn/test/core.clj),  [api.clj](https://github.com/mpenet/casyn/blob/master/src/casyn/api.clj) and [codox doc](http://mpenet.github.com/casyn/) for more details.
 
 ## License
 
