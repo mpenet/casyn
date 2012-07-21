@@ -157,10 +157,9 @@ Or you can just pass `true` as a third parameter to decode-result.
 user> {"foo" "bar", "baz" "quux"}
 ```
 
+## Documentation
 
-
-
-See See [tests](https://github.com/mpenet/casyn/blob/master/test/casyn/test/core.clj),  [api.clj](https://github.com/mpenet/casyn/blob/master/src/casyn/api.clj) and [codox doc](http://mpenet.github.com/casyn/) for more details.
+See the [API documentation](http://mpenet.github.com/casyn/) or [tests](https://github.com/mpenet/casyn/blob/master/test/casyn/test/core.clj) for more details.
 
 ## License
 
