@@ -1,4 +1,4 @@
-(defproject casyn "0.1.3-SNAPSHOT"
+(defproject cc.qbits/casyn "0.1.3-SNAPSHOT"
   :description "Async Thrift based Cassandra Client"
   :url "https://github.com/mpenet/casyn"
   :dependencies [[org.clojure/clojure "1.4.0"]
@@ -8,6 +8,10 @@
                  [tron "0.5.3"]
                  [useful "0.8.0"]
                  [commons-pool "1.6"]]
-
-  :dev-dependencies [[codox "0.6.1"]]
+  :profiles {:1.3  {:dependencies [[org.clojure/clojure "1.3.0"]]}
+             :1.4  {:dependencies [[org.clojure/clojure "1.4.0"]]}
+             :1.5  {:dependencies [[org.clojure/clojure "1.5.0-master-SNAPSHOT"]]}
+             :dev  {:dependencies [[codox "0.6.1"]]}
+             :test {:dependencies []}}
+  :min-lein-version "2.0.0"
   :warn-on-reflection true)
