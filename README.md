@@ -105,10 +105,10 @@ The same example as before with a simple schema:
 (defschema test-schema
   :row :string
   :super :string
-  :columns
-{:default [:string :string]
- ;; when a column with the age name is encountered it will overwrite the defaults for decoding
- :exceptions {"age" :long}})
+  :columns {:default [:string :string]
+            ;; when a column with the age name is encountered it will
+            ;; overwride the defaults for decoding
+            :exceptions {"age" :long}})
 
 @(l/run-pipeline
   (c insert-column "colFamily1" "1" "n0" "value0" :consistency :all)  ;; consistency is tunable per query
