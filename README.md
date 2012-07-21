@@ -78,7 +78,7 @@ or since we want to play asynchronously register a callback
 or use a pipeline to compose async/sync operations.
 Here a write then reading the entire row.
 A pipeline also returns a result-channel and can be nested with other
-pipelines, making async workflow easier to deal with.
+pipelines, making async workflow and error handling easier to deal with.
 
 ```clojure
 
@@ -112,7 +112,6 @@ The same example as before with a simple schema:
 
 @(l/run-pipeline
   (c insert-column "colFamily1" "1" "n0" "value0" :consistency :all)  ;; consistency is tunable per query
-  :error-handler (fn [_] (println "something went wrong"))
   (fn [_] (c get-row "colFamily1" "1"))
   #(decode-result % test-schema))
 
@@ -128,11 +127,9 @@ Composite types are also supported, use the same type definitions but in a vecto
 ```clojure
 (defschema test-schema
   :row :string
-  :super :string
-  :columns
-{:default [:string :string]
- :exceptions {"age" :long
-              "test-composite-type" [:string :clojure :int]}})
+  :columns {:default [:string :string]
+            :exceptions {"age" :long
+                         "test-composite-type" [:string :clojure :int]}})
 ```
 
 To create composite values just use the `composite` function, it will just mark the collection as composite in its metadata, and encode it when you execute the query.
