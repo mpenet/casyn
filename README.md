@@ -8,7 +8,7 @@ It relies on the perf Lamina branch that hasnt been officialy released yet.
 It is a work in progress,
 
 The majority of the [Cassandra Api](http://wiki.apache.org/cassandra/API) is
-supported.
+supported, this includes CQL support.
 
 Pooling is using Apache commons pools, but it is open to other
 implementations from clojure Protocols/multimethods, the same is true for almost
@@ -99,6 +99,7 @@ Cassandra/Thrift column name/values are returned as bytes, but you can supply a 
 decoding.
 Encoding of clojure data is automatic.
 Encoding and decoding is open and extendable, see codecs.clj.
+This also works for CQL queries.
 
 The same example as before with a simple schema:
 
