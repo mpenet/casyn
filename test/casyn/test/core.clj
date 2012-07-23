@@ -252,9 +252,6 @@
 
 
 (deftest codecs
-  ;; FIXME : -in and -out should be identical
-  ;; probably wrapping composite in a type that looks like a list would do.
-  ;; or using meta
   (is (= test-coerce-data
          @(lc/run-pipeline
           (c get-row cf "2")
