@@ -520,7 +520,7 @@ http://javasourcecode.org/html/open-source/cassandra/cassandra-0.8.1/org/apache/
   (wrap-result-channel
    (.execute_cql_query client
                        (codecs/clojure->byte-buffer query)
-                       Compression/GZIP)))
+                       Compression/NONE)))
 
 
 ;; Sugar

@@ -4,7 +4,7 @@
    [org.apache.cassandra.utils ByteBufferUtil]
    [org.apache.cassandra.thrift
     ColumnOrSuperColumn Column CounterColumn CounterSuperColumn
-    SuperColumn KeySlice]
+    SuperColumn KeySlice CqlResult CqlRow CqlResultType]
    [java.nio ByteBuffer]))
 
 (declare composite-expression)
@@ -18,8 +18,8 @@
 ;; extend-protocol messes things up during expansion
 (extend-type (Class/forName "[Lorg.apache.cassandra.thrift.ColumnOrSuperColumn;")
   ThriftDecodable
-  (thrift->clojure [kss]
-    (map thrift->clojure kss)))
+  (thrift->clojure [cs]
+    (map thrift->clojure cs)))
 
 (extend-type (Class/forName "[Lorg.apache.cassandra.thrift.KeySlice;")
   ThriftDecodable
@@ -83,6 +83,17 @@
   (thrift->clojure [ks]
     {(.getKey ks)
      (thrift->clojure (.getColumns ks))})
+
+  CqlRow
+  (thrift->clojure [r]
+    {(.getKey r)
+     (mapv thrift->clojure (.getColumns r))})
+
+  CqlResult
+  (thrift->clojure [r]
+    (condp = (.getType r)
+      CqlResultType/INT (.getNum r)
+      CqlResultType/ROWS (mapv thrift->clojure (.getRows r))))
 
   Object
   (thrift->clojure [v] v)

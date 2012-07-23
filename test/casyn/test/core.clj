@@ -309,4 +309,7 @@
                :bar))))
 
 (deftest test-cql
-  (is true))
+  (is @(lc/run-pipeline
+        (c execute-cql "SELECT * FROM test_cf;")
+        #(decode-result % test-codec-schema true)
+        #(= "value0" (-> % ffirst val :n0)))))
