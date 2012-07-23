@@ -1,11 +1,11 @@
 # casyn
 
-Clojure client library for Cassandra based on Thrift AsyncClient.
+Clojure client for Cassandra based on Thrift AsyncClient.
 
 [![Build Status](https://secure.travis-ci.org/mpenet/casyn.png?branch=master)](http://travis-ci.org/mpenet/casyn)
 
-It is a work in progress and a very early release.
 It relies on the perf Lamina branch that hasnt been officialy released yet.
+It is a work in progress,
 
 The majority of the [Cassandra Api](http://wiki.apache.org/cassandra/API) is
 supported.
@@ -16,11 +16,12 @@ every part of the library (cluster, balancer, codecs, failover).
 
 Contributions and suggestions are welcome.
 
-See clj-hector or some of the very mature java clients available if you need a production ready library right now.
+See clj-hector or some of the very mature java clients available if
+you need a production ready library right now.
 
 ## Installation
 
-Casyn uses Leinigen 2,  but it should be backward compatible with 1.x
+Casyn uses Leinigen 2, but it is compatible with 1.x
 
 Add the following dependency on your project.clj:
 
