@@ -203,29 +203,27 @@
 
 
 ;; Composite
+;;
+;; The encoding of a CompositeType column name should be:
+;; <component><component><component> ...
+;; where <component> is:
+;; <length of value><value><'end-of-component' byte>
+;; where <length of value> is a 2 bytes unsigned short the and the
+;; 'end-of-component' byte should always be 0 for actual column name.
 
-;; /*
-;;  * The encoding of a CompositeType column name should be:
-;;  *   <component><component><component> ...
-;;  * where <component> is:
-;;  *   <length of value><value><'end-of-component' byte>
-;;  * where <length of value> is a 2 bytes unsigned short the and the
-;;  * 'end-of-component' byte should always be 0 for actual column name.
+;; However, it can set to 1 for query bounds. This allows to query for the
+;; equivalent of 'give me the full super-column'. That is, if during a slice
+;; query uses:
+;; start = <3><"foo".getBytes()><0>
+;; end   = <3><"foo".getBytes()><1>
+;; then he will be sure to get *all* the columns whose first component is "foo".
 
-;;  * However, it can set to 1 for query bounds. This allows to query for the
-;;  * equivalent of 'give me the full super-column'. That is, if during a slice
-;;  * query uses:
-;;  *   start = <3><"foo".getBytes()><0>
-;;  *   end   = <3><"foo".getBytes()><1>
-;;  * then he will be sure to get *all* the columns whose first component is "foo".
-
-;;  * If for a component, the 'end-of-component' is != 0, there should not be any
-;;  * following component. The end-of-component can also be -1 to allow
-;;  * non-inclusive query. For instance:
-;;  *   start = <3><"foo".getBytes()><-1>
-;;  * allows to query everything that is greater than <3><"foo".getBytes()>, but
-;;  * not <3><"foo".getBytes()> itself.
-;;  */
+;; If for a component, the 'end-of-component' is != 0, there should not be any
+;; following component. The end-of-component can also be -1 to allow
+;; non-inclusive query. For instance:
+;; start = <3><"foo".getBytes()><-1>
+;; allows to query everything that is greater than <3><"foo".getBytes()>, but
+;; not <3><"foo".getBytes()> itself.
 
 (def composite-operators
   {:eq? (byte 0)
@@ -264,13 +262,12 @@ ex: (composite-expression [:eq? 12] [:gt? \"meh\"] [:lt? 12])"
 byte-arrays individual values"
   [ba]
   (let [bb (ByteBuffer/wrap ba)]
-    (loop [bb bb
-           values []]
+    (loop [values []]
       (if (> (.remaining bb) 0)
         (let [dest (byte-array (.getShort bb))] ;; create the output buffer for the value
           (.get bb dest) ;; fill it
           (.position bb (inc (.position bb))) ;; skip the last eoc byte
-          (recur bb (conj values dest)))
+          (recur (conj values dest)))
         values))))
 
 (defmethod bytes->clojure :composite [composite-types vs]
