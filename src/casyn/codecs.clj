@@ -231,6 +231,8 @@
    :gt? (byte 1)})
 
 (defn composite-value
+  "Create a composite value as a ByteBuffer from a raw clojure value
+  and a composite operator"
   [raw-value suffix]
   (let [value-bb ^ByteBuffer (clojure->byte-buffer raw-value)
         ;; we need a new bb of capacity 2+(size value)+1
@@ -257,15 +259,15 @@ ex: (composite-expression [:eq? 12] [:gt? \"meh\"] [:lt? 12])"
 
     (.rewind bb)))
 
-(defn composite-column->clojure
-  "Takes a composite value as byte-array and transforms it to a collection of
-byte-arrays individual values"
+(defn composite->bytes-values
+  "Takes a composite byte-array returned by thrift and transforms it
+  to a collection of byte-arrays holding actual values for decoding"
   [ba]
   (let [bb (ByteBuffer/wrap ba)]
     (loop [values []]
       (if (> (.remaining bb) 0)
         (let [dest (byte-array (.getShort bb))] ;; create the output buffer for the value
-          (.get bb dest) ;; fill it
+          (.get bb dest)                        ;; fill it
           (.position bb (inc (.position bb))) ;; skip the last eoc byte
           (recur (conj values dest)))
         values))))
@@ -273,7 +275,7 @@ byte-arrays individual values"
 (defmethod bytes->clojure :composite [composite-types vs]
   (map #(bytes->clojure %1 %2)
        composite-types
-       (composite-column->clojure vs)))
+       (composite->bytes-values vs)))
 
 (defn composite
   "Mark a column value|name|key value as composite"
