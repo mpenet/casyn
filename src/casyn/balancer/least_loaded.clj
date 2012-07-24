@@ -23,5 +23,5 @@
   (unregister-node [b node]
     (.remove nodes node)))
 
-(defmethod balancer :least-loaded [_ & initial-nodes]
+(defmethod balancer :least-loaded [_ & opts]
   (LeastLoadedBalancer. (LinkedBlockingQueue.)))

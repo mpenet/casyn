@@ -6,4 +6,4 @@
   (register-node [b node] "Notify balancer of new node")
   (unregister-node [b node] "Removes node from balancer"))
 
-(defmulti balancer (fn [k & initial-nodes] k))
+(defmulti balancer (fn [k & opts] k))

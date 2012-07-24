@@ -24,5 +24,5 @@
     (.remove nodes node)))
 
 
-(defmethod balancer :round-robin [_]
+(defmethod balancer :round-robin [_ & opts]
   (RoundRobinBalancer. (LinkedBlockingQueue.)))
