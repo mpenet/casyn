@@ -58,10 +58,9 @@
                           options)]
 
     (if (sequential? hosts)
-      (doseq [h hosts
-              :let [host (u/host->ip h)]]
-        (add-node cluster host))
-      (add-node cluster hosts))
+      (doseq [host hosts]
+        (add-node cluster (u/host->ip host)))
+      (add-node cluster (u/host->ip hosts)))
 
     (when auto-discovery
       (discovery/start-worker cluster 2000))
