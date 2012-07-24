@@ -85,7 +85,7 @@
   "Create a connection pool. For option documentation see
   http://commons.apache.org/pool/apidocs/org/apache/commons/pool/impl/GenericKeyedObjectPool.html"
   ^GenericKeyedObjectPool
-  [host port keyspace & pool-options]
+  [port keyspace & pool-options]
   (reduce set-pool-option
           (GenericKeyedObjectPool. (make-factory port keyspace))
           (merge pool-options-defaults (apply hash-map pool-options))))

@@ -15,7 +15,7 @@
 
   (:import [org.apache.commons.pool.impl GenericKeyedObjectPool]))
 
-(deftype Cluster [host port keyspace balancer pool options]
+(deftype Cluster [balancer pool options]
   PCluster
 
   (get-pool [cluster] pool)
@@ -43,19 +43,26 @@
         (remove-node cluster node-host)))))
 
 (defn make-cluster
-  [host port keyspace & {:keys [auto-discovery load-balancer-strategy]
-                         :or {auto-discovery true
-                              load-balancer-strategy :round-robin}
-                         :as options}]
+  "hosts can be a sequence or a single value, port will be the same
+  for all the hosts, you can manage a fixed sized cluster with
+  predetermined ips by turning auto-discovery off"
+  [hosts port
+  keyspace & {:keys [auto-discovery load-balancer-strategy]
+                          :or {auto-discovery true
+                               load-balancer-strategy :round-robin}
+                          :as options}]
 
-  (let [host (u/host->ip host)
-        cluster (Cluster. host port keyspace
-                          (b/balancer load-balancer-strategy host)
-                          (apply commons-pool/create-pool host port keyspace
+  (let [cluster (Cluster. (b/balancer load-balancer-strategy)
+                          (apply commons-pool/create-pool port keyspace
                                  (mapcat (juxt key val) (:pool options)))
                           options)]
 
-    ;; (Thread/sleep 4000)
+    (if (sequential? hosts)
+      (doseq [h hosts
+              :let [host (u/host->ip h)]]
+        (add-node cluster host))
+      (add-node cluster hosts))
+
     (when auto-discovery
       (discovery/start-worker cluster 2000))
 

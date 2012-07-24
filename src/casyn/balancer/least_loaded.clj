@@ -24,4 +24,4 @@
     (.remove nodes node)))
 
 (defmethod balancer :least-loaded [_ & initial-nodes]
-  (LeastLoadedBalancer. (LinkedBlockingQueue. initial-nodes)))
+  (LeastLoadedBalancer. (LinkedBlockingQueue.)))

@@ -24,6 +24,5 @@
     (.remove nodes node)))
 
 
-(defmethod balancer :round-robin [_ & initial-nodes]
-  (RoundRobinBalancer.
-   (LinkedBlockingQueue. ^Collection initial-nodes)))
+(defmethod balancer :round-robin [_]
+  (RoundRobinBalancer. (LinkedBlockingQueue.)))
