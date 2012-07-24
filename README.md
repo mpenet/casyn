@@ -29,6 +29,8 @@ Add the following dependency on your project.clj:
 [cc.qbits/casyn "0.1.3"]
 ```
 
+Note: It runs on Clojure 1.4+
+
 ## Usage
 
 Start by creating a playground for this introduction:
