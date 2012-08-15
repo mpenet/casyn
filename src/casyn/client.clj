@@ -27,11 +27,9 @@
 (defn make-client
   "Create client with its own socket"
   ([host port timeout]
-     (try
-       (doto (.getAsyncClient ^Cassandra$AsyncClient$Factory client-factory
-                              (TNonblockingSocket. host port))
-         (.setTimeout timeout))
-       (catch Exception _ nil)))
+     (doto (.getAsyncClient ^Cassandra$AsyncClient$Factory client-factory
+                            (TNonblockingSocket. host port))
+       (.setTimeout timeout)))
 
   ([host port]
      (make-client host
