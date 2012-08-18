@@ -137,12 +137,12 @@
 
   (is (= 2
          @(lc/run-pipeline
-           (c get-slice cf "0" (columns-by-names "n0" "n00"))
+           (c get-slice cf "0" :names ["n0" "n00"])
            count)))
 
   (is (= 2
          @(lc/run-pipeline
-           (c get-slice cf "0" (columns-by-range :start "n0" :finish "n00"))
+           (c get-slice cf "0" :start "n0" :finish "n00")
            count)))
 
   (is (= 2
@@ -156,12 +156,12 @@
 
   (is (= 2
          @(lc/run-pipeline
-           (c mget-slice cf ["0" "1"] (columns-by-names "n0" "n1" "n00"))
+           (c mget-slice cf ["0" "1"] :names ["n0" "n1" "n00"])
            count)))
 
   (is (= 2
          @(lc/run-pipeline
-           (c mget-slice cf ["0" "1"] (columns-by-range))
+           (c mget-slice cf ["0" "1"])
            #(decode-result % test-schema)
            count)))
 
@@ -174,18 +174,18 @@
 (deftest test-get-count
   (is (= 2
          @(lc/run-pipeline
-           (c get-count cf "0" (columns-by-names "n0" "n00"))
+           (c get-count cf "0" :names ["n0" "n00"])
            #(decode-result % test-schema))))
 
   (is (= 2
          @(lc/run-pipeline
-           (c get-count cf "0" (columns-by-range :start "n0" :finish "n00"))
+           (c get-count cf "0" :start "n0" :finish "n00")
            #(decode-result % test-schema)))))
 
 (deftest test-mget-count
   (is (= {"1" 1 "0" 2}
          @(lc/run-pipeline
-           (c mget-count cf ["0" "1"] (columns-by-names "n0" "n1" "n00"))
+           (c mget-count cf ["0" "1"] :names ["n0" "n1" "n00"])
            #(decode-result % test-schema))))
 
   (is (= {"1" 2 "0" 2}
@@ -193,7 +193,7 @@
            (c mget-count
               cf
               ["0" "1"]
-              (columns-by-range :start "n0" :finish "zzzzz"))
+              :start "n0" :finish "zzzzz")
            #(decode-result % test-schema)))))
 
 (deftest counters
@@ -223,10 +223,10 @@
   (is (nil?
        @(c batch-mutate
          {"0" {cf
-               [(delete-mutation (columns-by-names "n0" ))
-                (delete-mutation (columns-by-names "n00"))]}
+               [(delete-mutation :names ["n0"] )
+                (delete-mutation :names ["n00"])]}
           "1" {cf
-               [(delete-mutation (columns-by-names "n1"))]}})))
+               [(delete-mutation :names ["n1"])]}})))
 
   (is (nil?
        @(c put cf "11"
@@ -245,8 +245,9 @@
   (is (= 3
          @(lc/run-pipeline
            (c get-range-slice cf
-                     (columns-by-names "n0" "n00")
-                     [:start-key "0" :end-key "1"])
+              :start-key "0"
+              :end-key "1"
+              :names ["n0" "n00"])
            #(decode-result % test-schema)
            count))))
 
@@ -276,7 +277,7 @@
            (c get-indexed-slice
                      [cf]
                      [[:eq? :n1 "value1"]]
-                     (columns-by-names "n1"))
+                     :names ["n1"])
            #(decode-result % test-schema true))))
 
   (is (= 1
@@ -284,7 +285,7 @@
            (c get-indexed-slice
                      [cf]
                      [[:eq? :n1 "value1"]]
-                     (columns-by-names "n1"))
+                     :names ["n1"])
            #(decode-result % test-schema)
            count))))
 

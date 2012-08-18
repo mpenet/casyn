@@ -32,10 +32,9 @@ http://javasourcecode.org/html/open-source/cassandra/cassandra-0.8.1/org/apache/
     :two ConsistencyLevel/TWO}))
 
 ;; Async helper
-
 (defmacro wrap-result-channel
   "Wraps a form in a Lamina result-channel, and make the last arg of the form an
-   AsyncMethodCallback with error/complete callback bound to the result-channel"
+   AsyncMethodCallback with error/complete callback bound to a result-channel"
   [form]
   (let [thrift-cmd-call (gensym)
         result-hint (format "org.apache.cassandra.thrift.Cassandra$AsyncClient$%s_call"
@@ -79,14 +78,14 @@ http://javasourcecode.org/html/open-source/cassandra/cassandra-0.8.1/org/apache/
                 (map #(apply column %) columns)))
 
 (defn counter-super-column
-  ""
+  "Returns a Thrift CounterSuperColumn instance"
   [name columns]
   (CounterSuperColumn. (codecs/clojure->byte-buffer name)
                        (map #(apply counter-column %) columns)))
 
 (defn column-parent
-  "Returns a Thrift ColumnParent instance, api fns accept a vector or a single
- value that will be applied to this fn"
+  "Returns a Thrift ColumnParent instance, works for common columns or
+  super columns depending on arity used"
   ^ColumnParent
   ([^String cf sc]
      (doto (ColumnParent. cf)
@@ -94,16 +93,9 @@ http://javasourcecode.org/html/open-source/cassandra/cassandra-0.8.1/org/apache/
   ([^String cf] (ColumnParent. cf))
   ([] (ColumnParent.)))
 
-(defn super-column-path
-  "Returns a Thrift SuperColumnPath instance, api fns accept a vector or a single
- value that will be applied to this"
-  [^String cf sc]
-  (doto (ColumnPath. cf)
-    (.setSuper_column ^ByteBuffer (codecs/clojure->byte-buffer sc))))
-
 (defn column-path
-  "Returns a Thrift ColumnPath instance, api fns accept a vector or a single
- value that will be applied to this fn"
+  "Returns a Thrift ColumnPath instance, works for common columns or
+  super columns depending on arity used"
   ^ColumnPath
   ([^String cf sc c]
      (doto ^ColumnPath (column-path cf c)
@@ -114,24 +106,31 @@ http://javasourcecode.org/html/open-source/cassandra/cassandra-0.8.1/org/apache/
   ([^String cf]
      (ColumnPath. cf)))
 
-(defn columns-by-names
-  ""
-  [& column-names]
+(defn slice-for-names
+  "Returns a Thrift SlicePredicate instance for column names"
+  [column-names]
   (doto (SlicePredicate.)
     (.setColumn_names (map codecs/clojure->byte-buffer column-names))))
 
-(defn columns-by-range
+(defn slice-for-range
   "Returns a Thrift SlicePredicate instance for a range of columns"
-  [& {:keys [start finish reversed count]}]
+  [{:keys [start finish reversed count]}]
   (doto (SlicePredicate.)
     (.setSlice_range (SliceRange. (codecs/clojure->byte-buffer start)
                                   (codecs/clojure->byte-buffer finish)
                                   (boolean reversed)
                                   (int (or count 100))))))
 
+(defn slice-predicate
+  ^SlicePredicate
+  [opts]
+  (if-let [names (:names opts)]
+    (slice-for-names names)
+    (slice-for-range opts)))
+
 (defn key-range
   "Returns a Thrift KeyRange instance for a range of keys"
-  [& {:keys [start-token start-key end-token end-key count-key]}]
+  [{:keys [start-token start-key end-token end-key count-key]}]
   (let [kr (KeyRange.)]
     (when start-token (.setStart_token kr ^String start-token))
     (when end-token (.setEnd_token kr ^String end-token))
@@ -171,22 +170,23 @@ http://javasourcecode.org/html/open-source/cassandra/cassandra-0.8.1/org/apache/
   (doto-mutation
    (.setCounter_super_column ^CounterSuperColumn (apply counter-super-column sc))))
 
-(defn ^Deletion deletion
+(defn deletion
   ""
   ^SlicePredicate
-  ([slice-pred ^ByteBuffer sc]
-     (doto ^Deletion (deletion  slice-pred)
-       (.setSuper_column sc)))
-  ([slice-pred]
-     (doto (Deletion.)
-       (.setTimestamp (utils/ts))
-       (.setPredicate slice-pred))))
+  [{:keys [super]
+    :as opts}]
+  (let [d (Deletion.)]
+    (.setTimestamp d (utils/ts))
+    (.setPredicate d (slice-predicate opts))
+    (when super
+      (.setSuper_column d ^ByteBuffer (codecs/clojure->byte-buffer super)))
+    d))
 
 (defn delete-mutation
   ""
   [& args] ;; expects a pred and opt sc
   (doto (Mutation.)
-    (.setDeletion (apply deletion args))))
+    (.setDeletion (deletion args))))
 
 
 ;; Secondary indexes
@@ -210,7 +210,7 @@ http://javasourcecode.org/html/open-source/cassandra/cassandra-0.8.1/org/apache/
   "Defines one or more IndexExpressions for get_indexed_slices. An
   IndexExpression containing an EQ IndexOperator must be present"
   [expressions & {:keys [start-key count]
-      :or {count 100}}]
+                  :or {count 100}}]
   (IndexClause. (index-expressions expressions)
                 (codecs/clojure->byte-buffer start-key)
                 (int count)))
@@ -249,90 +249,98 @@ http://javasourcecode.org/html/open-source/cassandra/cassandra-0.8.1/org/apache/
 
 (defn get-slice
   ""
-  [^Cassandra$AsyncClient client cf row-key slice-predicate
-   & {:keys [consistency]}]
+  [^Cassandra$AsyncClient client cf row-key
+   & {:keys [consistency]
+      :as opts}]
   (wrap-result-channel
    (.get_slice client
                (codecs/clojure->byte-buffer row-key)
                (column-parent cf)
-               slice-predicate
+               (slice-predicate opts)
                (consistency-level consistency))))
 
 (defn mget-slice
   ""
-  [^Cassandra$AsyncClient client cf row-keys slice-predicate
-   & {:keys [consistency]}]
+  [^Cassandra$AsyncClient client cf row-keys
+   & {:keys [consistency]
+      :as opts}]
   (wrap-result-channel
    (.multiget_slice client
                     (map codecs/clojure->byte-buffer row-keys)
                     (column-parent cf)
-                    slice-predicate
+                    (slice-predicate opts)
                     (consistency-level consistency))))
 
 (defn get-super-slice
   ""
-  [^Cassandra$AsyncClient client cf row-key sc slice-predicate
-   & {:keys [consistency]}]
+  [^Cassandra$AsyncClient client cf row-key sc
+   & {:keys [consistency]
+      :as opts}]
   (wrap-result-channel
    (.get_slice client
                (codecs/clojure->byte-buffer row-key)
                (column-parent cf sc)
-               slice-predicate
+               (slice-predicate opts)
                (consistency-level consistency))))
 
 (defn mget-super-slice
   ""
-  [^Cassandra$AsyncClient client cf row-keys sc slice-predicate
-   & {:keys [consistency]}]
+  [^Cassandra$AsyncClient client cf row-keys sc
+   & {:keys [consistency]
+      :as opts}]
   (wrap-result-channel
    (.multiget_slice client
                     (map codecs/clojure->byte-buffer row-keys)
                     (column-parent cf sc)
-                    slice-predicate
+                    (slice-predicate opts)
                     (consistency-level consistency))))
 
 (defn get-count
   ""
-  [^Cassandra$AsyncClient client cf row-key slice-predicate
-   & {:keys [consistency]}]
+  [^Cassandra$AsyncClient client cf row-key
+   & {:keys [consistency]
+      :as opts}]
   (wrap-result-channel
    (.get_count client
                (codecs/clojure->byte-buffer row-key)
                (column-parent cf)
-               slice-predicate
+               (slice-predicate opts)
                (consistency-level consistency))))
 
 (defn mget-count
   ""
-  [^Cassandra$AsyncClient client cf row-keys slice-predicate
-   & {:keys [consistency]}]
+  [^Cassandra$AsyncClient client cf row-keys
+   & {:keys [consistency]
+      :as opts}]
   (wrap-result-channel
    (.multiget_count client
                     (map codecs/clojure->byte-buffer row-keys)
                     (column-parent cf)
-                    slice-predicate
+                    (slice-predicate opts)
                     (consistency-level consistency))))
 
 (defn get-super-count
   ""
-  [^Cassandra$AsyncClient client cf row-key sc slice-predicate
-   & {:keys [consistency]}]
+  [^Cassandra$AsyncClient client cf row-key sc
+   & {:keys [consistency]
+      :as opts}]
   (wrap-result-channel
    (.get_count client
                (codecs/clojure->byte-buffer row-key)
                (column-parent cf sc)
-               slice-predicate
+               (slice-predicate opts)
                (consistency-level consistency))))
 
 (defn mget-super-count
   ""
-  [^Cassandra$AsyncClient client cf row-keys sc slice-predicate
-   & {:keys [consistency]}]
+  [^Cassandra$AsyncClient client cf row-keys sc
+   & {:keys [consistency]
+      :as opts}]
   (wrap-result-channel
    (.multiget_count client
                     (map codecs/clojure->byte-buffer row-keys)
                     (column-parent cf sc)
-                    slice-predicate
+                    (slice-predicate opts)
                     (consistency-level consistency))))
 
 (defn insert-column
@@ -437,28 +445,30 @@ http://javasourcecode.org/html/open-source/cassandra/cassandra-0.8.1/org/apache/
 
 (defn get-range-slice
   ""
-  [^Cassandra$AsyncClient client column-parent-args slice-predicate key-range-args
-   & {:keys [consistency]}]
+  [^Cassandra$AsyncClient client column-parent-args
+   & {:keys [consistency]
+      :as opts}]
   (wrap-result-channel
    (.get_range_slices client
                       (if (sequential? column-parent-args)
                         (apply column-parent column-parent-args)
                         (column-parent column-parent-args))
-                      slice-predicate
-                      (apply key-range key-range-args)
+                      (slice-predicate opts)
+                      (key-range opts)
                       (consistency-level consistency))))
 
 (defn get-indexed-slice
   ""
-  [^Cassandra$AsyncClient client column-parent-args index-clause-args slice-predicate
-   & {:keys [consistency]}]
+  [^Cassandra$AsyncClient client column-parent-args index-clause-args
+   & {:keys [consistency]
+      :as opts}]
   (wrap-result-channel
    (.get_indexed_slices client
                         (if (sequential? column-parent-args)
                           (apply column-parent column-parent-args)
                           (column-parent column-parent-args))
                         (index-clause index-clause-args)
-                        slice-predicate
+                        (slice-predicate opts)
                         (consistency-level consistency))))
 
 (defn truncate
@@ -525,32 +535,6 @@ http://javasourcecode.org/html/open-source/cassandra/cassandra-0.8.1/org/apache/
 
 ;; Sugar
 
-(defn get-rows
-  ""
-  [^Cassandra$AsyncClient client cf row-keys
-   & {:keys [consistency start finish reversed count]}]
-  (mget-slice client
-              cf
-              row-keys
-              (columns-by-range :start start
-                                :finish finish
-                                :reversed reversed
-                                :count count)
-              :consistency consistency))
-
-(defn get-row
-  ""
-  [^Cassandra$AsyncClient client cf row-key
-   & {:keys [consistency start finish reversed count]}]
-  (get-slice client
-             cf
-             row-key
-             (columns-by-range :start start
-                               :finish finish
-                               :reversed reversed
-                               :count count)
-             :consistency consistency))
-
 (defn put
   "Accepts cols as vectors or maps to be applied to cols
   constructors (use maps for simple key vals, use vectors if you need
@@ -570,30 +554,8 @@ http://javasourcecode.org/html/open-source/cassandra/cassandra-0.8.1/org/apache/
              columns)}}
    :consistency consistency))
 
-(defn get-super-rows
-  ""
-  [^Cassandra$AsyncClient client cf row-keys sc
-   & {:keys [consistency start finish reversed count]}]
-  (mget-super-slice client
-                    cf
-                    row-keys
-                    sc
-                    (columns-by-range :start start
-                                      :finish finish
-                                      :reversed reversed
-                                      :count count)
-                    :consistency consistency))
-
-(defn get-super-row
-  ""
-  [^Cassandra$AsyncClient client cf row-key sc
-   & {:keys [consistency start finish reversed count]}]
-  (get-super-slice client
-                   cf
-                   row-key
-                   sc
-                   (columns-by-range :start start
-                                     :finish finish
-                                     :reversed reversed
-                                     :count count)
-                   :consistency consistency))
+;; aliases
+(def get-rows mget-slice)
+(def get-row get-slice)
+(def get-super-rows mget-super-slice)
+(def get-super-row get-super-slice)
