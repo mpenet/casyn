@@ -137,7 +137,7 @@
 
   (is (= 2
          @(lc/run-pipeline
-           (c get-slice cf "0" :names ["n0" "n00"])
+           (c get-slice cf "0" :columns ["n0" "n00"])
            count)))
 
   (is (= 2
@@ -156,7 +156,7 @@
 
   (is (= 2
          @(lc/run-pipeline
-           (c mget-slice cf ["0" "1"] :names ["n0" "n1" "n00"])
+           (c mget-slice cf ["0" "1"] :columns ["n0" "n1" "n00"])
            count)))
 
   (is (= 2
@@ -174,7 +174,7 @@
 (deftest test-get-count
   (is (= 2
          @(lc/run-pipeline
-           (c get-count cf "0" :names ["n0" "n00"])
+           (c get-count cf "0" :columns ["n0" "n00"])
            #(decode-result % test-schema))))
 
   (is (= 2
@@ -185,7 +185,7 @@
 (deftest test-mget-count
   (is (= {"1" 1 "0" 2}
          @(lc/run-pipeline
-           (c mget-count cf ["0" "1"] :names ["n0" "n1" "n00"])
+           (c mget-count cf ["0" "1"] :columns ["n0" "n1" "n00"])
            #(decode-result % test-schema))))
 
   (is (= {"1" 2 "0" 2}
@@ -223,10 +223,10 @@
   (is (nil?
        @(c batch-mutate
          {"0" {cf
-               [(delete-mutation :names ["n0"] )
-                (delete-mutation :names ["n00"])]}
+               [(delete-mutation :columns ["n0"] )
+                (delete-mutation :columns ["n00"])]}
           "1" {cf
-               [(delete-mutation :names ["n1"])]}})))
+               [(delete-mutation :columns ["n1"])]}})))
 
   (is (nil?
        @(c put cf "11"
@@ -247,7 +247,7 @@
            (c get-range-slice cf
               :start-key "0"
               :end-key "1"
-              :names ["n0" "n00"])
+              :columns ["n0" "n00"])
            #(decode-result % test-schema)
            count))))
 
@@ -277,7 +277,7 @@
            (c get-indexed-slice
               cf
               [[:eq? :n1 "value1"]]
-              :names ["n1"])
+              :columns ["n1"])
            #(decode-result % test-schema true))))
 
   (is (= 1
@@ -285,7 +285,7 @@
            (c get-indexed-slice
               cf
               [[:eq? :n1 "value1"]]
-              :names ["n1"])
+              :columns ["n1"])
            #(decode-result % test-schema)
            count))))
 

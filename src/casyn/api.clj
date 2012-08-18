@@ -134,12 +134,12 @@ http://javasourcecode.org/html/open-source/cassandra/cassandra-0.8.1/org/apache/
 
 (defn slice-predicate
   "Returns a SlicePredicate instance, takes a map, it can be either for named keys
-using the :names key, or a range defined from :start :finish :reversed :count
-Ex: (slice-predicate :names [\"foo\" \"bar\"]"
+using the :columns key, or a range defined from :start :finish :reversed :count
+Ex: (slice-predicate :columns [\"foo\" \"bar\"])"
   ^SlicePredicate
   [opts]
-  (if-let [names (:names opts)]
-    (slice-for-names names)
+  (if-let [cols (:columns opts)]
+    (slice-for-names cols)
     (slice-for-range opts)))
 
 (defn key-range
@@ -196,8 +196,8 @@ Ex: (slice-predicate :names [\"foo\" \"bar\"]"
     d))
 
 (defn delete-mutation
-  "Accepts optional slice-predicate arguments (:names, :start, :finish, :count,
-:reversed), if you specify :names the other slice args will be ignored (as
+  "Accepts optional slice-predicate arguments :columns, :start, :finish, :count,
+:reversed, if you specify :columns the other slice args will be ignored (as
 defined by thrift)
 The :super key and specify a supercolumn name"
   [& args] ;; expects a pred and opt sc
@@ -254,8 +254,8 @@ IndexExpression containing an EQ IndexOperator must be present"
          (consistency-level consistency))))
 
 (defn get-slice
-  "Returns a slice of columns. Accepts optional slice-predicate arguments (:names, :start, :finish, :count,
-:reversed), if you specify :names the other slice args will be ignored (as
+  "Returns a slice of columns. Accepts optional slice-predicate arguments :columns, :start, :finish, :count,
+:reversed, if you specify :columns the other slice args will be ignored (as
 defined by the cassandra api)"
 
   [^Cassandra$AsyncClient client cf row-key
@@ -271,8 +271,8 @@ defined by the cassandra api)"
 (defn mget-slice
   "Returns a collection of slices of columns.
    Accepts optional slice-predicate
-   arguments (:names, :start, :finish, :count, :reversed), if you
-   specify :names the other slice args will be ignored (as defined by the cassandra api)"
+   arguments :columns, :start, :finish, :count, :reversed, if you
+   specify :columns the other slice args will be ignored (as defined by the cassandra api)"
   [^Cassandra$AsyncClient client cf row-keys
    & {:keys [super consistency]
       :as opts}]
@@ -284,8 +284,8 @@ defined by the cassandra api)"
                     (consistency-level consistency))))
 
 (defn get-count
-  "Accepts optional slice-predicate arguments (:names, :start, :finish, :count,
-:reversed), if you specify :names the other slice args will be ignored (as
+  "Accepts optional slice-predicate arguments :columns, :start, :finish, :count,
+:reversed, if you specify :columns the other slice args will be ignored (as
 defined by the cassandra api)"
   [^Cassandra$AsyncClient client cf row-key
    & {:keys [super consistency]
@@ -298,8 +298,8 @@ defined by the cassandra api)"
                (consistency-level consistency))))
 
 (defn mget-count
-  "Accepts optional slice-predicate arguments (:names, :start, :finish, :count,
-:reversed), if you specify :names the other slice args will be ignored (as
+  "Accepts optional slice-predicate arguments :columns, :start, :finish, :count,
+:reversed, if you specify :columns the other slice args will be ignored (as
 defined by the cassandra api)"
   [^Cassandra$AsyncClient client cf row-keys
    & {:keys [super consistency]
@@ -371,8 +371,8 @@ defined by the cassandra api)"
                   (consistency-level consistency))))
 
 (defn get-range-slice
-  "Accepts optional slice-predicate arguments (:names, :start, :finish, :count,
-:reversed), if you specify :names the other slice args will be ignored (as
+  "Accepts optional slice-predicate arguments :columns, :start, :finish, :count,
+:reversed, if you specify :columns the other slice args will be ignored (as
 defined by the cassandra api)"
   [^Cassandra$AsyncClient client cf
    & {:keys [super consistency]
@@ -385,8 +385,8 @@ defined by the cassandra api)"
                       (consistency-level consistency))))
 
 (defn get-indexed-slice
-  "Accepts optional slice-predicate arguments (:names, :start, :finish, :count,
-:reversed), if you specify :names the other slice args will be ignored (as
+  "Accepts optional slice-predicate arguments :columns, :start, :finish, :count,
+:reversed, if you specify :columns the other slice args will be ignored (as
 defined by the cassandra api)"
   [^Cassandra$AsyncClient client cf index-clause-args
    & {:keys [super consistency]
