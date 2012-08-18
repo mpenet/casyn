@@ -22,8 +22,8 @@ and a composite operator</pre></div><div class="public" id="var-counter-column">
 </pre></div><div class="public" id="var-counter-super-column"><h3>counter-super-column</h3><div class="usage"><code>(counter-super-column name columns)</code></div><pre class="doc">Returns a Thrift CounterSuperColumn instance
 </pre></div><div class="public" id="var-decode-result"><h3>decode-result</h3><div class="usage"><code>(decode-result result schema)</code><code>(decode-result result schema as-map)</code></div><pre class="doc">Decodes a result according to supplied schema
 </pre></div><div class="public" id="var-defschema"><h3>defschema</h3><div class="usage"><code>(defschema name &amp; {:keys [row super columns]})</code></div><pre class="doc">Create a var holding a Schema instance to be used as an argument to
-decode-result. TODO: add schema sync such as ks/sc/c definitions</pre></div><div class="public" id="var-delete-mutation"><h3>delete-mutation</h3><div class="usage"><code>(delete-mutation &amp; args)</code></div><pre class="doc">Accepts optional slice-predicate arguments (:names, :start, :finish, :count,
-:reversed), if you specify :names the other slice args will be ignored (as
+decode-result. TODO: add schema sync such as ks/sc/c definitions</pre></div><div class="public" id="var-delete-mutation"><h3>delete-mutation</h3><div class="usage"><code>(delete-mutation &amp; args)</code></div><pre class="doc">Accepts optional slice-predicate arguments :columns, :start, :finish, :count,
+:reversed, if you specify :columns the other slice args will be ignored (as
 defined by thrift)
 The :super key and specify a supercolumn name</pre></div><div class="public" id="var-describe-cluster-name"><h3>describe-cluster-name</h3><div class="usage"><code>(describe-cluster-name client)</code></div><pre class="doc">
 </pre></div><div class="public" id="var-describe-keyspace"><h3>describe-keyspace</h3><div class="usage"><code>(describe-keyspace client ks)</code></div><pre class="doc">
@@ -38,14 +38,14 @@ The :super key and specify a supercolumn name</pre></div><div class="public" id=
 </pre></div><div class="public" id="var-drop-keyspace"><h3>drop-keyspace</h3><div class="usage"><code>(drop-keyspace client ks-name)</code></div><pre class="doc">
 </pre></div><div class="public" id="var-execute-cql"><h3>execute-cql</h3><div class="usage"><code>(execute-cql client query)</code></div><pre class="doc">
 </pre></div><div class="public" id="var-get-column"><h3>get-column</h3><div class="usage"><code>(get-column client cf row-key c &amp; {:keys [super consistency]})</code></div><pre class="doc">
-</pre></div><div class="public" id="var-get-count"><h3>get-count</h3><div class="usage"><code>(get-count client cf row-key &amp; {:keys [super consistency], :as opts})</code></div><pre class="doc">Accepts optional slice-predicate arguments (:names, :start, :finish, :count,
-:reversed), if you specify :names the other slice args will be ignored (as
-defined by the cassandra api)</pre></div><div class="public" id="var-get-indexed-slice"><h3>get-indexed-slice</h3><div class="usage"><code>(get-indexed-slice client cf index-clause-args &amp; {:keys [super consistency], :as opts})</code></div><pre class="doc">Accepts optional slice-predicate arguments (:names, :start, :finish, :count,
-:reversed), if you specify :names the other slice args will be ignored (as
-defined by the cassandra api)</pre></div><div class="public" id="var-get-range-slice"><h3>get-range-slice</h3><div class="usage"><code>(get-range-slice client cf &amp; {:keys [super consistency], :as opts})</code></div><pre class="doc">Accepts optional slice-predicate arguments (:names, :start, :finish, :count,
-:reversed), if you specify :names the other slice args will be ignored (as
-defined by the cassandra api)</pre></div><div class="public" id="var-get-slice"><h3>get-slice</h3><div class="usage"><code>(get-slice client cf row-key &amp; {:keys [super consistency], :as opts})</code></div><pre class="doc">Returns a slice of columns. Accepts optional slice-predicate arguments (:names, :start, :finish, :count,
-:reversed), if you specify :names the other slice args will be ignored (as
+</pre></div><div class="public" id="var-get-count"><h3>get-count</h3><div class="usage"><code>(get-count client cf row-key &amp; {:keys [super consistency], :as opts})</code></div><pre class="doc">Accepts optional slice-predicate arguments :columns, :start, :finish, :count,
+:reversed, if you specify :columns the other slice args will be ignored (as
+defined by the cassandra api)</pre></div><div class="public" id="var-get-indexed-slice"><h3>get-indexed-slice</h3><div class="usage"><code>(get-indexed-slice client cf index-clause-args &amp; {:keys [super consistency], :as opts})</code></div><pre class="doc">Accepts optional slice-predicate arguments :columns, :start, :finish, :count,
+:reversed, if you specify :columns the other slice args will be ignored (as
+defined by the cassandra api)</pre></div><div class="public" id="var-get-range-slice"><h3>get-range-slice</h3><div class="usage"><code>(get-range-slice client cf &amp; {:keys [super consistency], :as opts})</code></div><pre class="doc">Accepts optional slice-predicate arguments :columns, :start, :finish, :count,
+:reversed, if you specify :columns the other slice args will be ignored (as
+defined by the cassandra api)</pre></div><div class="public" id="var-get-slice"><h3>get-slice</h3><div class="usage"><code>(get-slice client cf row-key &amp; {:keys [super consistency], :as opts})</code></div><pre class="doc">Returns a slice of columns. Accepts optional slice-predicate arguments :columns, :start, :finish, :count,
+:reversed, if you specify :columns the other slice args will be ignored (as
 defined by the cassandra api)</pre></div><div class="public" id="var-increment"><h3>increment</h3><div class="usage"><code>(increment client cf row-key column-name value &amp; {:keys [super consistency]})</code></div><pre class="doc">
 </pre></div><div class="public" id="var-index-clause"><h3>index-clause</h3><div class="usage"><code>(index-clause expressions &amp; {:keys [start-key count], :or {count 100}})</code></div><pre class="doc">Defines one or more IndexExpressions for get_indexed_slices. An
 IndexExpression containing an EQ IndexOperator must be present</pre></div><div class="public" id="var-insert-column"><h3>insert-column</h3><div class="usage"><code>(insert-column client cf row-key name value &amp; {:keys [super counter consistency ttl timestamp]})</code></div><pre class="doc">
@@ -56,12 +56,12 @@ IndexExpression containing an EQ IndexOperator must be present</pre></div><div c
 </pre></div><div class="public" id="var-make-cluster"><h3>make-cluster</h3><div class="usage"><code>(make-cluster hosts port keyspace &amp; {:keys [auto-discovery load-balancer-strategy], :or {auto-discovery true, load-balancer-strategy :round-robin}, :as options})</code></div><pre class="doc">hosts can be a sequence or a single value, port will be the same
 for all the hosts, you can manage a fixed sized cluster with
 predetermined ips by turning auto-discovery off</pre></div><div class="public" id="var-map-%3ESchema"><h3>map-&gt;Schema</h3><div class="usage"><code>(map-&gt;Schema m__5665__auto__)</code></div><pre class="doc">Factory function for class casyn.schema.Schema, taking a map of keywords to field values.
-</pre></div><div class="public" id="var-mget-count"><h3>mget-count</h3><div class="usage"><code>(mget-count client cf row-keys &amp; {:keys [super consistency], :as opts})</code></div><pre class="doc">Accepts optional slice-predicate arguments (:names, :start, :finish, :count,
-:reversed), if you specify :names the other slice args will be ignored (as
+</pre></div><div class="public" id="var-mget-count"><h3>mget-count</h3><div class="usage"><code>(mget-count client cf row-keys &amp; {:keys [super consistency], :as opts})</code></div><pre class="doc">Accepts optional slice-predicate arguments :columns, :start, :finish, :count,
+:reversed, if you specify :columns the other slice args will be ignored (as
 defined by the cassandra api)</pre></div><div class="public" id="var-mget-slice"><h3>mget-slice</h3><div class="usage"><code>(mget-slice client cf row-keys &amp; {:keys [super consistency], :as opts})</code></div><pre class="doc">Returns a collection of slices of columns.
 Accepts optional slice-predicate
-arguments (:names, :start, :finish, :count, :reversed), if you
-specify :names the other slice args will be ignored (as defined by the cassandra api)</pre></div><div class="public" id="var-put"><h3>put</h3><div class="usage"><code>(put client cf row-key columns &amp; {:keys [consistency counters super-columns super-counters]})</code></div><pre class="doc">Accepts cols as vectors or maps to be applied to cols
+arguments :columns, :start, :finish, :count, :reversed, if you
+specify :columns the other slice args will be ignored (as defined by the cassandra api)</pre></div><div class="public" id="var-put"><h3>put</h3><div class="usage"><code>(put client cf row-key columns &amp; {:keys [consistency counters super-columns super-counters]})</code></div><pre class="doc">Accepts cols as vectors or maps to be applied to cols
 constructors (use maps for simple key vals, use vectors if you need
 to set ttl or timestamp</pre></div><div class="public" id="var-remove-column"><h3>remove-column</h3><div class="usage"><code>(remove-column client cf row-key c &amp; {:keys [super timestamp consistency], :or {timestamp (utils/ts)}})</code></div><pre class="doc">
 </pre></div><div class="public" id="var-remove-counter"><h3>remove-counter</h3><div class="usage"><code>(remove-counter client cf row-key c &amp; {:keys [super consistency]})</code></div><pre class="doc">
@@ -69,8 +69,8 @@ to set ttl or timestamp</pre></div><div class="public" id="var-remove-column"><h
 </pre></div><div class="public" id="var-slice-for-names"><h3>slice-for-names</h3><div class="usage"><code>(slice-for-names column-names)</code></div><pre class="doc">Returns a Thrift SlicePredicate instance for column names
 </pre></div><div class="public" id="var-slice-for-range"><h3>slice-for-range</h3><div class="usage"><code>(slice-for-range {:keys [start finish reversed count]})</code></div><pre class="doc">Returns a Thrift SlicePredicate instance for a range of columns
 </pre></div><div class="public" id="var-slice-predicate"><h3>slice-predicate</h3><div class="usage"><code>(slice-predicate opts)</code></div><pre class="doc">Returns a SlicePredicate instance, takes a map, it can be either for named keys
-using the :names key, or a range defined from :start :finish :reversed :count
-Ex: (slice-predicate :names [&quot;foo&quot; &quot;bar&quot;]</pre></div><div class="public" id="var-super-column"><h3>super-column</h3><div class="usage"><code>(super-column name columns)</code></div><pre class="doc">Returns a Thrift SuperColumn instance
+using the :columns key, or a range defined from :start :finish :reversed :count
+Ex: (slice-predicate :columns [&quot;foo&quot; &quot;bar&quot;])</pre></div><div class="public" id="var-super-column"><h3>super-column</h3><div class="usage"><code>(super-column name columns)</code></div><pre class="doc">Returns a Thrift SuperColumn instance
 </pre></div><div class="public" id="var-super-column-mutation"><h3>super-column-mutation</h3><div class="usage"><code>(super-column-mutation &amp; sc)</code></div><pre class="doc">
 </pre></div><div class="public" id="var-super-counter-column-mutation"><h3>super-counter-column-mutation</h3><div class="usage"><code>(super-counter-column-mutation &amp; sc)</code></div><pre class="doc">
 </pre></div><div class="public" id="var-thrift-%3Eclojure"><h3>thrift-&gt;clojure</h3><div class="usage"><code>(thrift-&gt;clojure v)</code></div><pre class="doc">Transforms a thrift type to clojure friendly type
