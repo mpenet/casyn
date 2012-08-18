@@ -44,7 +44,7 @@ http://javasourcecode.org/html/open-source/cassandra/cassandra-0.8.1/org/apache/
                (reify AsyncMethodCallback
                  (onComplete [_ ~thrift-cmd-call]
                    (lc/success result-ch#
-                                (.getResult ~(with-meta thrift-cmd-call {:tag result-hint}))))
+                               (.getResult ~(with-meta thrift-cmd-call {:tag result-hint}))))
                  (onError [_ error#]
                    (lc/error result-ch# error#))))
        (lc/run-pipeline
@@ -99,10 +99,10 @@ http://javasourcecode.org/html/open-source/cassandra/cassandra-0.8.1/org/apache/
   ^ColumnPath
   ([^String cf sc c]
      (doto ^ColumnPath (column-path cf c)
-       (.setSuper_column ^ByteBuffer (codecs/clojure->byte-buffer sc))))
+           (.setSuper_column ^ByteBuffer (codecs/clojure->byte-buffer sc))))
   ([^String cf c]
      (doto ^ColumnPath (column-path cf)
-       (.setColumn ^ByteBuffer (codecs/clojure->byte-buffer c))))
+           (.setColumn ^ByteBuffer (codecs/clojure->byte-buffer c))))
   ([^String cf]
      (ColumnPath. cf)))
 
@@ -122,6 +122,9 @@ http://javasourcecode.org/html/open-source/cassandra/cassandra-0.8.1/org/apache/
                                   (int (or count 100))))))
 
 (defn slice-predicate
+  "Returns a SlicePredicate instance, takes a map, it can be either for named keys
+using the :names key, or a range defined from :start :finish :reversed :count
+Ex: (slice-predicate :names [\"foo\" \"bar\"]"
   ^SlicePredicate
   [opts]
   (if-let [names (:names opts)]
@@ -150,28 +153,27 @@ http://javasourcecode.org/html/open-source/cassandra/cassandra-0.8.1/org/apache/
   ""
   [& c]
   (doto-mutation
-   (.setColumn (apply column c))))
+    (.setColumn (apply column c))))
 
 (defn counter-column-mutation
   ""
   [n value]
   (doto-mutation
-   (.setCounter_column (counter-column n value))))
+    (.setCounter_column (counter-column n value))))
 
 (defn super-column-mutation
   ""
   [& sc]
   (doto-mutation
-   (.setSuper_column (apply super-column sc))))
+    (.setSuper_column (apply super-column sc))))
 
 (defn super-counter-column-mutation
   ""
   [& sc]
   (doto-mutation
-   (.setCounter_super_column ^CounterSuperColumn (apply counter-super-column sc))))
+    (.setCounter_super_column ^CounterSuperColumn (apply counter-super-column sc))))
 
 (defn deletion
-  ""
   ^SlicePredicate
   [{:keys [super]
     :as opts}]
@@ -183,7 +185,10 @@ http://javasourcecode.org/html/open-source/cassandra/cassandra-0.8.1/org/apache/
     d))
 
 (defn delete-mutation
-  ""
+  "Accepts optional slice-predicate arguments (:names, :start, :finish, :count,
+:reversed), if you specify :names the other slice args will be ignored (as
+defined by thrift)
+The :super key and specify a supercolumn name"
   [& args] ;; expects a pred and opt sc
   (doto (Mutation.)
     (.setDeletion (deletion args))))
@@ -208,7 +213,7 @@ http://javasourcecode.org/html/open-source/cassandra/cassandra-0.8.1/org/apache/
 
 (defn index-clause
   "Defines one or more IndexExpressions for get_indexed_slices. An
-  IndexExpression containing an EQ IndexOperator must be present"
+IndexExpression containing an EQ IndexOperator must be present"
   [expressions & {:keys [start-key count]
                   :or {count 100}}]
   (IndexClause. (index-expressions expressions)
@@ -248,10 +253,13 @@ http://javasourcecode.org/html/open-source/cassandra/cassandra-0.8.1/org/apache/
          (consistency-level consistency))))
 
 (defn get-slice
-  ""
-  [^Cassandra$AsyncClient client cf row-key
-   & {:keys [consistency]
-      :as opts}]
+  "Returns a slice of columns. Accepts optional slice-predicate arguments (:names, :start, :finish, :count,
+:reversed), if you specify :names the other slice args will be ignored (as
+defined by thrift)"
+
+  [^Cassandra$AsyncClient
+   client cf row-key & {:keys [consistency]
+                        :as opts}]
   (wrap-result-channel
    (.get_slice client
                (codecs/clojure->byte-buffer row-key)
@@ -260,7 +268,10 @@ http://javasourcecode.org/html/open-source/cassandra/cassandra-0.8.1/org/apache/
                (consistency-level consistency))))
 
 (defn mget-slice
-  ""
+  "Returns a collection of slices of columns.
+   Accepts optional slice-predicate
+   arguments (:names, :start, :finish, :count, :reversed), if you
+   specify :names the other slice args will be ignored (as defined by thrift)"
   [^Cassandra$AsyncClient client cf row-keys
    & {:keys [consistency]
       :as opts}]
@@ -272,7 +283,9 @@ http://javasourcecode.org/html/open-source/cassandra/cassandra-0.8.1/org/apache/
                     (consistency-level consistency))))
 
 (defn get-super-slice
-  ""
+  "Accepts optional slice-predicate arguments (:names, :start, :finish, :count,
+:reversed), if you specify :names the other slice args will be ignored (as
+defined by thrift)"
   [^Cassandra$AsyncClient client cf row-key sc
    & {:keys [consistency]
       :as opts}]
@@ -284,7 +297,9 @@ http://javasourcecode.org/html/open-source/cassandra/cassandra-0.8.1/org/apache/
                (consistency-level consistency))))
 
 (defn mget-super-slice
-  ""
+  "Accepts optional slice-predicate arguments (:names, :start, :finish, :count,
+:reversed), if you specify :names the other slice args will be ignored (as
+defined by thrift)"
   [^Cassandra$AsyncClient client cf row-keys sc
    & {:keys [consistency]
       :as opts}]
@@ -296,7 +311,9 @@ http://javasourcecode.org/html/open-source/cassandra/cassandra-0.8.1/org/apache/
                     (consistency-level consistency))))
 
 (defn get-count
-  ""
+  "Accepts optional slice-predicate arguments (:names, :start, :finish, :count,
+:reversed), if you specify :names the other slice args will be ignored (as
+defined by thrift)"
   [^Cassandra$AsyncClient client cf row-key
    & {:keys [consistency]
       :as opts}]
@@ -308,7 +325,9 @@ http://javasourcecode.org/html/open-source/cassandra/cassandra-0.8.1/org/apache/
                (consistency-level consistency))))
 
 (defn mget-count
-  ""
+  "Accepts optional slice-predicate arguments (:names, :start, :finish, :count,
+:reversed), if you specify :names the other slice args will be ignored (as
+defined by thrift)"
   [^Cassandra$AsyncClient client cf row-keys
    & {:keys [consistency]
       :as opts}]
@@ -320,7 +339,9 @@ http://javasourcecode.org/html/open-source/cassandra/cassandra-0.8.1/org/apache/
                     (consistency-level consistency))))
 
 (defn get-super-count
-  ""
+  "Accepts optional slice-predicate arguments (:names, :start, :finish, :count,
+:reversed), if you specify :names the other slice args will be ignored (as
+defined by thrift)"
   [^Cassandra$AsyncClient client cf row-key sc
    & {:keys [consistency]
       :as opts}]
@@ -332,7 +353,9 @@ http://javasourcecode.org/html/open-source/cassandra/cassandra-0.8.1/org/apache/
                (consistency-level consistency))))
 
 (defn mget-super-count
-  ""
+  "Accepts optional slice-predicate arguments (:names, :start, :finish, :count,
+:reversed), if you specify :names the other slice args will be ignored (as
+defined by thrift)"
   [^Cassandra$AsyncClient client cf row-keys sc
    & {:keys [consistency]
       :as opts}]
@@ -439,12 +462,14 @@ http://javasourcecode.org/html/open-source/cassandra/cassandra-0.8.1/org/apache/
    (.batch_mutate client
                   (reduce-kv (fn [m k v]
                                (assoc m (codecs/clojure->byte-buffer k) v))
-                          {}
-                          mutations)
+                             {}
+                             mutations)
                   (consistency-level consistency))))
 
 (defn get-range-slice
-  ""
+  "Accepts optional slice-predicate arguments (:names, :start, :finish, :count,
+:reversed), if you specify :names the other slice args will be ignored (as
+defined by thrift)"
   [^Cassandra$AsyncClient client column-parent-args
    & {:keys [consistency]
       :as opts}]
@@ -458,7 +483,9 @@ http://javasourcecode.org/html/open-source/cassandra/cassandra-0.8.1/org/apache/
                       (consistency-level consistency))))
 
 (defn get-indexed-slice
-  ""
+  "Accepts optional slice-predicate arguments (:names, :start, :finish, :count,
+:reversed), if you specify :names the other slice args will be ignored (as
+defined by thrift)"
   [^Cassandra$AsyncClient client column-parent-args index-clause-args
    & {:keys [consistency]
       :as opts}]
