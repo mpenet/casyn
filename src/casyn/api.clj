@@ -255,7 +255,7 @@ IndexExpression containing an EQ IndexOperator must be present"
 (defn get-slice
   "Returns a slice of columns. Accepts optional slice-predicate arguments (:names, :start, :finish, :count,
 :reversed), if you specify :names the other slice args will be ignored (as
-defined by thrift)"
+defined by the cassandra api)"
 
   [^Cassandra$AsyncClient
    client cf row-key & {:keys [consistency]
@@ -271,7 +271,7 @@ defined by thrift)"
   "Returns a collection of slices of columns.
    Accepts optional slice-predicate
    arguments (:names, :start, :finish, :count, :reversed), if you
-   specify :names the other slice args will be ignored (as defined by thrift)"
+   specify :names the other slice args will be ignored (as defined by the cassandra api)"
   [^Cassandra$AsyncClient client cf row-keys
    & {:keys [consistency]
       :as opts}]
@@ -285,7 +285,7 @@ defined by thrift)"
 (defn get-super-slice
   "Accepts optional slice-predicate arguments (:names, :start, :finish, :count,
 :reversed), if you specify :names the other slice args will be ignored (as
-defined by thrift)"
+defined by the cassandra api)"
   [^Cassandra$AsyncClient client cf row-key sc
    & {:keys [consistency]
       :as opts}]
@@ -299,7 +299,7 @@ defined by thrift)"
 (defn mget-super-slice
   "Accepts optional slice-predicate arguments (:names, :start, :finish, :count,
 :reversed), if you specify :names the other slice args will be ignored (as
-defined by thrift)"
+defined by the cassandra api)"
   [^Cassandra$AsyncClient client cf row-keys sc
    & {:keys [consistency]
       :as opts}]
@@ -313,7 +313,7 @@ defined by thrift)"
 (defn get-count
   "Accepts optional slice-predicate arguments (:names, :start, :finish, :count,
 :reversed), if you specify :names the other slice args will be ignored (as
-defined by thrift)"
+defined by the cassandra api)"
   [^Cassandra$AsyncClient client cf row-key
    & {:keys [consistency]
       :as opts}]
@@ -327,7 +327,7 @@ defined by thrift)"
 (defn mget-count
   "Accepts optional slice-predicate arguments (:names, :start, :finish, :count,
 :reversed), if you specify :names the other slice args will be ignored (as
-defined by thrift)"
+defined by the cassandra api)"
   [^Cassandra$AsyncClient client cf row-keys
    & {:keys [consistency]
       :as opts}]
@@ -341,7 +341,7 @@ defined by thrift)"
 (defn get-super-count
   "Accepts optional slice-predicate arguments (:names, :start, :finish, :count,
 :reversed), if you specify :names the other slice args will be ignored (as
-defined by thrift)"
+defined by the cassandra api)"
   [^Cassandra$AsyncClient client cf row-key sc
    & {:keys [consistency]
       :as opts}]
@@ -355,7 +355,7 @@ defined by thrift)"
 (defn mget-super-count
   "Accepts optional slice-predicate arguments (:names, :start, :finish, :count,
 :reversed), if you specify :names the other slice args will be ignored (as
-defined by thrift)"
+defined by the cassandra api)"
   [^Cassandra$AsyncClient client cf row-keys sc
    & {:keys [consistency]
       :as opts}]
@@ -469,7 +469,7 @@ defined by thrift)"
 (defn get-range-slice
   "Accepts optional slice-predicate arguments (:names, :start, :finish, :count,
 :reversed), if you specify :names the other slice args will be ignored (as
-defined by thrift)"
+defined by the cassandra api)"
   [^Cassandra$AsyncClient client column-parent-args
    & {:keys [consistency]
       :as opts}]
@@ -485,7 +485,7 @@ defined by thrift)"
 (defn get-indexed-slice
   "Accepts optional slice-predicate arguments (:names, :start, :finish, :count,
 :reversed), if you specify :names the other slice args will be ignored (as
-defined by thrift)"
+defined by the cassandra api)"
   [^Cassandra$AsyncClient client column-parent-args index-clause-args
    & {:keys [consistency]
       :as opts}]
