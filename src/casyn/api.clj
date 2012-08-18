@@ -90,8 +90,7 @@ http://javasourcecode.org/html/open-source/cassandra/cassandra-0.8.1/org/apache/
   ([^String cf sc]
      (doto (ColumnParent. cf)
        (.setSuper_column ^ByteBuffer (codecs/clojure->byte-buffer sc))))
-  ([^String cf] (ColumnParent. cf))
-  ([] (ColumnParent.)))
+  ([^String cf] (ColumnParent. cf)))
 
 (defn column-path
   "Returns a Thrift ColumnPath instance, works for common columns or
@@ -105,6 +104,18 @@ http://javasourcecode.org/html/open-source/cassandra/cassandra-0.8.1/org/apache/
            (.setColumn ^ByteBuffer (codecs/clojure->byte-buffer c))))
   ([^String cf]
      (ColumnPath. cf)))
+
+(defn- path
+  [cf super c]
+  (if super
+    (column-path cf super c)
+    (column-path cf c)))
+
+(defn- parent
+  [cf super]
+  (if super
+    (column-parent cf super)
+    (column-parent cf)))
 
 (defn slice-for-names
   "Returns a Thrift SlicePredicate instance for column names"
@@ -235,21 +246,11 @@ IndexExpression containing an EQ IndexOperator must be present"
 (defn get-column
   ""
   [^Cassandra$AsyncClient client cf row-key c
-   & {:keys [consistency]}]
+   & {:keys [super consistency]}]
   (wrap-result-channel
    (.get client
          ^ByteBuffer (codecs/clojure->byte-buffer row-key)
-         (column-path cf c)
-         (consistency-level consistency))))
-
-(defn get-super-column
-  ""
-  [^Cassandra$AsyncClient client cf row-key c sc
-   & {:keys [consistency]}]
-  (wrap-result-channel
-   (.get client
-         ^ByteBuffer (codecs/clojure->byte-buffer row-key)
-         (column-path cf sc c)
+         (path cf super c)
          (consistency-level consistency))))
 
 (defn get-slice
@@ -257,13 +258,13 @@ IndexExpression containing an EQ IndexOperator must be present"
 :reversed), if you specify :names the other slice args will be ignored (as
 defined by the cassandra api)"
 
-  [^Cassandra$AsyncClient
-   client cf row-key & {:keys [consistency]
-                        :as opts}]
+  [^Cassandra$AsyncClient client cf row-key
+   & {:keys [super consistency]
+      :as opts}]
   (wrap-result-channel
    (.get_slice client
                (codecs/clojure->byte-buffer row-key)
-               (column-parent cf)
+               (parent cf super)
                (slice-predicate opts)
                (consistency-level consistency))))
 
@@ -273,40 +274,12 @@ defined by the cassandra api)"
    arguments (:names, :start, :finish, :count, :reversed), if you
    specify :names the other slice args will be ignored (as defined by the cassandra api)"
   [^Cassandra$AsyncClient client cf row-keys
-   & {:keys [consistency]
+   & {:keys [super consistency]
       :as opts}]
   (wrap-result-channel
    (.multiget_slice client
                     (map codecs/clojure->byte-buffer row-keys)
-                    (column-parent cf)
-                    (slice-predicate opts)
-                    (consistency-level consistency))))
-
-(defn get-super-slice
-  "Accepts optional slice-predicate arguments (:names, :start, :finish, :count,
-:reversed), if you specify :names the other slice args will be ignored (as
-defined by the cassandra api)"
-  [^Cassandra$AsyncClient client cf row-key sc
-   & {:keys [consistency]
-      :as opts}]
-  (wrap-result-channel
-   (.get_slice client
-               (codecs/clojure->byte-buffer row-key)
-               (column-parent cf sc)
-               (slice-predicate opts)
-               (consistency-level consistency))))
-
-(defn mget-super-slice
-  "Accepts optional slice-predicate arguments (:names, :start, :finish, :count,
-:reversed), if you specify :names the other slice args will be ignored (as
-defined by the cassandra api)"
-  [^Cassandra$AsyncClient client cf row-keys sc
-   & {:keys [consistency]
-      :as opts}]
-  (wrap-result-channel
-   (.multiget_slice client
-                    (map codecs/clojure->byte-buffer row-keys)
-                    (column-parent cf sc)
+                    (parent cf super)
                     (slice-predicate opts)
                     (consistency-level consistency))))
 
@@ -315,12 +288,12 @@ defined by the cassandra api)"
 :reversed), if you specify :names the other slice args will be ignored (as
 defined by the cassandra api)"
   [^Cassandra$AsyncClient client cf row-key
-   & {:keys [consistency]
+   & {:keys [super consistency]
       :as opts}]
   (wrap-result-channel
    (.get_count client
                (codecs/clojure->byte-buffer row-key)
-               (column-parent cf)
+               (parent cf super)
                (slice-predicate opts)
                (consistency-level consistency))))
 
@@ -329,129 +302,60 @@ defined by the cassandra api)"
 :reversed), if you specify :names the other slice args will be ignored (as
 defined by the cassandra api)"
   [^Cassandra$AsyncClient client cf row-keys
-   & {:keys [consistency]
+   & {:keys [super consistency]
       :as opts}]
   (wrap-result-channel
    (.multiget_count client
                     (map codecs/clojure->byte-buffer row-keys)
-                    (column-parent cf)
-                    (slice-predicate opts)
-                    (consistency-level consistency))))
-
-(defn get-super-count
-  "Accepts optional slice-predicate arguments (:names, :start, :finish, :count,
-:reversed), if you specify :names the other slice args will be ignored (as
-defined by the cassandra api)"
-  [^Cassandra$AsyncClient client cf row-key sc
-   & {:keys [consistency]
-      :as opts}]
-  (wrap-result-channel
-   (.get_count client
-               (codecs/clojure->byte-buffer row-key)
-               (column-parent cf sc)
-               (slice-predicate opts)
-               (consistency-level consistency))))
-
-(defn mget-super-count
-  "Accepts optional slice-predicate arguments (:names, :start, :finish, :count,
-:reversed), if you specify :names the other slice args will be ignored (as
-defined by the cassandra api)"
-  [^Cassandra$AsyncClient client cf row-keys sc
-   & {:keys [consistency]
-      :as opts}]
-  (wrap-result-channel
-   (.multiget_count client
-                    (map codecs/clojure->byte-buffer row-keys)
-                    (column-parent cf sc)
+                    (parent cf super)
                     (slice-predicate opts)
                     (consistency-level consistency))))
 
 (defn insert-column
   ""
   [^Cassandra$AsyncClient client cf row-key name value
-   & {:keys [consistency counter ttl timestamp]}]
+   & {:keys [super counter consistency ttl timestamp]}]
   (wrap-result-channel
    (.insert client
             (codecs/clojure->byte-buffer row-key)
-            (column-parent cf)
-            (if counter
-              (counter-column name value)
-              (column name value :ttl ttl :timestamp timestamp))
-            (consistency-level consistency))))
-
-(defn insert-super-column
-  ""
-  [^Cassandra$AsyncClient client cf row-key sc cols
-   & {:keys [consistency]}]
-  (wrap-result-channel
-   (.insert client
-            (codecs/clojure->byte-buffer row-key)
-            (column-parent cf sc)
-            (super-column sc cols)
+            (parent cf super)
+            (cond
+                counter (counter-column name value)
+                super (super-column super value) ;; values is a collection of columns
+                :else (column name value :ttl ttl :timestamp timestamp))
             (consistency-level consistency))))
 
 (defn increment
   ""
   [^Cassandra$AsyncClient client cf row-key column-name value
-   & {:keys [consistency]}]
+   & {:keys [super consistency]}]
   (wrap-result-channel
    (.add client
          (codecs/clojure->byte-buffer row-key)
-         (column-parent cf)
-         (counter-column column-name value)
-         (consistency-level consistency))))
-
-(defn increment-super
-  ""
-  [^Cassandra$AsyncClient client cf row-key sc column-name value
-   & {:keys [consistency]}]
-  (wrap-result-channel
-   (.add client
-         (codecs/clojure->byte-buffer row-key)
-         (column-parent cf sc)
+         (parent cf super)
          (counter-column column-name value)
          (consistency-level consistency))))
 
 (defn remove-column
   ""
-  [^Cassandra$AsyncClient client cf row-key
-   & {:keys [timestamp consistency]
+  [^Cassandra$AsyncClient client cf row-key c
+   & {:keys [super timestamp consistency]
       :or {timestamp (utils/ts)}}]
   (wrap-result-channel
    (.remove client
             (codecs/clojure->byte-buffer row-key)
-            (column-path cf)
+            (path cf super c)
             timestamp
             (consistency-level consistency))))
 
 (defn remove-counter
   ""
   [^Cassandra$AsyncClient client cf row-key c
-   & {:keys [consistency]}]
+   & {:keys [super consistency]}]
   (wrap-result-channel
    (.remove_counter client
                     (codecs/clojure->byte-buffer row-key)
-                    (column-path cf c)
-                    (consistency-level consistency))))
-
-(defn remove-super-column
-  ""
-  [^Cassandra$AsyncClient client cf row-key sc c
-   & {:keys [consistency]}]
-  (wrap-result-channel
-   (.remove_counter client
-                    (codecs/clojure->byte-buffer row-key)
-                    (column-path cf sc c)
-                    (consistency-level consistency))))
-
-(defn remove-super-counter
-  ""
-  [^Cassandra$AsyncClient client cf row-key sc c
-   & {:keys [consistency]}]
-  (wrap-result-channel
-   (.remove_counter client
-                    (codecs/clojure->byte-buffer row-key)
-                    (column-path cf sc c)
+                    (path cf super c)
                     (consistency-level consistency))))
 
 (defn batch-mutate
@@ -470,14 +374,12 @@ defined by the cassandra api)"
   "Accepts optional slice-predicate arguments (:names, :start, :finish, :count,
 :reversed), if you specify :names the other slice args will be ignored (as
 defined by the cassandra api)"
-  [^Cassandra$AsyncClient client column-parent-args
-   & {:keys [consistency]
+  [^Cassandra$AsyncClient client cf
+   & {:keys [super consistency]
       :as opts}]
   (wrap-result-channel
    (.get_range_slices client
-                      (if (sequential? column-parent-args)
-                        (apply column-parent column-parent-args)
-                        (column-parent column-parent-args))
+                      (parent cf super)
                       (slice-predicate opts)
                       (key-range opts)
                       (consistency-level consistency))))
@@ -486,14 +388,12 @@ defined by the cassandra api)"
   "Accepts optional slice-predicate arguments (:names, :start, :finish, :count,
 :reversed), if you specify :names the other slice args will be ignored (as
 defined by the cassandra api)"
-  [^Cassandra$AsyncClient client column-parent-args index-clause-args
-   & {:keys [consistency]
+  [^Cassandra$AsyncClient client cf index-clause-args
+   & {:keys [super consistency]
       :as opts}]
   (wrap-result-channel
    (.get_indexed_slices client
-                        (if (sequential? column-parent-args)
-                          (apply column-parent column-parent-args)
-                          (column-parent column-parent-args))
+                        (parent cf super)
                         (index-clause index-clause-args)
                         (slice-predicate opts)
                         (consistency-level consistency))))
@@ -584,5 +484,3 @@ defined by the cassandra api)"
 ;; aliases
 (def get-rows mget-slice)
 (def get-row get-slice)
-(def get-super-rows mget-super-slice)
-(def get-super-row get-super-slice)

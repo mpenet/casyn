@@ -239,7 +239,7 @@
             :test-dwa2 "dwa12"}))))
 
 (deftest deletes
-  (is (= nil (seq @(c remove-column cf "0")))))
+  (is (= nil (seq @(c remove-column cf "0" "n0")))))
 
 (deftest test-ranges
   (is (= 3
@@ -275,23 +275,23 @@
   (is (= '({"1" {"n1" "value1"}})
        @(lc/run-pipeline
            (c get-indexed-slice
-                     [cf]
-                     [[:eq? :n1 "value1"]]
-                     :names ["n1"])
+              cf
+              [[:eq? :n1 "value1"]]
+              :names ["n1"])
            #(decode-result % test-schema true))))
 
   (is (= 1
          @(lc/run-pipeline
            (c get-indexed-slice
-                     [cf]
-                     [[:eq? :n1 "value1"]]
-                     :names ["n1"])
+              cf
+              [[:eq? :n1 "value1"]]
+              :names ["n1"])
            #(decode-result % test-schema)
            count))))
 
 (deftest error-handlers
   (is (= nil @(lc/run-pipeline
-               (c get-super-row cf "1" "meh")
+               (c get-row cf "mehhhhh" :super "meh")
                {:error-handler
                 (fn [e]
                   (if-not (instance? org.apache.cassandra.thrift.InvalidRequestException e)
