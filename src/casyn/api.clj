@@ -482,5 +482,5 @@ defined by the cassandra api)"
    :consistency consistency))
 
 ;; aliases
-(def get-rows mget-slice)
-(def get-row get-slice)
+(def ^{:doc "Alias to mget-slice"} get-rows mget-slice)
+(def ^{:doc "Alias to get-slice"} get-row get-slice)
