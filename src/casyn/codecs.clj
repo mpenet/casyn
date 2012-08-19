@@ -79,16 +79,15 @@
      (.getName sc)
      (thrift->clojure (.getColumns sc))))
 
-
   KeySlice
   (thrift->clojure [ks]
-    {(.getKey ks)
-     (thrift->clojure (.getColumns ks))})
+    (casyn.types.KeySlice. (.getKey ks)
+                           (map thrift->clojure (.getColumns ks))))
 
   CqlRow
   (thrift->clojure [r]
-    {(.getKey r)
-     (mapv thrift->clojure (.getColumns r))})
+    (casyn.types.CqlRow. (.getKey r)
+                         (map thrift->clojure (.getColumns r))))
 
   CqlResult
   (thrift->clojure [r]
@@ -98,8 +97,7 @@
 
   CqlPreparedResult
   (thrift->clojure [c]
-    {:item-id (.getItemId c)
-     :count (.getCount c)})
+    (casyn.types.CqlPreparedResult. (.getItemId c) (.getCount c)))
 
   Object
   (thrift->clojure [v] v)

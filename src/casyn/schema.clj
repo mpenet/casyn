@@ -4,7 +4,10 @@
             Column
             CounterColumn
             SuperColumn
-            CounterSuperColumn]))
+            CounterSuperColumn
+            KeySlice
+            CqlRow
+            ]))
 
 (defn cols->map
   "Turns a collection of columns into an array-map with column name mapped to key"
@@ -27,35 +30,78 @@
 
   clojure.lang.Sequential
   (decode-result
-    ([r s]
-       (map #(decode-result % s) r))
     ([r s m]
        (if m
-         (cols->map (decode-result r s))
-         (decode-result r s))))
+         (cols->map (map #(decode-result % s) r))
+         (map #(decode-result % s) r)))
+    ([r s]
+       (decode-result r s false)))
 
   clojure.lang.IPersistentVector
   (decode-result
-    ([r s]
-       (map #(decode-result % s) r))
     ([r s m]
-       (map #(decode-result % s m) r)))
+       (mapv #(decode-result % s m) r))
+    ([r s]
+       (decode-result r s false)))
 
   clojure.lang.IPersistentMap
   (decode-result
-    ([r s]
-       (reduce-kv
-        (fn [m k v]
-          (assoc m
-            (codecs/bytes->clojure (:row s) k)
-            (decode-result v s)))
-        (array-map)
-        r))
     ([r s m]
-       (reduce-kv (fn [m k v]
-                    (assoc m k (cols->map v)))
-                   (array-map)
-                   (decode-result r s))))
+       (if m
+         (reduce-kv (fn [m k v]
+                      (assoc m k (cols->map v)))
+                    (array-map)
+                    (decode-result r s))
+         (reduce-kv
+          (fn [m k v]
+            (assoc m
+              (codecs/bytes->clojure (:row s) k)
+              (decode-result v s)))
+          (array-map)
+          r)))
+    ([r s]
+       (decode-result r s false)))
+
+  KeySlice
+  (decode-result
+    ([r s m]
+       (if m
+         {(codecs/bytes->clojure (:row s) (:row r))
+          (decode-result (:columns r) s m)}
+         (assoc r
+           :row (codecs/bytes->clojure (:row s) (:row r))
+           :columns (decode-result (:columns r) s m))))
+    ([r s]
+       (decode-result r s false)))
+
+  CounterSuperColumn
+  (decode-result
+    ([r s m]
+       (assoc r
+         :name (codecs/bytes->clojure (:name s) (:name r))
+         :columns (decode-result (:columns r) s)))
+    ([r s]
+       (decode-result r s false)))
+
+  SuperColumn
+  (decode-result
+    ([r s m]
+       (assoc r
+         :name (codecs/bytes->clojure (:name s) (:row r))
+         :columns (decode-result (:columns r) s)))
+    ([r s]
+       (decode-result r s false)))
+
+  CqlRow
+  (decode-result
+    ([r s m]
+       (if m
+         (decode-result (:columns r) s m)
+         (assoc r
+           :row (codecs/bytes->clojure (:row s) (:row r))
+           :columns (decode-result (:columns r) s m))))
+    ([r s]
+       (decode-result r s false)))
 
   Column
   (decode-result [r s]
@@ -74,18 +120,6 @@
     (update-in r
                [:name]
                (partial codecs/bytes->clojure (-> s :columns :default first))))
-
-  CounterSuperColumn
-  (decode-result [r s]
-    (assoc r
-      :name (codecs/bytes->clojure (:name s) (:name r))
-      :columns (decode-result (:columns r) s)))
-
-  SuperColumn
-  (decode-result [r s]
-    (assoc r
-      :name (codecs/bytes->clojure (:name s) (:name r))
-      :columns (decode-result (:columns r) s)))
 
 
   nil

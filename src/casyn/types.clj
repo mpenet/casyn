@@ -5,3 +5,8 @@
 (defrecord CounterColumn [name value])
 (defrecord SuperColumn [name columns])
 (defrecord CounterSuperColumn [name columns])
+
+(defrecord KeySlice [row columns])
+
+(defrecord CqlRow [row columns])
+(defrecord CqlPreparedResult [item-id count])
