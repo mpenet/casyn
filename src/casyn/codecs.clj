@@ -1,5 +1,6 @@
 (ns casyn.codecs
-  (:require casyn.types)
+  (:require casyn.types
+            [taoensso.nippy :as nippy])
   (:import
    [org.apache.cassandra.utils ByteBufferUtil]
    [org.apache.cassandra.thrift
@@ -153,12 +154,12 @@
     (clojure->byte-buffer (.toString u)))
 
   Object
-  (clojure->byte-buffer [b]
+  (clojure->byte-buffer [o]
     ;; check for a composite
-    (if (and (sequential? b)
-             (:composite (meta b)))
-      (apply composite-expression (map #(vector :eq? %) b))
-      (ByteBufferUtil/bytes (prn-str b))))
+    (if (and (sequential? o)
+             (:composite (meta o)))
+      (apply composite-expression (map #(vector :eq? %) o))
+      (-> o nippy/freeze-to-bytes clojure->byte-buffer)))
 
   nil
   (clojure->byte-buffer [b]
@@ -173,37 +174,37 @@
       val-type
       :composite)))
 
-(defmethod bytes->clojure :string [_  v]
-  (ByteBufferUtil/string (ByteBuffer/wrap v)))
+(defmethod bytes->clojure :string [_  b]
+  (ByteBufferUtil/string (ByteBuffer/wrap b)))
 
-(defmethod bytes->clojure :keyword [_  v]
-  (keyword (bytes->clojure :string v)))
+(defmethod bytes->clojure :keyword [_  b]
+  (keyword (bytes->clojure :string b)))
 
-(defmethod bytes->clojure :long [_  v]
-  (ByteBufferUtil/toLong (ByteBuffer/wrap v)))
+(defmethod bytes->clojure :long [_  b]
+  (ByteBufferUtil/toLong (ByteBuffer/wrap b)))
 
-(defmethod bytes->clojure :float  [_ v]
-  (ByteBufferUtil/toFloat (ByteBuffer/wrap v)))
+(defmethod bytes->clojure :float  [_ b]
+  (ByteBufferUtil/toFloat (ByteBuffer/wrap b)))
 
-(defmethod bytes->clojure :double [_ v]
-  (ByteBufferUtil/toDouble (ByteBuffer/wrap v)))
+(defmethod bytes->clojure :double [_ b]
+  (ByteBufferUtil/toDouble (ByteBuffer/wrap b)))
 
-(defmethod bytes->clojure :int [_ v]
-  (ByteBufferUtil/toInt (ByteBuffer/wrap v)))
+(defmethod bytes->clojure :int [_ b]
+  (ByteBufferUtil/toInt (ByteBuffer/wrap b)))
 
-(defmethod bytes->clojure :boolean [_ v]
-  (= 1 (bytes->clojure :int v)))
+(defmethod bytes->clojure :boolean [_ b]
+  (= 1 (bytes->clojure :int b)))
 
-(defmethod bytes->clojure :date [_ v]
-  (java.util.Date. ^long (bytes->clojure :long v)))
+(defmethod bytes->clojure :date [_ b]
+  (java.util.Date. ^long (bytes->clojure :long b)))
 
-(defmethod bytes->clojure :uuid [_ u]
-  (java.util.UUID/fromString (bytes->clojure :string u)))
+(defmethod bytes->clojure :uuid [_ b]
+  (java.util.UUID/fromString (bytes->clojure :string b)))
 
-(defmethod bytes->clojure :clojure [_ v]
-  (read-string (bytes->clojure :string v)))
+(defmethod bytes->clojure :clojure [_ b]
+  (nippy/thaw-from-bytes b))
 
-(defmethod bytes->clojure :default [_ v] v)
+(defmethod bytes->clojure :default [_ b] b)
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
