@@ -251,8 +251,16 @@
               :end-key "1"
               :columns ["n0" "n00"])
            #(decode-result % test-schema)
-           count))))
+           count)))
 
+  (is (= 1
+         @(lc/run-pipeline
+           (c get-paged-slice cf
+              :start-key "0"
+              :end-key "0"
+              :start-column "n0")
+           #(decode-result % test-schema)
+           count))))
 
 (deftest codecs
   (is (= test-coerce-data
@@ -310,6 +318,13 @@
 
 (deftest test-cql
   (is @(lc/run-pipeline
-        (c execute-cql "SELECT * FROM test_cf;")
+        (c execute-cql-query "SELECT * FROM test_cf;")
         #(decode-result % test-codec-schema true)
-        #(= "value0" (-> % ffirst val :n0)))))
+        #(= "value0" (-> % ffirst val :n0))))
+
+    ;; (is @(lc/run-pipeline
+    ;;     (c prepare-cql-query "SELECT * FROM test_cf;")
+    ;;     #(decode-result % test-codec-schema true)
+    ;;     #(= "value0" (-> % ffirst val :n0))))
+
+    )

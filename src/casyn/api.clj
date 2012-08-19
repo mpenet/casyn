@@ -398,6 +398,20 @@ defined by the cassandra api)"
                         (slice-predicate opts)
                         (consistency-level consistency))))
 
+(defn get-paged-slice
+  "Accepts optional slice-predicate arguments :columns, :start, :finish, :count,
+:reversed, if you specify :columns the other slice args will be ignored (as
+defined by the cassandra api)"
+  [^Cassandra$AsyncClient client cf
+   & {:keys [super consistency]
+      :as opts}]
+  (wrap-result-channel
+   (.get_paged_slice client
+                     cf
+                     (key-range opts)
+                     (-> opts :start-column codecs/clojure->byte-buffer)
+                     (consistency-level consistency))))
+
 (defn truncate
   ""
   [^Cassandra$AsyncClient client cf]
@@ -451,7 +465,15 @@ defined by the cassandra api)"
   [^Cassandra$AsyncClient client]
   (wrap-result-channel (.describe_version client)))
 
-(defn execute-cql
+(defn prepare-cql-query
+  ""
+  [^Cassandra$AsyncClient client query]
+  (wrap-result-channel
+   (.prepare_cql_query client
+                       (codecs/clojure->byte-buffer query)
+                       Compression/NONE)))
+
+(defn execute-cql-query
   ""
   [^Cassandra$AsyncClient client query]
   (wrap-result-channel
