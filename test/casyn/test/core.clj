@@ -40,6 +40,7 @@
                 :boo :boolean
                 :clj :clojure
                 :clj2 :clojure
+                :uuid :uuid
                 :comp [:string :long :double]
                 :crazy-nested-comp [:string :long [:string [:string :long :double] :double]]
                 }})
@@ -57,6 +58,7 @@
    :clj {:foo "bar"}
    :clj2 [1 2 3]
    :comp (composite "dwa" (long 216) (double 3.14))
+   :uuid (java.util.UUID/randomUUID)
    :crazy-nested-comp (composite "dwa1"
                                  (long 216)
                                  (composite "dwa2"

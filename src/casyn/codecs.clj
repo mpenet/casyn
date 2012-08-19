@@ -115,8 +115,8 @@
     (ByteBuffer/wrap (.getBytes s "utf-8")))
 
   clojure.lang.Keyword
-  (clojure->byte-buffer [s]
-    (clojure->byte-buffer (name s)))
+  (clojure->byte-buffer [k]
+    (clojure->byte-buffer (name k)))
 
   clojure.lang.Symbol
   (clojure->byte-buffer [s]
@@ -128,24 +128,28 @@
      (int (if b 1 0))))
 
   Long
-  (clojure->byte-buffer [b]
-    (ByteBufferUtil/bytes ^long b))
+  (clojure->byte-buffer [l]
+    (ByteBufferUtil/bytes ^long l))
 
   Integer
-  (clojure->byte-buffer [b]
-    (ByteBufferUtil/bytes ^int b))
+  (clojure->byte-buffer [i]
+    (ByteBufferUtil/bytes ^int i))
 
   Double
-  (clojure->byte-buffer [b]
-    (ByteBufferUtil/bytes ^double b))
+  (clojure->byte-buffer [d]
+    (ByteBufferUtil/bytes ^double d))
 
   Float
-  (clojure->byte-buffer [b]
-    (ByteBufferUtil/bytes ^float b))
+  (clojure->byte-buffer [f]
+    (ByteBufferUtil/bytes ^float f))
 
   java.util.Date
-  (clojure->byte-buffer [b]
-    (clojure->byte-buffer (.getTime b)))
+  (clojure->byte-buffer [d]
+    (clojure->byte-buffer (.getTime d)))
+
+  java.util.UUID
+  (clojure->byte-buffer [u]
+    (clojure->byte-buffer (.toString u)))
 
   Object
   (clojure->byte-buffer [b]
@@ -192,6 +196,9 @@
 (defmethod bytes->clojure :date [_ v]
   (java.util.Date. ^long (bytes->clojure :long v)))
 
+(defmethod bytes->clojure :uuid [_ u]
+  (java.util.UUID/fromString (bytes->clojure :string u)))
+
 (defmethod bytes->clojure :symbol [_ v]
   (symbol (bytes->clojure :string v)))
 
@@ -201,8 +208,9 @@
 (defmethod bytes->clojure :default [_ v] v)
 
 
-
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Composite
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
 ;; The encoding of a CompositeType column name should be:
 ;; <component><component><component> ...
@@ -281,3 +289,8 @@ ex: (composite-expression [:eq? 12] [:gt? \"meh\"] [:lt? 12])"
   "Mark a column value|name|key value as composite"
   [& values]
   (vary-meta values assoc :composite true))
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; UUIDs
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
