@@ -122,7 +122,7 @@ The same example as before with a simple schema:
 user> (#casyn.types.Column{:name "n0", :value "value0", :ttl 0, :timestamp 1332536503948650})
 ```
 
-Schema supports `:string` `:long`  `:float`  `:double` `:int` `:boolean` `:keyword` `:clojure` `:symbol` `:bytes` `:date` `:uuid`
+Schema supports `:string` `:long`  `:float`  `:double` `:int` `:boolean` `:keyword` `:clojure` `:bytes` `:date` `:uuid`
 
 These are also extendable from a multimethod.
 

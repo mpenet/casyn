@@ -123,10 +123,6 @@
   (clojure->byte-buffer [k]
     (clojure->byte-buffer (name k)))
 
-  clojure.lang.Symbol
-  (clojure->byte-buffer [s]
-    (clojure->byte-buffer (str s)))
-
   Boolean
   (clojure->byte-buffer [b]
     (ByteBufferUtil/bytes
@@ -203,9 +199,6 @@
 
 (defmethod bytes->clojure :uuid [_ u]
   (java.util.UUID/fromString (bytes->clojure :string u)))
-
-(defmethod bytes->clojure :symbol [_ v]
-  (symbol (bytes->clojure :string v)))
 
 (defmethod bytes->clojure :clojure [_ v]
   (read-string (bytes->clojure :string v)))

@@ -34,7 +34,6 @@
                 :double :double
                 :float :float
                 :str :string
-                :symbol :symbol
                 :date :date
                 :kw :keyword
                 :boo :boolean
@@ -52,7 +51,6 @@
    :double 0.3
    :date (java.util.Date.)
    :str "meh"
-   :symbol 'sym
    :kw :keyword
    :boo true
    :clj {:foo "bar"}
