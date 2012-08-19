@@ -321,9 +321,9 @@
         (c execute-cql-query "SELECT * FROM test_cf;")
         #(decode-result % test-codec-schema true)
         #(= "value0" (-> % ffirst val :n0))))
-  (let [prepared-statement @(c prepare-cql-query "SELECT * FROM test_cf;")]
+  (let [prepared-statement @(c prepare-cql-query "SELECT * FROM test_cf WHERE KEY=?;")]
       (is (not-empty prepared-statement))
       (is @(lc/run-pipeline
-            (c execute-prepared-cql-query (:item-id prepared-statement) [])
+            (c execute-prepared-cql-query (:item-id prepared-statement) ["0"])
             #(decode-result % test-codec-schema true)
             #(= "value0" (-> % ffirst val :n0))))))
