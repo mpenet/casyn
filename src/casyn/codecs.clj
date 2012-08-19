@@ -159,7 +159,7 @@
     (if (and (sequential? o)
              (:composite (meta o)))
       (apply composite-expression (map #(vector :eq? %) o))
-      (-> o nippy/freeze-to-bytes clojure->byte-buffer)))
+      (-> o nippy/freeze-to-bytes ByteBuffer/wrap)))
 
   nil
   (clojure->byte-buffer [b]
