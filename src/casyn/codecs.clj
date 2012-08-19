@@ -4,7 +4,7 @@
    [org.apache.cassandra.utils ByteBufferUtil]
    [org.apache.cassandra.thrift
     ColumnOrSuperColumn Column CounterColumn CounterSuperColumn
-    SuperColumn KeySlice CqlResult CqlRow CqlResultType]
+    SuperColumn KeySlice CqlResult CqlRow CqlResultType CqlPreparedResult]
    [java.nio ByteBuffer]))
 
 (declare composite-expression)
@@ -94,6 +94,11 @@
     (condp = (.getType r)
       CqlResultType/INT (.getNum r)
       CqlResultType/ROWS (mapv thrift->clojure (.getRows r))))
+
+  CqlPreparedResult
+  (thrift->clojure [c]
+    {:item-id (.getItemId c)
+     :count (.getCount c)})
 
   Object
   (thrift->clojure [v] v)

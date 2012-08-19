@@ -481,6 +481,15 @@ defined by the cassandra api)"
                        (codecs/clojure->byte-buffer query)
                        Compression/NONE)))
 
+(defn execute-prepared-cql-query
+  ""
+  ([^Cassandra$AsyncClient client item-id values]
+     (wrap-result-channel
+      (.execute_prepared_cql_query client
+                                   (int item-id)
+                                   (map codecs/clojure->byte-buffer values))))
+  ([^Cassandra$AsyncClient client item-id]
+     (execute-prepared-cql-query client item-id [])))
 
 ;; Sugar
 
