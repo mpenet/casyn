@@ -1,5 +1,5 @@
-*** TODO extend test coverage
-*** TODO improve schema with cf/ks definitions sync and related meta data
-*** TODO test cluster management with ccm (failover, balancing)
-*** TODO benchmark suite
-*** TODO check different options for clj serialisation alternatives to the reader (carbonite, nippy)
+*** TODO add examples with the docstring, it is sometimes not very clear unless you read the source atm :high:
+*** TODO extend test coverage (prepared statements with actual params and issues with nil decoding?) :high:
+*** TODO test cluster management with ccm (failover, balancing)        :high:
+*** TODO benchmark suite                                                :low:
+*** TODO check different options for clj serialisation alternatives to the reader (carbonite, nippy) :low:
