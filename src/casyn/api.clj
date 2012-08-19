@@ -460,6 +460,11 @@ defined by the cassandra api)"
                                          start-token end-token
                                          keys-per-split)))
 
+(defn describe-token-map
+  ""
+  [^Cassandra$AsyncClient client]
+  (wrap-result-channel (.describe_token_map client)))
+
 (defn describe-version
   ""
   [^Cassandra$AsyncClient client]
