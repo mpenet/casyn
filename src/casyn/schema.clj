@@ -34,14 +34,6 @@
     ([r s]
        (decode-result r s false))))
 
-(extend-type (Class/forName "[Lcasyn.types.CqlRow;")
-  SchemaDecodable
-  (decode-result
-    ([r s m]
-       (map #(decode-result % s m) r))
-    ([r s]
-       (decode-result r s false))))
-
 (extend-protocol SchemaDecodable
 
   clojure.lang.Sequential
@@ -104,9 +96,7 @@
   CqlResult
   (decode-result
     ([r s m]
-       (println r)
-
-       (update-in r [:rows] #(decode-result % s m)))
+       (update-in r [:rows] (fn [row] (map #(decode-result % s m) row))))
     ([r s]
        (decode-result r s false)))
 
