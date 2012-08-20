@@ -1,4 +1,5 @@
 * TODO add examples with the docstring, it is sometimes not very clear unless you read the source atm  :high:
-* TODO extend test coverage (prepared statements with actual params and issues with nil decoding?)  :high:
+* TODO extend test coverage (issues with nil decoding?)  :high:
 * TODO test cluster management with ccm (failover, balancing)          :high:
+* TODO add utilities to handle type 1 UUIDs (meh) - create/encode/decode/compare etc :medium:
 * TODO benchmark suite                                                  :low:
