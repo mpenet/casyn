@@ -333,4 +333,9 @@
          (lc/run-pipeline
           (execute-cql-query "SELECT * FROM test_cf;")
           #(decode-result % test-codec-schema true)
+          #(= "value0" (-> % :rows first :n0)))))
+    (is @(with-client2 c
+         (lc/run-pipeline
+          (execute-cql-query "SELECT * FROM test_cf;")
+          #(decode-result % test-codec-schema true)
           #(= "value0" (-> % :rows first :n0))))))

@@ -63,6 +63,23 @@ api-call args) form"
            %)
         body)))
 
+(defmacro with-client2
+  "Same as the other one but supports apply/partial, slower though (cost of a partial call)"
+  [client & body]
+  `(binding [casyn.api/*client* ~client]
+     ~@(w/postwalk
+        #(if (and (symbol? %)
+                  (= 'Cassandra$AsyncClient
+                     (-> (ns-resolve 'casyn.api %)
+                         meta
+                         :arglists
+                         ffirst
+                         meta
+                         :tag)))
+           (list 'partial 'casyn.api/*client* %)
+           %)
+        body)))
+
 ;; Async helper
 (defmacro wrap-result-channel
   "Wraps a form in a Lamina result-channel, and make the last arg of the form an
