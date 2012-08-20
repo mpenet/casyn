@@ -242,6 +242,7 @@
   (is (= nil (seq @(c remove-column cf "0" "n0")))))
 
 (deftest test-ranges
+
   (is (= 3
          @(lc/run-pipeline
            (c get-range-slice cf

@@ -26,6 +26,22 @@
   (decode-result [result schema] [result schema as-map]
     "Decodes a result according to supplied schema"))
 
+(extend-type (Class/forName "[Lcasyn.types.KeySlice;")
+  SchemaDecodable
+  (decode-result
+    ([r s m]
+       (map #(decode-result % s m) r))
+    ([r s]
+       (decode-result r s false))))
+
+(extend-type (Class/forName "[Lcasyn.types.CqlRow;")
+  SchemaDecodable
+  (decode-result
+    ([r s m]
+       (map #(decode-result % s m) r))
+    ([r s]
+       (decode-result r s false))))
+
 (extend-protocol SchemaDecodable
 
   clojure.lang.Sequential
@@ -34,13 +50,6 @@
        (if m
          (cols->map (map #(decode-result % s) r))
          (map #(decode-result % s) r)))
-    ([r s]
-       (decode-result r s false)))
-
-  clojure.lang.IPersistentVector
-  (decode-result
-    ([r s m]
-       (mapv #(decode-result % s m) r))
     ([r s]
        (decode-result r s false)))
 
@@ -104,23 +113,32 @@
        (decode-result r s false)))
 
   Column
-  (decode-result [r s]
-    (let [[name-type value-type] (-> s :columns :default)
-          col-name (codecs/bytes->clojure name-type (:name r))
-          col-value-bytes (:value r)]
-      (assoc r
-        :name col-name
-        :value  (when-not (empty? col-value-bytes)
-                  (codecs/bytes->clojure
-                   (get-in s [:columns :exceptions col-name] value-type)
-                   col-value-bytes)))))
+  (decode-result
+    ([r s m]
+       (let [[name-type value-type] (-> s :columns :default)
+             col-name (codecs/bytes->clojure name-type (:name r))
+             col-value-bytes (:value r)
+             col-value (when-not (empty? col-value-bytes)
+                         (codecs/bytes->clojure
+                          (get-in s [:columns :exceptions col-name] value-type)
+                          col-value-bytes))]
+         (if m
+           {col-name col-value}
+           (assoc r
+             :name col-name
+             :value col-value))))
+    ([r s]
+       (decode-result r s false)))
 
   CounterColumn
-  (decode-result [r s]
-    (update-in r
-               [:name]
-               (partial codecs/bytes->clojure (-> s :columns :default first))))
-
+  (decode-result
+    ([r s m]
+       (let [col-name (->> r :name (codecs/bytes->clojure (-> s :columns :default first)))]
+         (if m
+           {col-name (:value r)}
+           (assoc r :name col-name))))
+    ([r s]
+       (decode-result r s false)))
 
   nil
   (decode-result

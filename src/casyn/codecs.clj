@@ -25,7 +25,7 @@
 (extend-type (Class/forName "[Lorg.apache.cassandra.thrift.KeySlice;")
   ThriftDecodable
   (thrift->clojure [kss]
-    (mapv thrift->clojure kss)))
+    (into-array (map thrift->clojure kss))))
 
 (extend-protocol ThriftDecodable
 
@@ -93,7 +93,7 @@
   (thrift->clojure [r]
     (condp = (.getType r)
       CqlResultType/INT (.getNum r)
-      CqlResultType/ROWS (mapv thrift->clojure (.getRows r))))
+      CqlResultType/ROWS (into-array (map thrift->clojure (.getRows r)))))
 
   CqlPreparedResult
   (thrift->clojure [c]
