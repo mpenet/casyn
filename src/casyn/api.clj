@@ -203,7 +203,7 @@ Ex: (slice-predicate {:columns [\"foo\" \"bar\"]})"
       (.setSlice_range sp (SliceRange. (codecs/clojure->byte-buffer (:start opts))
                                        (codecs/clojure->byte-buffer (:finish opts))
                                        (boolean (:reversed opts))
-                                       (int (or (:count opts) 100)))))))
+                                       (int (:count opts 100)))))))
 
 (defn key-range
   "Returns a Thrift KeyRange instance for a range of keys"
