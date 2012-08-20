@@ -64,7 +64,8 @@ api-call args) form"
         body)))
 
 (defmacro with-client2
-  "Same as the other one but supports apply/partial, slower though (cost of a partial call)"
+  "Same as the other one but supports apply/partial, slower though (cost of a
+partial call)"
   [client & body]
   `(binding [casyn.api/*client* ~client]
      ~@(w/postwalk
