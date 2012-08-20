@@ -154,6 +154,24 @@ If you want a collection of columns to be turned into a regular map just pass `t
 user> {"foo" "bar", "baz" "quux"}
 ```
 
+### Convenience macros
+
+You can use with-client and with-consistency to bind their respective
+values if you prefer that to explicit arguments.
+
+```clojure
+(with-client c
+  (lc/run-pipeline (execute-cql-query "SELECT * FROM test_cf;")
+          #(decode-result % test-codec-schema true)))
+
+(with-consistency :all)
+  @(c get-row "colFamily1" "1")
+  @(c get-row "colFamily1" "2"))
+ ```
+
+
+
+
 ## Documentation
 
 See the [API documentation](http://mpenet.github.com/casyn/) or [tests](https://github.com/mpenet/casyn/blob/master/test/casyn/test/core.clj) for more details.

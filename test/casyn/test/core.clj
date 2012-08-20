@@ -326,3 +326,11 @@
             (c execute-prepared-cql-query (:item-id prepared-statement) ["0"])
             #(decode-result % test-codec-schema true)
             #(= "value0" (-> % :rows first :n0))))))
+
+
+(deftest test-with*
+  (is @(with-client c
+         (lc/run-pipeline
+          (execute-cql-query "SELECT * FROM test_cf;")
+          #(decode-result % test-codec-schema true)
+          #(= "value0" (-> % :rows first :n0))))))

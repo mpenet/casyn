@@ -7,7 +7,8 @@ http://javasourcecode.org/html/open-source/cassandra/cassandra-0.8.1/org/apache/
    [lamina.core :as lc]
    [casyn.utils :as utils]
    [casyn.codecs :as codecs]
-   [casyn.schema :as schema])
+   [casyn.schema :as schema]
+   [clojure.walk :as w])
 
   (:import
    [org.apache.cassandra.thrift
@@ -36,6 +37,28 @@ http://javasourcecode.org/html/open-source/cassandra/cassandra-0.8.1/org/apache/
   [consistency & body]
   `(binding [casyn.api/*consistency-default* ~consistency]
      ~@body))
+
+(def ^:dynamic *client*)
+(defmacro with-client
+  "Binds client for the enclosed body, won't work if the body contains partial
+or apply of api functions, if you need to handle this cases you will have to
+pass *client* explicitely"
+  [client & body]
+  `(binding [casyn.api/*client* ~client]
+     ~@(w/prewalk
+        #(if (and (sequential? %)
+                  (-> % first symbol?)
+                  (= 'Cassandra$AsyncClient
+                     (->> % first
+                          (ns-resolve 'casyn.api)
+                          meta
+                          :arglists
+                          ffirst
+                          meta
+                          :tag)))
+           (conj % 'casyn.api/*client*)
+           %)
+        body)))
 
 ;; Async helper
 (defmacro wrap-result-channel
@@ -249,7 +272,8 @@ IndexExpression containing an EQ IndexOperator must be present"
   [^Cassandra$AsyncClient client ^String ks]
   (wrap-result-channel (.set_keyspace client ks)))
 
-(defn get-column
+(defn
+  get-column
   ""
   [^Cassandra$AsyncClient client cf row-key c
    & {:keys [super consistency]}]
@@ -263,7 +287,6 @@ IndexExpression containing an EQ IndexOperator must be present"
   "Returns a slice of columns. Accepts optional slice-predicate arguments :columns, :start, :finish, :count,
 :reversed, if you specify :columns the other slice args will be ignored (as
 defined by the cassandra api)"
-
   [^Cassandra$AsyncClient client cf row-key
    & {:keys [super consistency]
       :as opts}]
