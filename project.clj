@@ -1,5 +1,5 @@
 (defproject cc.qbits/casyn "0.1.4-SNAPSHOT"
-  :description "Clojure client for Cassandra based on Thrift AsyncClient + Lamina/perf"
+  :description "Clojure client for Cassandra using Thrift AsyncClient + Lamina/perf"
   :url "https://github.com/mpenet/casyn"
   :license {:name "Eclipse Public License"}
   :dependencies [[org.clojure/clojure "1.4.0"]

@@ -1,23 +1,19 @@
 # casyn
 
-Clojure client for Cassandra based on Thrift AsyncClient.
+Clojure client for Cassandra using Thrift AsyncClient.
 
 [![Build Status](https://secure.travis-ci.org/mpenet/casyn.png?branch=master)](http://travis-ci.org/mpenet/casyn)
 
 It relies on the perf Lamina branch that hasnt been officialy released yet.
-It is a work in progress,
+It is a work in progress. Contributions and suggestions are welcome.
 
-The majority of the [Cassandra Api](http://wiki.apache.org/cassandra/API) is
+The entire [Cassandra Api](http://wiki.apache.org/cassandra/API) thrift api is
 supported, this includes CQL support.
 
 Pooling is using Apache commons pools, but it is open to other
 implementations from clojure Protocols/multimethods, the same is true for almost
 every part of the library (cluster, balancer, codecs, failover).
 
-Contributions and suggestions are welcome.
-
-See clj-hector or some of the very mature java clients available if
-you need a production ready library right now.
 
 ## Installation
 
@@ -27,6 +23,12 @@ Add the following dependency on your project.clj:
 
 ```clojure
 [cc.qbits/casyn "0.1.3"]
+```
+
+or if you want to try the dev version:
+
+```clojure
+[cc.qbits/casyn "0.1.4-SNAPSHOT"]
 ```
 
 Note: It runs on Clojure 1.4+
@@ -126,7 +128,7 @@ Schema supports `:string` `:long`  `:float`  `:double` `:int` `:boolean` `:keywo
 
 These are also extendable from a multimethod.
 
-Composite types are also supported, use the same type definitions but in a vector (they can be used as keys, names, values):
+Composite types are also supported, use the same type definitions but in a vector (they can be used as keys, names, values, and allow nested types, when nested composite expression might fail though, it can be useful for storage of more data):
 
 ```clojure
 (defschema test-schema
@@ -137,23 +139,17 @@ Composite types are also supported, use the same type definitions but in a vecto
 ```
 
 To create composite values just use the `composite` function, it will just mark the collection as composite in its metadata, and encode it when you execute the query.
-That means you could also create this composite collection beforehand, modify it without having to worry about anything (as long as the metadata is perserved).
+
 
 ```clojure
 (c insert-column "colFamily1" "1" (composite ["meh" 1 :something 3.14 {:foo "bar"}] "value0"))
 ```
 
-If you want a collection of columns to be turned into a regular map
-you can use `cols->map` , :name and :value are then mapped to
-key/value. You would no longer have access to the additional data such as
-ttl or timestamp on the column.
-Or you can just pass `true` as a third parameter to decode-result.
-
+If you want a collection of columns to be turned into a regular map just pass `true` as a third parameter to decode-result (or if you dont use shemas, you can manually deal with them using cols->map).
 
 ```clojure
-@(l/run-pipeline
-  (c get-row "colFamily1" "1")
-  #(decode-result % test-schema true))
+(-> @(c get-row "colFamily1" "1")
+     (decode-result test-schema true))
 
 user> {"foo" "bar", "baz" "quux"}
 ```
