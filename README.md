@@ -128,7 +128,8 @@ Schema supports `:string` `:long`  `:float`  `:double` `:int` `:boolean` `:keywo
 
 These are also extendable from a multimethod.
 
-Composite types are also supported, use the same type definitions but in a vector (they can be used as keys, names, values, and allow nested types, when nested composite expression might fail though, it can be useful for storage of more data):
+Composite types are also supported and use the same type definitions
+(they can be used as keys, names, values):
 
 ```clojure
 (defschema test-schema
@@ -139,7 +140,6 @@ Composite types are also supported, use the same type definitions but in a vecto
 ```
 
 To create composite values just use the `composite` function, it will just mark the collection as composite in its metadata, and encode it when you execute the query.
-
 
 ```clojure
 (c insert-column "colFamily1" "1" (composite ["meh" 1 :something 3.14 {:foo "bar"}] "value0"))
