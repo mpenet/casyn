@@ -31,7 +31,9 @@ http://javasourcecode.org/html/open-source/cassandra/cassandra-0.8.1/org/apache/
     :three ConsistencyLevel/THREE
     :two ConsistencyLevel/TWO}))
 
-(defmacro with-consistency [consistency & body]
+(defmacro with-consistency
+  "Binds consistency level for the enclosed body"
+  [consistency & body]
   `(binding [casyn.api/*consistency-default* ~consistency]
      ~@body))
 
