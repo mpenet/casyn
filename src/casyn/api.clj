@@ -39,10 +39,13 @@ http://javasourcecode.org/html/open-source/cassandra/cassandra-0.8.1/org/apache/
      ~@body))
 
 (def ^:dynamic *client*)
+
 (defmacro with-client
-  "Binds client for the enclosed body, won't work if the body contains partial
-or apply of api functions, if you need to handle this cases you will have to
-pass *client* explicitely"
+  "Binds client for the enclosed body, won't work if the body contains
+partial or apply of api functions, if you need to handle this cases
+you will have to pass *client* explicitly. This is a second class
+citizen macro, should probably be avoided and use the regular (c-fn
+api-call args) form"
   [client & body]
   `(binding [casyn.api/*client* ~client]
      ~@(w/prewalk

@@ -156,7 +156,7 @@ user> {"foo" "bar", "baz" "quux"}
 
 ### Convenience macros
 
-You can use with-client and with-consistency to bind their respective
+You can use with-consistency or with-client to bind their respective
 values if you prefer that to explicit arguments.
 
 ```clojure
