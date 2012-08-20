@@ -18,10 +18,10 @@ http://javasourcecode.org/html/open-source/cassandra/cassandra-0.8.1/org/apache/
    [org.apache.thrift.async AsyncMethodCallback TAsyncClient]
    [java.nio ByteBuffer]))
 
-(def ^:dynamic consistency-default :one)
+(def ^:dynamic *consistency-default* :one)
 
 (defn consistency-level [c]
-  ((or c consistency-default)
+  ((or c *consistency-default*)
    {:all ConsistencyLevel/ALL
     :any ConsistencyLevel/ANY
     :each-quorum ConsistencyLevel/EACH_QUORUM
@@ -30,6 +30,10 @@ http://javasourcecode.org/html/open-source/cassandra/cassandra-0.8.1/org/apache/
     :quorum ConsistencyLevel/QUORUM
     :three ConsistencyLevel/THREE
     :two ConsistencyLevel/TWO}))
+
+(defmacro with-consistency [consistency & body]
+  `(binding [casyn.api/*consistency-default* ~consistency]
+     ~@body))
 
 ;; Async helper
 (defmacro wrap-result-channel
