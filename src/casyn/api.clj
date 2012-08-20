@@ -167,6 +167,30 @@ partial call)"
     (column-parent cf super)
     (column-parent cf)))
 
+(def index-operators
+  {:eq? IndexOperator/EQ
+   :lt? IndexOperator/LT
+   :gt? IndexOperator/GT
+   :lte? IndexOperator/LTE
+   :gte? IndexOperator/GTE})
+
+(defn index-expressions
+  [expressions]
+  (map (fn [[op k v]]
+         (IndexExpression. (codecs/clojure->byte-buffer k)
+                           (index-operators op)
+                           (codecs/clojure->byte-buffer v)))
+       expressions))
+
+(defn index-clause
+  "Defines one or more IndexExpressions for get_indexed_slices. An
+IndexExpression containing an EQ IndexOperator must be present"
+  [expressions & {:keys [start-key count]
+                  :or {count 100}}]
+  (IndexClause. (index-expressions expressions)
+                (codecs/clojure->byte-buffer start-key)
+                (int count)))
+
 (defn slice-for-names
   "Returns a Thrift SlicePredicate instance for column names"
   [column-names]
@@ -194,13 +218,14 @@ Ex: (slice-predicate :columns [\"foo\" \"bar\"])"
 
 (defn key-range
   "Returns a Thrift KeyRange instance for a range of keys"
-  [{:keys [start-token start-key end-token end-key count-key]}]
+  [{:keys [start-token start-key end-token end-key count-key row-filter]}]
   (let [kr (KeyRange.)]
     (when start-token (.setStart_token kr ^String start-token))
     (when end-token (.setEnd_token kr ^String end-token))
     (when start-key (.setStart_key kr ^ByteBuffer (codecs/clojure->byte-buffer start-key)))
     (when end-key (.setEnd_key kr ^ByteBuffer (codecs/clojure->byte-buffer end-key)))
     (when count-key (.setCount kr (int count-key)))
+    (when row-filter (.setRow_filter kr (index-expressions row-filter)))
     kr))
 
 (defmacro doto-mutation
@@ -254,32 +279,6 @@ The :super key and specify a supercolumn name"
   (doto (Mutation.)
     (.setDeletion (deletion args))))
 
-
-;; Secondary indexes
-
-(def index-operators
-  {:eq? IndexOperator/EQ
-   :lt? IndexOperator/LT
-   :gt? IndexOperator/GT
-   :lte? IndexOperator/LTE
-   :gte? IndexOperator/GTE})
-
-(defn index-expressions
-  [expressions]
-  (map (fn [[op k v]]
-         (IndexExpression. (codecs/clojure->byte-buffer k)
-                           (index-operators op)
-                           (codecs/clojure->byte-buffer v)))
-       expressions))
-
-(defn index-clause
-  "Defines one or more IndexExpressions for get_indexed_slices. An
-IndexExpression containing an EQ IndexOperator must be present"
-  [expressions & {:keys [start-key count]
-                  :or {count 100}}]
-  (IndexClause. (index-expressions expressions)
-                (codecs/clojure->byte-buffer start-key)
-                (int count)))
 
 ;; API
 
@@ -424,7 +423,7 @@ defined by the cassandra api)"
   "Accepts optional slice-predicate arguments :columns, :start, :finish, :count,
 :reversed, if you specify :columns the other slice args will be ignored (as
 defined by the cassandra api). Accepts optional key-range arguments :start-token
-:start-key :end-token :end-key :count-key"
+:start-key :end-token :end-key :count-key :row-filter (vector or index-expressions)"
   [^Cassandra$AsyncClient client cf
    & {:keys [super consistency]
       :as opts}]
@@ -451,7 +450,7 @@ defined by the cassandra api)"
 
 (defn get-paged-slice
   "Accepts optional key-range arguments :start-token :start-key :end-token
-:end-key :count-key, and takes an additional :start-column name"
+:end-key :count-key :row-filter (vector or index-expressions) and takes an additional :start-column name"
   [^Cassandra$AsyncClient client cf
    & {:keys [super consistency]
       :as opts}]

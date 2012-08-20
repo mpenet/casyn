@@ -242,13 +242,13 @@
   (is (= nil (seq @(c remove-column cf "0" "n0")))))
 
 (deftest test-ranges
-
-  (is (= 3
+  (is (= 1
          @(lc/run-pipeline
            (c get-range-slice cf
               :start-key "0"
               :end-key "1"
-              :columns ["n0" "n00"])
+              :columns ["n0" "n00"]
+              :row-filter [[:eq? "n0" "value0"]])
            #(decode-result % test-schema)
            count)))
 
