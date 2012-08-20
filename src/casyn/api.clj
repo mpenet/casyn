@@ -196,15 +196,14 @@ IndexExpression containing an EQ IndexOperator must be present"
 using the :columns key, or a range defined from :start :finish :reversed :count
 Ex: (slice-predicate {:columns [\"foo\" \"bar\"]})"
   ^SlicePredicate
-  [{:keys [columns
-           start finish reversed count]}]
+  [opts]
   (let [sp (SlicePredicate.)]
-    (if columns
+    (if-let [columns (:columns opts)]
       (.setColumn_names sp (map codecs/clojure->byte-buffer columns))
-      (.setSlice_range sp (SliceRange. (codecs/clojure->byte-buffer start)
-                                       (codecs/clojure->byte-buffer finish)
-                                       (boolean reversed)
-                                       (int (or count 100)))))))
+      (.setSlice_range sp (SliceRange. (codecs/clojure->byte-buffer (:start opts))
+                                       (codecs/clojure->byte-buffer (:finish opts))
+                                       (boolean (:reversed opts))
+                                       (int (or (:count opts) 100)))))))
 
 (defn key-range
   "Returns a Thrift KeyRange instance for a range of keys"
