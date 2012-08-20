@@ -6,8 +6,8 @@
             SuperColumn
             CounterSuperColumn
             KeySlice
-            CqlRow
-            ]))
+            CqlResult
+            CqlRow]))
 
 (defn cols->map
   "Turns a collection of columns into an array-map with column name mapped to key"
@@ -98,6 +98,15 @@
        (assoc r
          :name (codecs/bytes->clojure (:name s) (:row r))
          :columns (decode-result (:columns r) s)))
+    ([r s]
+       (decode-result r s false)))
+
+  CqlResult
+  (decode-result
+    ([r s m]
+       (println r)
+
+       (update-in r [:rows] #(decode-result % s m)))
     ([r s]
        (decode-result r s false)))
 

@@ -91,9 +91,10 @@
 
   CqlResult
   (thrift->clojure [r]
-    (condp = (.getType r)
-      CqlResultType/INT (.getNum r)
-      CqlResultType/ROWS (into-array (map thrift->clojure (.getRows r)))))
+    (-> (casyn.types.CqlResult. (.getNum r)
+                                (.getType r)
+                                (into-array (map thrift->clojure (.getRows r))))
+        (with-meta {:schema (.getSchema r)})))
 
   CqlPreparedResult
   (thrift->clojure [c]
