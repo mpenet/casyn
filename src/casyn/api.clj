@@ -413,7 +413,7 @@ defined by the cassandra api)"
   "Accepts optional slice-predicate arguments :columns, :start, :finish, :count,
 :reversed, if you specify :columns the other slice args will be ignored (as
 defined by the cassandra api). Accepts optional key-range arguments :start-token
-:start-key :end-token :end-key :count-key :row-filter (vector or index-expressions)"
+:start-key :end-token :end-key :count-key :row-filter (vector of index-expressions)"
   [^Cassandra$AsyncClient client cf
    & {:keys [super consistency]
       :as opts}]
@@ -440,7 +440,7 @@ defined by the cassandra api)"
 
 (defn get-paged-slice
   "Accepts optional key-range arguments :start-token :start-key :end-token
-:end-key :count-key :row-filter (vector or index-expressions) and takes an additional :start-column name"
+:end-key :count-key :row-filter (vector of index-expressions) and takes an additional :start-column name"
   [^Cassandra$AsyncClient client cf
    & {:keys [super consistency]
       :as opts}]
