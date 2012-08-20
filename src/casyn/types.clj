@@ -8,4 +8,4 @@
 
 (defrecord KeySlice [row columns])
 (defrecord CqlRow [row columns])
-(defrecord CqlPreparedResult [item-id count])
+(defrecord CqlPreparedResult [item-id count variable-names variable-types])

@@ -97,7 +97,10 @@
 
   CqlPreparedResult
   (thrift->clojure [c]
-    (casyn.types.CqlPreparedResult. (.getItemId c) (.getCount c)))
+    (casyn.types.CqlPreparedResult. (.getItemId c)
+                                    (.getCount c)
+                                    (.getVariable_names c)
+                                    (.getVariable_types c)))
 
   Object
   (thrift->clojure [v] v)
