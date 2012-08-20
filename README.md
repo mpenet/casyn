@@ -7,7 +7,7 @@ Clojure client for Cassandra using Thrift AsyncClient.
 It relies on the perf Lamina branch that hasnt been officialy released yet.
 It is a work in progress. Contributions and suggestions are welcome.
 
-The entire [Cassandra Api](http://wiki.apache.org/cassandra/API) thrift api is
+The entire [Cassandra Thrift Api](http://wiki.apache.org/cassandra/API) is
 supported, this includes CQL support.
 
 Pooling is using Apache commons pools, but it is open to other
