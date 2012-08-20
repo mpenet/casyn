@@ -75,7 +75,7 @@
 
   CounterSuperColumn
   (thrift->clojure [sc]
-    (casyn.types/CounterSuperColumn.
+    (casyn.types.CounterSuperColumn.
      (.getName sc)
      (thrift->clojure (.getColumns sc))))
 
