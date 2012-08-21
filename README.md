@@ -164,7 +164,7 @@ values if you prefer that to explicit arguments.
   (lc/run-pipeline (execute-cql-query "SELECT * FROM test_cf;")
           #(decode-result % test-codec-schema true)))
 
-(with-consistency :all)
+(with-consistency :all
   @(c get-row "colFamily1" "1")
   @(c get-row "colFamily1" "2"))
  ```

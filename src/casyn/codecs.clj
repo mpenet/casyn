@@ -169,8 +169,7 @@
 
 
 (defmulti bytes->clojure
-  "Decode byte arrays
-   TODO: use isa? protocol maybe"
+  "Decode byte arrays from schema type definitions"
   (fn [val-type v]
     (if (keyword? val-type)
       val-type
@@ -286,10 +285,10 @@ ex: (composite-expression [:eq? 12] [:gt? \"meh\"] [:lt? 12])"
   [& values]
   (vary-meta values assoc :composite true))
 
-(defmethod bytes->clojure :composite [composite-types vs]
+(defmethod bytes->clojure :composite [composite-types b]
   (->> (map #(bytes->clojure %1 %2)
             composite-types
-            (composite->bytes-values vs))
+            (composite->bytes-values b))
        ;; mark as composite again: consistent read/modify behavior, it
        ;; stays a composite
        (apply composite)))
