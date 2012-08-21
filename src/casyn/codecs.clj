@@ -251,6 +251,19 @@
     (.put bb ^byte suffix) ;; eoc suffix
     (.rewind bb)))
 
+(defn composite->bytes-values
+  "Takes a composite byte-array returned by thrift and transforms it
+  to a collection of byte-arrays holding actual values for decoding"
+  [ba]
+  (let [bb (ByteBuffer/wrap ba)]
+    (loop [values []]
+      (if (> (.remaining bb) 0)
+        (let [dest (byte-array (.getShort bb))] ;; create the output buffer for the value
+          (.get bb dest)                        ;; fill it
+          (.position bb (inc (.position bb))) ;; skip the last eoc byte
+          (recur (conj values dest)))
+        values))))
+
 (defn composite-expression
   "Takes a sequence of values pairs holding operator and actual clojure value to
 be encoded as a composite type. Returns a ByteBuffer
@@ -268,28 +281,20 @@ ex: (composite-expression [:eq? 12] [:gt? \"meh\"] [:lt? 12])"
 
     (.rewind bb)))
 
-(defn composite->bytes-values
-  "Takes a composite byte-array returned by thrift and transforms it
-  to a collection of byte-arrays holding actual values for decoding"
-  [ba]
-  (let [bb (ByteBuffer/wrap ba)]
-    (loop [values []]
-      (if (> (.remaining bb) 0)
-        (let [dest (byte-array (.getShort bb))] ;; create the output buffer for the value
-          (.get bb dest)                        ;; fill it
-          (.position bb (inc (.position bb))) ;; skip the last eoc byte
-          (recur (conj values dest)))
-        values))))
-
-(defmethod bytes->clojure :composite [composite-types vs]
-  (map #(bytes->clojure %1 %2)
-       composite-types
-       (composite->bytes-values vs)))
-
 (defn composite
   "Mark a column value|name|key value as composite"
   [& values]
   (vary-meta values assoc :composite true))
+
+(defmethod bytes->clojure :composite [composite-types vs]
+  (->> (map #(bytes->clojure %1 %2)
+            composite-types
+            (composite->bytes-values vs))
+       ;; mark as composite again: consistent read/modify behavior, it
+       ;; stays a composite
+       (apply composite)))
+
+
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
