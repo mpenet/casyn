@@ -7,9 +7,6 @@ Clojure client for Cassandra using Thrift AsyncClient.
 It relies on the perf branch of
 [Lamina](https://github.com/ztellman/lamina) which hasn't been
 officialy released yet.
-It is a work in progress.
-
-Contributions and suggestions are welcome.
 
 The entire [Cassandra Thrift Api](http://wiki.apache.org/cassandra/API) is
 supported, this includes CQL support.
@@ -17,6 +14,8 @@ supported, this includes CQL support.
 Pooling is using Apache commons pools, but it is open to other
 implementations from clojure Protocols/multimethods, the same is true for almost
 every part of the library (cluster, balancer, codecs, failover).
+
+It is a work in progress. Contributions and suggestions are welcome.
 
 
 ## Installation
@@ -142,14 +141,16 @@ Composite types are also supported and use the same type definitions
                          "test-composite-type" [:string :clojure :int]}})
 ```
 
-To create composite values just use the `composite` function, it will just mark the collection as composite in its metadata, and encode it when you execute the query.
+To create composite values just use the `composite` function, it will
+mark the collection as composite and encode it accordingly when you execute the
+query.
 
 ```clojure
 (c insert-column "colFamily1" "1" (composite ["meh" 1 :something 3.14 {:foo "bar"}] "value0"))
 ```
 
 A collection of columns can be turned into a regular map just pass
-`true` as a third parameter to decode-result (or if you dont use
+`true` as a third parameter to `decode-result` (or if you dont use
 a schema, you can manually deal with them using cols->map).
 
 ```clojure
