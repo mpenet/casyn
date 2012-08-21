@@ -40,6 +40,14 @@ http://javasourcecode.org/html/open-source/cassandra/cassandra-0.8.1/org/apache/
 
 (def ^:dynamic *client*)
 
+(defn- api-fn?
+  [v]
+  (and (symbol? v)
+       (= 'Cassandra$AsyncClient
+          (-> (ns-resolve 'casyn.api v)
+              meta :arglists
+              ffirst meta :tag))))
+
 (defmacro with-client
   "Binds client for the enclosed body, won't work if the body contains
 partial or apply of api functions, if you need to handle this cases
@@ -50,33 +58,18 @@ api-call args) form"
   `(binding [casyn.api/*client* ~client]
      ~@(w/prewalk
         #(if (and (sequential? %)
-                  (-> % first symbol?)
-                  (= 'Cassandra$AsyncClient
-                     (->> % first
-                          (ns-resolve 'casyn.api)
-                          meta
-                          :arglists
-                          ffirst
-                          meta
-                          :tag)))
+                  (api-fn? (first %)))
            (conj % 'casyn.api/*client*)
            %)
         body)))
 
 (defmacro with-client2
-  "Same as the other one but supports apply/partial, slower though (cost of a
+  "Same as the with-client but supports apply/partial, slower though (cost of a
 partial call)"
   [client & body]
   `(binding [casyn.api/*client* ~client]
      ~@(w/postwalk
-        #(if (and (symbol? %)
-                  (= 'Cassandra$AsyncClient
-                     (-> (ns-resolve 'casyn.api %)
-                         meta
-                         :arglists
-                         ffirst
-                         meta
-                         :tag)))
+        #(if (api-fn? %)
            (list 'partial 'casyn.api/*client* %)
            %)
         body)))
