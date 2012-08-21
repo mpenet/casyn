@@ -8,6 +8,7 @@ It relies on the perf branch of
 [Lamina](https://github.com/ztellman/lamina) which hasn't been
 officialy released yet.
 It is a work in progress.
+
 Contributions and suggestions are welcome.
 
 The entire [Cassandra Thrift Api](http://wiki.apache.org/cassandra/API) is
