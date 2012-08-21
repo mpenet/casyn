@@ -4,7 +4,9 @@ Clojure client for Cassandra using Thrift AsyncClient.
 
 [![Build Status](https://secure.travis-ci.org/mpenet/casyn.png?branch=master)](http://travis-ci.org/mpenet/casyn)
 
-It relies on the perf Lamina branch that hasnt been officialy released yet.
+It relies on the perf branch of
+[Lamina](https://github.com/ztellman/lamina) which hasn't been
+officialy released yet.
 It is a work in progress. Contributions and suggestions are welcome.
 
 The entire [Cassandra Thrift Api](http://wiki.apache.org/cassandra/API) is
@@ -45,8 +47,8 @@ Start by creating a playground for this introduction:
                "SimpleStrategy"
                [["colFamily1"]
                ["colFamily2"
-               :default-validation-class :counter
-               :replicate-on-write true]]
+                :default-validation-class :counter
+                :replicate-on-write true]]
                :strategy-options {"replication_factor" "1"})
 user> < ... >
 ```
@@ -99,10 +101,10 @@ user> (#casyn.types.Column{:name #<byte[] [B@7cc09980>, :value #<byte[] [B@489de
 [Lamina](https://github.com/ztellman/lamina) offers a lot of possibilities. I encourage you to check what is possible with it.
 
 
-Cassandra/Thrift column name/values are returned as bytes, but you can supply a schema for
-decoding.
+Cassandra/Thrift column name/values are returned as bytes, but you can
+supply a schema for decoding.
 Encoding of clojure data is automatic.
-Encoding and decoding is open and extendable, see codecs.clj.
+Encoding/decoding is open and extendable, see codecs.clj.
 This also works for CQL queries.
 
 The same example as before with a simple schema:
@@ -110,7 +112,6 @@ The same example as before with a simple schema:
 ```clojure
 (defschema test-schema
   :row :string
-  :super :string
   :columns {:default [:string :string]
             ;; when a column with the age name is encountered it will
             ;; overwride the defaults for decoding
@@ -145,7 +146,9 @@ To create composite values just use the `composite` function, it will just mark 
 (c insert-column "colFamily1" "1" (composite ["meh" 1 :something 3.14 {:foo "bar"}] "value0"))
 ```
 
-If you want a collection of columns to be turned into a regular map just pass `true` as a third parameter to decode-result (or if you dont use shemas, you can manually deal with them using cols->map).
+A collection of columns can be turned into a regular map just pass
+`true` as a third parameter to decode-result (or if you dont use
+a schema, you can manually deal with them using cols->map).
 
 ```clojure
 (-> @(c get-row "colFamily1" "1")
@@ -156,8 +159,8 @@ user> {"foo" "bar", "baz" "quux"}
 
 ### Convenience macros
 
-You can use with-consistency or with-client to bind their respective
-values if you prefer that to explicit arguments.
+`with-consistency` or `with-client` can be used to bind their
+respective values if you prefer that to explicit arguments.
 
 ```clojure
 (with-client c
@@ -168,9 +171,6 @@ values if you prefer that to explicit arguments.
   @(c get-row "colFamily1" "1")
   @(c get-row "colFamily1" "2"))
  ```
-
-
-
 
 ## Documentation
 
