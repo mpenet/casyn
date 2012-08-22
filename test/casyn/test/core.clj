@@ -135,81 +135,31 @@
            type))))
 
 (deftest test-get-slice
-
-  (is (= 2
-         @(lc/run-pipeline
-           (c get-slice cf "0" :columns ["n0" "n00"])
-           count)))
-
-  (is (= 2
-         @(lc/run-pipeline
-           (c get-slice cf "0" :start "n0" :finish "n00")
-           count)))
-
-  (is (= 2
-         @(lc/run-pipeline
-           (c get-row cf "0")
-           #(decode-result % test-schema)
-           count)
-         )))
+  (is (= 2 (count @(c get-slice cf "0" :columns ["n0" "n00"]))))
+  (is (= 2 (count @(c get-slice cf "0" :start "n0" :finish "n00"))))
+  (is (= 2 (count @(c get-row cf "0" :schema test-schema)))))
 
 (deftest test-mget-slice
-
-  (is (= 2
-         @(lc/run-pipeline
-           (c mget-slice cf ["0" "1"] :columns ["n0" "n1" "n00"])
-           count)))
-
-  (is (= 2
-         @(lc/run-pipeline
-           (c mget-slice cf ["0" "1"])
-           #(decode-result % test-schema)
-           count)))
-
-    (is (= 2
-         @(lc/run-pipeline
-           (c get-rows cf ["0" "1"])
-           #(decode-result % test-schema)
-           count))))
+  (is (= 2 (count @(c mget-slice cf ["0" "1"]
+                      :columns ["n0" "n1" "n00"]))))
+  (is (= 2 (count @(c mget-slice cf ["0" "1"] :schema test-schema))))
+  (is (= 2 (count @(c get-rows cf ["0" "1"] :schema test-schema)))))
 
 (deftest test-get-count
-  (is (= 2
-         @(lc/run-pipeline
-           (c get-count cf "0" :columns ["n0" "n00"])
-           #(decode-result % test-schema))))
-
-  (is (= 2
-         @(lc/run-pipeline
-           (c get-count cf "0" :start "n0" :finish "n00")
-           #(decode-result % test-schema)))))
+  (is (= 2 @(c get-count cf "0" :columns ["n0" "n00"] :schema test-schema)))
+  (is (= 2 @(c get-count cf "0" :start "n0" :finish "n00" :schema test-schema))))
 
 (deftest test-mget-count
   (is (= {"1" 1 "0" 2}
-         @(lc/run-pipeline
-           (c mget-count cf ["0" "1"] :columns ["n0" "n1" "n00"])
-           #(decode-result % test-schema))))
-
+         @(c mget-count cf ["0" "1"] :columns ["n0" "n1" "n00"] :schema test-schema)))
   (is (= {"1" 2 "0" 2}
-         @(lc/run-pipeline
-           (c mget-count
-              cf
-              ["0" "1"]
-              :start "n0" :finish "zzzzz")
-           #(decode-result % test-schema)))))
+         @(c mget-count cf ["0" "1"] :start "n0" :finish "zzzzz" :schema test-schema))))
 
 (deftest counters
   (is (nil? @(c increment ccf "5" "c0" 10)))
-
-  (is (= 12 @(lc/run-pipeline
-              (c get-column ccf "5" "c0")
-              #(:value %))))
-
+  (is (= 12 (:value @(c get-column ccf "5" "c0"))))
   ;; keys must be decodable
-  (is (= "c0" @(lc/run-pipeline
-                (c get-column ccf "5" "c0")
-                #(decode-result % test-schema)
-                #(:name %))))
-
+  (is (= "c0" (:name @(c get-column ccf "5" "c0" :schema test-schema))))
   (is (nil? @(c remove-counter ccf "5" "c0"))))
 
 (deftest test-mutation
@@ -243,73 +193,51 @@
   (is (= nil (seq @(c remove-column cf "0" "n0")))))
 
 (deftest test-ranges
-  (is (= 1
-         @(lc/run-pipeline
-           (c get-range-slice cf
-              :start-key "0"
-              :end-key "1"
-              :columns ["n0" "n00"]
-              :row-filter [[:eq? "n0" "value0"]])
-           #(decode-result % test-schema)
-           count)))
+  (is (= 1 (count @(c get-range-slice cf
+                      :start-key "0"
+                      :end-key "1"
+                      :columns ["n0" "n00"]
+                      :row-filter [[:eq? "n0" "value0"]]
+                      :schema test-schema))))
 
-  (is (= 1
-         @(lc/run-pipeline
-           (c get-paged-slice cf
-              :start-key "0"
-              :end-key "0"
-              :start-column "n0")
-           #(decode-result % test-schema)
-           count))))
+  (is (= 1 (count @(c get-paged-slice cf
+                      :start-key "0"
+                      :end-key "0"
+                      :start-column "n0"
+                      :schema test-schema)))))
 
 (deftest codecs
   (is (= test-coerce-data
-         @(lc/run-pipeline
-          (c get-row cf "2")
-          #(decode-result % test-codec-schema)
-          cols->map)))
-
-  (is (= {"n0" "value0"
-          "n00" "value00"}
-         @(lc/run-pipeline
-           (c get-row cf "0")
-           #(decode-result % test-schema true))))
-
-
-(is (= {"0" {"n0" "value0", "n00" "value00"}, "1" {"n1" "value1", "n2-nil" nil}}
-         @(lc/run-pipeline
-           (c get-rows cf ["0" "1"])
-           #(decode-result % test-schema true)))))
+         @(c get-row cf "2" :schema test-codec-schema :as-map true)))
+  (is (= {"n0" "value0" "n00" "value00"}
+         @(c get-row cf "0" :schema test-schema :as-map true)))
+  (is (= {"0" {"n0" "value0", "n00" "value00"}, "1" {"n1" "value1", "n2-nil" nil}}
+         @(c get-rows cf ["0" "1"] :schema test-schema :as-map true))))
 
 (deftest test-index
   (is (= '({"1" {"n1" "value1"}})
-       @(lc/run-pipeline
-           (c get-indexed-slice
-              cf
-              [[:eq? :n1 "value1"]]
-              :columns ["n1"]
-              :schema test-schema
-              :as-map true))))
+         @(c get-indexed-slice cf
+            [[:eq? :n1 "value1"]]
+            :columns ["n1"]
+            :schema test-schema
+            :as-map true)))
 
-  (is (= 1
-         @(lc/run-pipeline
-           (c get-indexed-slice
-              cf
-              [[:eq? :n1 "value1"]]
-              :columns ["n1"])
-           #(decode-result % test-schema)
-           count))))
+  (is (= 1 (count @(c get-indexed-slice
+                      cf
+                      [[:eq? :n1 "value1"]]
+                      :columns ["n1"]
+                      :schema test-schema
+                      :as-map true)))))
 
 (deftest error-handlers
   (is (= nil @(lc/run-pipeline
-               (c get-row cf "mehhhhh" :super "meh")
+               (c get-row cf "mehhhhh" :super "meh" :schema test-schema)
                {:error-handler
                 (fn [e]
                   (if-not (instance? org.apache.cassandra.thrift.InvalidRequestException e)
                     (throw (Exception. "meh"))
                     (lc/complete nil))
                   )}
-              #(decode-result % test-schema)
               count)))
   ;; not found returns nil
   (is (= nil @(lc/run-pipeline
@@ -319,25 +247,25 @@
 
 (deftest test-cql
   (is @(lc/run-pipeline
-        (c execute-cql-query "SELECT * FROM test_cf;")
-        #(decode-result % test-codec-schema true)
+        (c execute-cql-query "SELECT * FROM test_cf;"
+           :schema test-codec-schema :as-map true)
         #(= "value0" (-> % :rows first :n0))))
   (let [prepared-statement @(c prepare-cql-query "SELECT * FROM test_cf WHERE KEY=?;")]
       (is (not-empty prepared-statement))
       (is @(lc/run-pipeline
-            (c execute-prepared-cql-query (:item-id prepared-statement) ["0"])
-            #(decode-result % test-codec-schema true)
+            (c execute-prepared-cql-query (:item-id prepared-statement) ["0"]
+               :schema test-codec-schema :as-map true)
             #(= "value0" (-> % :rows first :n0))))))
 
 
 (deftest test-with*
   (is @(with-client c
          (lc/run-pipeline
-          (execute-cql-query "SELECT * FROM test_cf;")
-          #(decode-result % test-codec-schema true)
+          (execute-cql-query "SELECT * FROM test_cf;"
+                             :schema test-codec-schema :as-map true)
           #(= "value0" (-> % :rows first :n0)))))
     (is @(with-client2 c
          (lc/run-pipeline
-          (execute-cql-query "SELECT * FROM test_cf;")
-          #(decode-result % test-codec-schema true)
+          (execute-cql-query "SELECT * FROM test_cf;"
+                             :schema test-codec-schema :as-map true)
           #(= "value0" (-> % :rows first :n0))))))
