@@ -284,12 +284,10 @@ The :super key and specify a supercolumn name"
   [^Cassandra$AsyncClient client ^String ks]
   (wrap-result-channel (.set_keyspace client ks)))
 
-(defn
-  get-column
+(defn get-column
   ""
   [^Cassandra$AsyncClient client cf row-key c
    & {:keys [super consistency schema as-map]}]
-
   (wrap-result-channel+schema
    (.get client
          ^ByteBuffer (codecs/clojure->byte-buffer row-key)
