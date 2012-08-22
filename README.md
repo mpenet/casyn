@@ -113,19 +113,34 @@ The same example as before with a simple schema:
 ```clojure
 (defschema test-schema
   :row :string
-  :columns {:default [:string :string]
+  :columns {:default [:keyword :string]
             ;; when a column with the age name is encountered it will
             ;; overwride the defaults for decoding
-            :exceptions {"age" :long}})
+            :exceptions {:age :long
+                         :created :date}})
 
-@(c get-row "colFamily1" "1" :schema test-schema)
+@(c put "colFamily1" "7" {:age 35 :name "Max" :created (java.util.Date.)})
+@(c get-row "colFamily1" "7" :schema test-schema)
 
-user> (#casyn.types.Column{:name "n0", :value "value0", :ttl 0, :timestamp 1332536503948650})
+user> (#casyn.types.Column{:name :age, :value 35, :ttl 0, :timestamp 1332536503948650}
+       #casyn.types.Column{:name :name, :value "Max", :ttl 0, :timestamp 1332536503948652})
+       #casyn.types.Column{:name :created, :value #inst "2012-08-22T22:34:41.079-00:00", :ttl 0, :timestamp 1332536503948651}
 ```
 
-Schema supports `:string` `:long`  `:float`  `:double` `:int` `:boolean` `:keyword` `:clojure` `:bytes` `:date` `:uuid`
+A collection of columns can be turned into a regular map just pass `:as-map true`.
 
-These are also extendable from a multimethod.
+
+```clojure
+@(c get-row "colFamily1" "7" :schema test-schema :as-map)
+
+user> {:age 35
+       :name "Max"
+       :created #inst "2012-08-22T22:34:41.079-00:00"}
+```
+
+Supported types are `:string` `:long`  `:float`  `:double` `:int` `:boolean` `:keyword` `:clojure` `:bytes` `:date` `:uuid`
+
+These are extendable from a multimethod.
 
 Composite types are also supported and use the same type definitions
 (they can be used as keys, names, values):
@@ -134,8 +149,7 @@ Composite types are also supported and use the same type definitions
 (defschema test-schema
   :row :string
   :columns {:default [:string :string] ;; column name/value
-            :exceptions {"age" :long
-                         "test-composite-type" [:string :clojure :int]}})
+            :exceptions {"test-composite-type" [:string :clojure :int]}})
 ```
 
 To create composite values just use the `composite` function, it will
@@ -146,17 +160,6 @@ query.
 (c insert-column "colFamily1" "1" (composite ["meh" 1 :something 3.14 {:foo "bar"}] "value0")
   ;; consistency is tunable per query
   :consistency :all)
-```
-
-A collection of columns can be turned into a regular map just pass `:as-map true`.
-
-
-```clojure
-@(c get-row "colFamily1" "1"
-    :schema test-schema
-    :as-map true)
-
-user> {"foo" "bar", "baz" "quux"}
 ```
 
 ### Convenience macros
