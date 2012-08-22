@@ -144,7 +144,8 @@ query.
 
 ```clojure
 (c insert-column "colFamily1" "1" (composite ["meh" 1 :something 3.14 {:foo "bar"}] "value0")
-  :consistency :all ;; consistency is tunable per query)
+  ;; consistency is tunable per query
+  :consistency :all)
 ```
 
 A collection of columns can be turned into a regular map just pass `:as-map true`.
@@ -165,7 +166,7 @@ respective values if you prefer that to explicit arguments.
 
 ```clojure
 (with-client c
-  (lc/run-pipeline (execute-cql-query "SELECT * FROM test_cf;" :schema test-schema)))
+  (execute-cql-query "SELECT * FROM test_cf;" :schema test-schema))
 
 (with-consistency :all
   @(c get-row "colFamily1" "1")
