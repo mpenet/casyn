@@ -118,10 +118,7 @@ The same example as before with a simple schema:
             ;; overwride the defaults for decoding
             :exceptions {"age" :long}})
 
-@(l/run-pipeline
-  (c insert-column "colFamily1" "1" "n0" "value0" :consistency :all)  ;; consistency is tunable per query
-  (fn [_] (c get-row "colFamily1" "1"))
-  #(decode-result % test-schema))
+@(c get-row "colFamily1" "1" :schema test-schema)
 
 user> (#casyn.types.Column{:name "n0", :value "value0", :ttl 0, :timestamp 1332536503948650})
 ```
@@ -136,7 +133,7 @@ Composite types are also supported and use the same type definitions
 ```clojure
 (defschema test-schema
   :row :string
-  :columns {:default [:string :string]
+  :columns {:default [:string :string] ;; column name/value
             :exceptions {"age" :long
                          "test-composite-type" [:string :clojure :int]}})
 ```
@@ -146,16 +143,17 @@ mark the collection as composite and encode it accordingly when you execute the
 query.
 
 ```clojure
-(c insert-column "colFamily1" "1" (composite ["meh" 1 :something 3.14 {:foo "bar"}] "value0"))
+(c insert-column "colFamily1" "1" (composite ["meh" 1 :something 3.14 {:foo "bar"}] "value0")
+  :consistency :all ;; consistency is tunable per query)
 ```
 
-A collection of columns can be turned into a regular map just pass
-`true` as a third parameter to `decode-result` (or if you dont use
-a schema, you can manually deal with them using cols->map).
+A collection of columns can be turned into a regular map just pass `:as-map true`.
+
 
 ```clojure
-(-> @(c get-row "colFamily1" "1")
-     (decode-result test-schema true))
+@(c get-row "colFamily1" "1"
+    :schema test-schema
+    :as-map true)
 
 user> {"foo" "bar", "baz" "quux"}
 ```
@@ -167,8 +165,7 @@ respective values if you prefer that to explicit arguments.
 
 ```clojure
 (with-client c
-  (lc/run-pipeline (execute-cql-query "SELECT * FROM test_cf;")
-          #(decode-result % test-codec-schema true)))
+  (lc/run-pipeline (execute-cql-query "SELECT * FROM test_cf;" :schema test-schema)))
 
 (with-consistency :all
   @(c get-row "colFamily1" "1")

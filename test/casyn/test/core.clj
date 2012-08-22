@@ -127,6 +127,7 @@
   (is (nil? @(c set-keyspace ks))))
 
 (deftest test-insert-and-read
+
   (is (= casyn.types.Column
          @(lc/run-pipeline
            (c insert-column cf "4" "col-name" "col-value")
@@ -286,8 +287,9 @@
            (c get-indexed-slice
               cf
               [[:eq? :n1 "value1"]]
-              :columns ["n1"])
-           #(decode-result % test-schema true))))
+              :columns ["n1"]
+              :schema test-schema
+              :as-map true))))
 
   (is (= 1
          @(lc/run-pipeline
