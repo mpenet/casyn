@@ -163,7 +163,7 @@ query.
 ```
 
 As shown in the previous example you can also store clojure data
-direclty (it is the fallback or the encoding protocol), this will be
+direclty (it is the fallback of the encoding protocol), this will be
 done via [Nippy](https://github.com/ptaoussanis/nippy), you will just
 need to indicate :clj as decoding type in the schema.
 
@@ -174,7 +174,7 @@ respective values if you prefer that to explicit arguments.
 
 ```clojure
 (with-client c
-  (execute-cql-query "SELECT * FROM test_cf;" :schema test-schema))
+  (execute-cql-query "SELECT * FROM test_cf;"))
 
 (with-consistency :all
   @(c get-row "colFamily1" "1")
