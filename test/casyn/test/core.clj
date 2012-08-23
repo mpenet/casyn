@@ -37,8 +37,8 @@
                 :date :date
                 :kw :keyword
                 :boo :boolean
-                :clj :clojure
-                :clj2 :clojure
+                :clj :clj
+                :clj2 :clj
                 :uuid :uuid
                 :comp [:string :long :double]
                 :crazy-nested-comp [:string :long [:string [:string :long :double] :double]]
@@ -53,17 +53,17 @@
    :str "meh"
    :kw :keyword
    :boo true
-   :clj {:foo "bar"}
-   :clj2 [1 2 3]
-   :comp (composite "dwa" (long 216) (double 3.14))
+   :clj #clj{:foo "bar"}
+   :clj2 #clj[1 2 3]
+   :comp #composite["dwa" (long 216) (double 3.14)]
    :uuid (java.util.UUID/randomUUID)
-   :crazy-nested-comp (composite "dwa1"
-                                 (long 216)
-                                 (composite "dwa2"
-                                            (composite "dwa3"
-                                                       (long 217)
-                                                       (double 3.141))
-                                            (double 3.1415)))
+   :crazy-nested-comp  #composite ["dwa1"
+                                  (long 216)
+                                  #composite ["dwa2"
+                                             #composite ["dwa3"
+                                                        (long 217)
+                                                        (double 3.141)]
+                                             (double 3.1415)]]
    })
 
 

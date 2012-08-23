@@ -6,7 +6,7 @@
 /checkouts
 /.lein-deps-sum
 /doc
-/resources
+/resources/play.clj
 /updoc.sh
 /src/log4j.properties
 /target/stale/dependencies

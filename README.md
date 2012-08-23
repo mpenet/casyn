@@ -138,7 +138,7 @@ user> {:age 35
        :created #inst "2012-08-22T22:34:41.079-00:00"}
 ```
 
-Supported types are `:string` `:long`  `:float`  `:double` `:int` `:boolean` `:keyword` `:clojure` `:bytes` `:date` `:uuid`
+Supported types are `:string` `:long`  `:float`  `:double` `:int` `:boolean` `:keyword` `:bytes` `:date` `:uuid :composite` `:clj`
 
 These are extendable from a multimethod.
 
@@ -149,18 +149,23 @@ Composite types are also supported and use the same type definitions
 (defschema test-schema
   :row :string
   :columns {:default [:string :string] ;; column name/value
-            :exceptions {"test-composite-type" [:string :clojure :int]}})
+            :exceptions {"test-composite-type" [:string :clj :int]}})
 ```
 
-To create composite values just use the `composite` function, it will
+To create composite values just use the `composite` function or reader literal, it will
 mark the collection as composite and encode it accordingly when you execute the
 query.
 
 ```clojure
-(c insert-column "colFamily1" "1" (composite ["meh" 1 :something 3.14 {:foo "bar"}] "value0")
+(c insert-column "colFamily1" "1" #composite["meh" 1 :something 3.14 {:foo "bar"}] "value0")
   ;; consistency is tunable per query
   :consistency :all)
 ```
+
+As shown in the previous example you can also store clojure data
+direclty (it is the fallback or the encoding protocol), this will be
+done via [Nippy](https://github.com/ptaoussanis/nippy), you will just
+need to indicate :clj as decoding type in the schema.
 
 ### Convenience macros
 

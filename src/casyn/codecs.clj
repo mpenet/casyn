@@ -8,7 +8,7 @@
     SuperColumn KeySlice CqlResult CqlRow CqlResultType CqlPreparedResult]
    [java.nio ByteBuffer]))
 
-(declare composite-expression)
+(declare composite-expression meta-encodable)
 
 (defprotocol ThriftDecodable
   (thrift->clojure [v] "Transforms a thrift type to clojure friendly type"))
@@ -157,11 +157,8 @@
 
   Object
   (clojure->byte-buffer [o]
-    ;; check for a composite
-    (if (and (sequential? o)
-             (:composite (meta o)))
-      (apply composite-expression (map #(vector :eq? %) o))
-      (-> o nippy/freeze-to-bytes ByteBuffer/wrap)))
+    ;; try to find out if it a custom type else just serialize as :clj
+    (meta-encodable o))
 
   nil
   (clojure->byte-buffer [b]
@@ -202,7 +199,7 @@
 (defmethod bytes->clojure :uuid [_ b]
   (java.util.UUID/fromString (bytes->clojure :string b)))
 
-(defmethod bytes->clojure :clojure [_ b]
+(defmethod bytes->clojure :clj [_ b]
   (nippy/thaw-from-bytes b))
 
 (defmethod bytes->clojure :default [_ b] b)
@@ -280,22 +277,56 @@ ex: (composite-expression [:eq? 12] [:gt? \"meh\"] [:lt? 12])"
 
     (.rewind bb)))
 
-(defn composite
-  "Mark a column value|name|key value as composite"
-  [& values]
-  (vary-meta values assoc :composite true))
-
 (defmethod bytes->clojure :composite [composite-types b]
   (->> (map #(bytes->clojure %1 %2)
             composite-types
             (composite->bytes-values b))
        ;; mark as composite again: consistent read/modify behavior, it
        ;; stays a composite
-       (apply composite)))
+       composite))
 
+;; encoder for types with meta+:casyn info
 
+(defmulti meta-encodable (fn [x] (-> x meta :casyn :type)))
 
+(defmethod meta-encodable :composite [x]
+  (apply composite-expression (map #(vector :eq? %) x)))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; UUIDs
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defmethod meta-encodable :default [x] ;; will work for clj too
+  (-> x nippy/freeze-to-bytes ByteBuffer/wrap))
+
+;; special data types markers
+
+(defn mark-as
+  ""
+  [x type-key]
+  (vary-meta x assoc-in [:casyn :type] type-key))
+
+;; 1.1 types
+
+(defn composite
+  "Mark a column value|name|key value as composite"
+  [x]
+  (mark-as x :composite))
+
+(defn clj
+  "Mark a column value|name|key value as composite"
+  [x]
+  (mark-as x :clj))
+
+;; Prepare for cassandra 1.2 new collections types
+
+(defn clist
+  ""
+  [x]
+  (mark-as x :list))
+
+(defn cset
+  ""
+  [x]
+  (mark-as x :set))
+
+(defn cset
+  ""
+  [x]
+  (mark-as x :map))
