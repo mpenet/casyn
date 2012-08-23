@@ -310,7 +310,7 @@ ex: (composite-expression [:eq? 12] [:gt? \"meh\"] [:lt? 12])"
   (mark-as x :composite))
 
 (defn clj
-  "Mark a column value|name|key value as composite"
+  "Mark a column value|name|key value as serializable"
   [x]
   (mark-as x :clj))
 
