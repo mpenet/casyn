@@ -13,31 +13,64 @@
    [org.apache.thrift TApplicationException]
    [org.apache.thrift.transport TNonblockingSocket]
    [org.apache.thrift.protocol TBinaryProtocol$Factory]
-   [org.apache.thrift.async TAsyncClient TAsyncClientManager]))
+   [org.apache.thrift.async TAsyncClient TAsyncClientManager]
+   [java.util.concurrent LinkedBlockingQueue]))
 
-(def client-factory (Cassandra$AsyncClient$Factory.
-                     (TAsyncClientManager.)
-                     (TBinaryProtocol$Factory.)))
+(defn client-factory []
+  (Cassandra$AsyncClient$Factory.
+   (TAsyncClientManager.)
+   (TBinaryProtocol$Factory.)))
+
+(defn resize-client-factory-pool
+  [^LinkedBlockingQueue pool num]
+  (let [diff (- num (.size pool))]
+    (dotimes [i (java.lang.Math/abs ^Integer diff)]
+      (if (pos? diff)
+        (.put pool (client-factory))
+        (.poll pool))))
+  pool)
+
+(defn client-factory-pool [initial-size]
+  (resize-client-factory-pool (LinkedBlockingQueue.) initial-size))
+
+(defn select
+  [^LinkedBlockingQueue pool]
+  (let [cf (.poll pool)]
+    (.put pool cf)
+    cf))
 
 (def defaults
   {:timeout 5000
    :host "127.0.0.1"
-   :port 9160})
+   :port 9160
+   :pool (client-factory-pool 3)})
 
 (defn make-client
   "Create client with its own socket"
-  ([host port timeout]
-     (doto (.getAsyncClient ^Cassandra$AsyncClient$Factory client-factory
+  ([host port pool timeout]
+     (doto (.getAsyncClient ^Cassandra$AsyncClient$Factory (select pool)
                             (TNonblockingSocket. host port))
        (.setTimeout timeout)))
 
+  ([host port pool]
+     (make-client host
+                  port
+                  pool
+                  (:timeout defaults)))
   ([host port]
      (make-client host
                   port
+                  (:pool defaults)
+                  (:timeout defaults)))
+  ([host]
+     (make-client host
+                  (:port defaults)
+                  (:pool defaults)
                   (:timeout defaults)))
   ([]
      (make-client (:host defaults)
                   (:port defaults)
+                  (:pool defaults)
                   (:timeout defaults))))
 
 (defprotocol PClient

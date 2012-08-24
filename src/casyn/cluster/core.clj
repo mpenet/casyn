@@ -8,7 +8,8 @@
    [casyn.utils :as u]
    [casyn.balancer :as b]
    [casyn.pool :as p]
-   ;; [casyn.balancer.least-loaded :as bll]
+   [casyn.client :as c]
+   [casyn.balancer.least-loaded :as bll]
    [casyn.balancer.round-robin :as brr]
    [casyn.auto-discovery :as discovery]
    [casyn.pool.commons :as commons-pool])
@@ -47,13 +48,17 @@
   for all the hosts, you can manage a fixed sized cluster with
   predetermined ips by turning auto-discovery off"
   [hosts port
-  keyspace & {:keys [auto-discovery load-balancer-strategy]
+  keyspace & {:keys [auto-discovery load-balancer-strategy selector-threads-num]
                           :or {auto-discovery true
-                               load-balancer-strategy :round-robin}
+                               load-balancer-strategy :round-robin
+                               selector-threads-num 3}
                           :as options}]
 
   (let [cluster (Cluster. (b/balancer load-balancer-strategy)
-                          (apply commons-pool/create-pool port keyspace
+                          (apply commons-pool/create-pool
+                                 port
+                                 keyspace
+                                 (c/client-factory-pool selector-threads-num)
                                  (mapcat (juxt key val) (:pool options)))
                           options)]
 

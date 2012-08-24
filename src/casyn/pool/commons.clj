@@ -48,10 +48,10 @@
   (idle-clients [pool]
     (.getNumIdle pool)))
 
-(defn make-factory [port keyspace]
+(defn make-factory [port keyspace cf-pool]
   (reify KeyedPoolableObjectFactory
     (makeObject [this node-host]
-      (when-let [client (c/make-client node-host port)]
+      (when-let [client (c/make-client node-host port cf-pool)]
         @(api/set-keyspace client keyspace)
         client))
     (destroyObject [this node-host client]
@@ -85,7 +85,9 @@
   "Create a connection pool. For option documentation see
   http://commons.apache.org/pool/apidocs/org/apache/commons/pool/impl/GenericKeyedObjectPool.html"
   ^GenericKeyedObjectPool
-  [port keyspace & pool-options]
+  [port keyspace cf-pool & pool-options]
   (reduce set-pool-option
-          (GenericKeyedObjectPool. (make-factory port keyspace))
+          (GenericKeyedObjectPool. (make-factory port
+                                                 keyspace
+                                                 cf-pool))
           (merge pool-options-defaults (apply hash-map pool-options))))

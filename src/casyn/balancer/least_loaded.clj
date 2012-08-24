@@ -1,7 +1,7 @@
 (ns casyn.balancer.least-loaded
   (:require
    [casyn.balancer :refer [PBalancer balancer]]
-   [casyn.pool :as p]
+   [casyn.pool :as p])
   (:import [java.util.concurrent LinkedBlockingQueue]))
 
 (deftype LeastLoadedBalancer [^LinkedBlockingQueue nodes]
