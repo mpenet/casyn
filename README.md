@@ -140,8 +140,6 @@ user> {:age 35
 
 Supported types are `:string` `:long`  `:float`  `:double` `:int` `:boolean` `:keyword` `:bytes` `:date` `:uuid` `:composite` `:clj`
 
-These are extendable from a multimethod.
-
 Composite types are also supported and use the same type definitions
 (they can be used as keys, names, values):
 
