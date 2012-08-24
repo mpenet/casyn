@@ -138,7 +138,7 @@ user> {:age 35
        :created #inst "2012-08-22T22:34:41.079-00:00"}
 ```
 
-Supported types are `:string` `:long`  `:float`  `:double` `:int` `:boolean` `:keyword` `:bytes` `:date` `:uuid :composite` `:clj`
+Supported types are `:string` `:long`  `:float`  `:double` `:int` `:boolean` `:keyword` `:bytes` `:date` `:uuid` `:composite` `:clj`
 
 These are extendable from a multimethod.
 
