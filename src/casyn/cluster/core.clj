@@ -16,7 +16,7 @@
 
   (:import [org.apache.commons.pool.impl GenericKeyedObjectPool]))
 
-(deftype Cluster [balancer pool options]
+(deftype Cluster [balancer pool cf-pool options]
   PCluster
 
   (get-pool [cluster] pool)
@@ -54,13 +54,12 @@
                                selector-threads-num 3}
                           :as options}]
 
-  (let [cluster (Cluster. (b/balancer load-balancer-strategy)
-                          (apply commons-pool/create-pool
-                                 port
-                                 keyspace
-                                 (c/client-factory-pool selector-threads-num)
-                                 (mapcat (juxt key val) (:pool options)))
-                          options)]
+  (let[cf-pool (c/client-factory-pool selector-threads-num)
+       cluster (Cluster. (b/balancer load-balancer-strategy)
+                         (apply commons-pool/create-pool port keyspace cf-pool
+                                (mapcat (juxt key val) (:pool options)))
+                         cf-pool
+                         options)]
 
     (if (sequential? hosts)
       (doseq [host hosts]
