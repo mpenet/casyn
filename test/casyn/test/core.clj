@@ -170,7 +170,7 @@
   (is (= 12 (:value @(c get-column ccf "5" "c0"))))
   ;; keys must be decodable
   (is (= "c0" (:name @(c get-column ccf "5" "c0" :schema test-schema))))
-  (is (nil? @(c remove-counter ccf "5" "c0"))))
+  (is (nil? @(c remove ccf "5" :column "c0" :counter true))))
 
 (deftest test-mutation
   (is (nil?
@@ -200,7 +200,12 @@
             :test-dwa2 "dwa12"}))))
 
 (deftest deletes
-  (is (= nil (seq @(c remove-column cf "0" "n0")))))
+  (is (= nil (seq @(c remove cf "0" :column "n0"))))
+  (is (= 1 (count @(c get-row cf "0"))))
+  (is (= nil (seq @(c remove cf "0"))))
+  (is (= 0 (count @(c get-row cf "0"))))
+
+  )
 
 (deftest test-ranges
   (is (= 1 (count @(c get-range-slice cf

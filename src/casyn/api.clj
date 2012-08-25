@@ -148,20 +148,15 @@ partial call)"
   "Returns a Thrift ColumnPath instance, works for common columns or
   super columns depending on arity used"
   ^ColumnPath
-  ([^String cf sc c]
-     (doto ^ColumnPath (column-path cf c)
-           (.setSuper_column ^ByteBuffer (codecs/clojure->byte-buffer sc))))
-  ([^String cf c]
-     (doto ^ColumnPath (column-path cf)
-           (.setColumn ^ByteBuffer (codecs/clojure->byte-buffer c))))
+  ([^String cf & {:keys [super column]}]
+     (let [cp ^ColumnPath (column-path cf)]
+       (when super
+         (.setSuper_column cp ^ByteBuffer (codecs/clojure->byte-buffer super)))
+       (when column
+         (.setColumn cp ^ByteBuffer (codecs/clojure->byte-buffer column)))
+       cp))
   ([^String cf]
      (ColumnPath. cf)))
-
-(defn- path
-  [cf super c]
-  (if super
-    (column-path cf super c)
-    (column-path cf c)))
 
 (defn- parent
   [cf super]
@@ -291,7 +286,7 @@ The :super key and specify a supercolumn name"
   (wrap-result-channel+schema
    (.get client
          ^ByteBuffer (codecs/clojure->byte-buffer row-key)
-         (path cf super c)
+         (column-path cf :super super :column c)
          (consistency-level consistency))
    schema output))
 
@@ -381,27 +376,23 @@ defined by the cassandra api)"
          (counter-column column-name value)
          (consistency-level consistency))))
 
-(defn remove-column
+(defn remove
   ""
-  [^Cassandra$AsyncClient client cf row-key c
-   & {:keys [super timestamp consistency]
+  [^Cassandra$AsyncClient client cf row-key
+   & {:keys [column super timestamp consistency counter]
       :or {timestamp (utils/ts)}}]
-  (wrap-result-channel
-   (.remove client
-            (codecs/clojure->byte-buffer row-key)
-            (path cf super c)
-            timestamp
-            (consistency-level consistency))))
-
-(defn remove-counter
-  ""
-  [^Cassandra$AsyncClient client cf row-key c
-   & {:keys [super consistency]}]
-  (wrap-result-channel
-   (.remove_counter client
-                    (codecs/clojure->byte-buffer row-key)
-                    (path cf super c)
-                    (consistency-level consistency))))
+  (if counter
+    (wrap-result-channel
+     (.remove_counter client
+                      (codecs/clojure->byte-buffer row-key)
+                      (column-path cf :super super :column column)
+                      (consistency-level consistency)))
+    (wrap-result-channel
+     (.remove client
+              (codecs/clojure->byte-buffer row-key)
+              (column-path cf :super super :column column)
+              timestamp
+              (consistency-level consistency)))))
 
 (defn batch-mutate
   ""
