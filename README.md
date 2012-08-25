@@ -146,8 +146,7 @@ Composite types are also supported and use the same type definitions
 ```clojure
 (defschema test-schema
   :row :string
-  :columns {:default [:string :string] ;; column name/value
-            :exceptions {"test-composite-type" [:string :clj :int]}})
+  :columns {:default [[:string :long :double] :string]}})
 ```
 
 To create composite values just use the `composite` function or reader literal, it will
@@ -155,7 +154,7 @@ mark the collection as composite and encode it accordingly when you execute the
 query.
 
 ```clojure
-(c insert-column "colFamily1" "1"  (composite ["meh" 1 :something 3.14 {:foo "bar"}]) "value0")
+(c insert-column "colFamily1" "1"  (composite ["meh" 1001 3.14]) "value0")
   ;; consistency is tunable per query
   :consistency :all)
 ```

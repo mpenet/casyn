@@ -13,4 +13,5 @@
              :1.5  {:dependencies [[org.clojure/clojure "1.5.0-master-SNAPSHOT"]]}
              :dev  {:dependencies [[codox "0.6.1"]]}
              :test {:dependencies []}}
-  :min-lein-version "2.0.0")
+  :min-lein-version "2.0.0"
+  :warn-on-reflection true)
