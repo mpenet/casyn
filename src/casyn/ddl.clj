@@ -28,20 +28,22 @@
 ;; LexicalUUIDType	128 bit UUID compared by byte value
 ;; TimeUUIDType	Timestamp compared 128 bit version 1 UUID
 
-(def cassandra-types
-  {:ascii             "AsciiType"
-   :bytes             "BytesType"
-   :composite         "CompositeType"
-   :counter           "CounterColumnType"
-   :double            "DoubleType"
-   :dynamic-composite "DynamicCompositeTYpe"
-   :integer           "IntegerType"
-   :lexical-uuid      "LeixcalUUIDType"
-   :local-partitioner "LocalByPartionerType"
-   :long              "LongType"
-   :time-uuid         "TimeUUIDType"
-   :utf-8             "UTF8Type"
-   :uuid              "UUIDType"})
+(defn cassandra-types [t]
+  (get {:ascii             "AsciiType"
+        :bytes             "BytesType"
+        :composite         "CompositeType"
+        :counter           "CounterColumnType"
+        :double            "DoubleType"
+        :dynamic-composite "DynamicCompositeTYpe"
+        :integer           "IntegerType"
+        :lexical-uuid      "LeixcalUUIDType"
+        :local-partitioner "LocalByPartionerType"
+        :long              "LongType"
+        :time-uuid         "TimeUUIDType"
+        :utf-8             "UTF8Type"
+        :uuid              "UUIDType"}
+       t
+       t))
 
 (def column-type
   {:super "Super"
@@ -61,19 +63,25 @@
 (defn column-family-definition
   ""
   [ks-name cf-name
-   & {:keys [cf-type comparator-type
+   & {:keys [cf-type
+             comparator-type
              default-validation-class
+             key-validation-class
              replicate-on-write
              column-metadata]}]
   (let [cfd (CfDef. ks-name cf-name)]
     (when cf-type
       (.setColumn_type cfd (column-type cf-type)))
     (when comparator-type
-      (.setComparator_type cfd (comparator-type cassandra-types)))
+      (.setComparator_type cfd (cassandra-types comparator-type)))
     (when default-validation-class
       (.setDefault_validation_class
        cfd
-       (default-validation-class cassandra-types)))
+       (cassandra-types default-validation-class )))
+    (when key-validation-class
+      (.setKey_validation_class
+       cfd
+       (cassandra-types key-validation-class)))
     (when replicate-on-write
       (.setReplicate_on_write cfd replicate-on-write))
     (when column-metadata
