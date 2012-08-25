@@ -58,7 +58,7 @@
    :uuid (java.util.UUID/randomUUID)})
 
 (defschema composite-cf-schema
-  :row [:long :long :long]
+  :row :long
   :columns {:default [[:long :long :long] :string]})
 
 
@@ -72,19 +72,13 @@
 
   @(c put cocf 0
       {#composite[2 3 4] "0"
-       #composite[5 6 7] "1"
-       #composite[6 8 9] "2"})
-
-  ;; @(c insert-column cocf
-  ;;     0
-  ;;     #composite[3 4 5]
-  ;;     "1")
-
-  ;; @(c insert-column cocf
-  ;;     0
-  ;;     #composite[4 5 6]
-  ;;     "2")
-  )
+       #composite[2 6 7] "1"
+       #composite[2 9 10] "2"
+       #composite[3 11 10] "3"
+       #composite[3 12 10] "4"
+       #composite[3 13 10] "5"
+       #composite[4 12 10] "6"
+       #composite[4 13 10] "7"}))
 
 (defn teardown-test []
   @(c truncate cf))
@@ -287,22 +281,9 @@
           #(= "value0" (-> % :rows first :n0))))))
 
 
-(deftest test-composites
-
-  ;; (println @(c get-row cocf 0))
-
-  ;; (println @(c get-range-slice cocf
-  ;;              :start-key 0
-  ;;              :end-key 0
-  ;;              :columns [(composite-expression [:eq? 2] [:eq? 3] [:eq? 4])]
-  ;;              ;; :row-filter [[:eq? "n0" "value0"]]
-  ;;              ;; :columns [(composite-expression [:eq? 2])]
-  ;;              ))
-
-  ;; (is (= [2 3 4]  (:name (get @(c get-row cocf 0
-  ;;                                 :schema composite-cf-schema
-  ;;                                 :output :as-map) 0))))
-
-  ;; (println )
-
-  )
+(deftest test-composites-expressions
+  (is  (= {[2 9 10] "2", [3 11 10] "3" [3 12 10] "4", [3 13 10] "5"}
+          @(c get-slice cocf 0
+              :start (composite-expression [:eq? 2] [:gt? 6])
+              :finish (composite-expression [:lt? 4])
+              :schema composite-cf-schema :output :as-map))))
