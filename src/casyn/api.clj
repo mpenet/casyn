@@ -139,10 +139,11 @@ partial call)"
   "Returns a Thrift ColumnParent instance, works for common columns or
   super columns depending on arity used"
   ^ColumnParent
-  ([^String cf sc]
-     (doto (ColumnParent. cf)
-       (.setSuper_column ^ByteBuffer (codecs/clojure->byte-buffer sc))))
-  ([^String cf] (ColumnParent. cf)))
+  [^String cf & [super]]
+  (let [cp (ColumnParent. cf)]
+    (when super
+      (.setSuper_column cp ^ByteBuffer (codecs/clojure->byte-buffer super)))
+    cp))
 
 (defn column-path
   "Returns a Thrift ColumnPath instance, works for common columns or
@@ -157,12 +158,6 @@ partial call)"
        cp))
   ([^String cf]
      (ColumnPath. cf)))
-
-(defn- parent
-  [cf super]
-  (if super
-    (column-parent cf super)
-    (column-parent cf)))
 
 (def index-operators
   {:eq? IndexOperator/EQ
@@ -300,7 +295,7 @@ defined by the cassandra api)"
   (wrap-result-channel+schema
    (.get_slice client
                (codecs/clojure->byte-buffer row-key)
-               (parent cf super)
+               (column-parent cf super)
                (slice-predicate opts)
                (consistency-level consistency))
    schema output))
@@ -316,7 +311,7 @@ defined by the cassandra api)"
   (wrap-result-channel+schema
    (.multiget_slice client
                     (map codecs/clojure->byte-buffer row-keys)
-                    (parent cf super)
+                    (column-parent cf super)
                     (slice-predicate opts)
                     (consistency-level consistency))
    schema output))
@@ -331,7 +326,7 @@ defined by the cassandra api)"
   (wrap-result-channel+schema
    (.get_count client
                (codecs/clojure->byte-buffer row-key)
-               (parent cf super)
+               (column-parent cf super)
                (slice-predicate opts)
                (consistency-level consistency))
    schema output))
@@ -346,7 +341,7 @@ defined by the cassandra api)"
   (wrap-result-channel+schema
    (.multiget_count client
                     (map codecs/clojure->byte-buffer row-keys)
-                    (parent cf super)
+                    (column-parent cf super)
                     (slice-predicate opts)
                     (consistency-level consistency))
    schema output))
@@ -358,7 +353,7 @@ defined by the cassandra api)"
   (wrap-result-channel
    (.insert client
             (codecs/clojure->byte-buffer row-key)
-            (parent cf super)
+            (column-parent cf super)
             (cond
                 counter (counter-column name value)
                 super (super-column super value) ;; values is a collection of columns
@@ -372,7 +367,7 @@ defined by the cassandra api)"
   (wrap-result-channel
    (.add client
          (codecs/clojure->byte-buffer row-key)
-         (parent cf super)
+         (column-parent cf super)
          (counter-column column-name value)
          (consistency-level consistency))))
 
@@ -416,7 +411,7 @@ defined by the cassandra api). Accepts optional key-range arguments :start-token
       :as opts}]
   (wrap-result-channel+schema
    (.get_range_slices client
-                      (parent cf super)
+                      (column-parent cf super)
                       (slice-predicate opts)
                       (key-range opts)
                       (consistency-level consistency))
@@ -431,7 +426,7 @@ defined by the cassandra api)"
       :as opts}]
   (wrap-result-channel+schema
    (.get_indexed_slices client
-                        (parent cf super)
+                        (column-parent cf super)
                         (index-clause index-clause-args)
                         (slice-predicate opts)
                         (consistency-level consistency))
