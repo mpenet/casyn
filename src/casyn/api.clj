@@ -349,15 +349,15 @@ defined by the cassandra api)"
 (defn insert-column
   ""
   [^Cassandra$AsyncClient client cf row-key name value
-   & {:keys [super counter? consistency ttl timestamp]}]
+   & {:keys [super type consistency ttl timestamp]}]
   (wrap-result-channel
    (.insert client
             (codecs/clojure->byte-buffer row-key)
             (column-parent cf super)
             (cond
-                counter? (counter-column name value)
-                super (super-column super value) ;; values is a collection of columns
-                :else (column name value :ttl ttl :timestamp timestamp))
+              (= type :counter) (counter-column name value)
+              super (super-column super value) ;; values is a collection of columns
+              :else (column name value :ttl ttl :timestamp timestamp))
             (consistency-level consistency))))
 
 (defn increment
@@ -374,9 +374,9 @@ defined by the cassandra api)"
 (defn remove
   ""
   [^Cassandra$AsyncClient client cf row-key
-   & {:keys [column super timestamp consistency counter?]
+   & {:keys [column super timestamp consistency type]
       :or {timestamp (utils/ts)}}]
-  (if counter?
+  (if (= :counter type)
     (wrap-result-channel
      (.remove_counter client
                       (codecs/clojure->byte-buffer row-key)
@@ -537,16 +537,16 @@ defined by the cassandra api)"
   constructors (use maps for simple key vals, use vectors if you need
   to set ttl or timestamp"
   [^Cassandra$AsyncClient client cf row-key columns
-   & {:keys [consistency counters? super-columns? super-counters?]}]
+   & {:keys [consistency type]}]
   (batch-mutate
    client
    {row-key
     {cf (map #(apply
-               (cond
-                 super-columns? super-column-mutation
-                 super-counters? super-counter-column-mutation
-                 counters? counter-column-mutation
-                 :else column-mutation)
+               (condp = type
+                 :super-columns super-column-mutation
+                 :super-counters super-counter-column-mutation
+                 :counters counter-column-mutation
+                 column-mutation)
                %)
              columns)}}
    :consistency consistency))
