@@ -170,7 +170,7 @@
   (is (= 12 (:value @(c get-column ccf "5" "c0"))))
   ;; keys must be decodable
   (is (= "c0" (:name @(c get-column ccf "5" "c0" :schema test-schema))))
-  (is (nil? @(c remove ccf "5" :column "c0" :counter true))))
+  (is (nil? @(c remove ccf "5" :column "c0" :counter? true))))
 
 (deftest test-mutation
   (is (nil?
