@@ -97,11 +97,11 @@ partial call)"
         ~@(filter identity post-realize-fns)
         ))))
 
-(defmacro wrap-result-channel+schema [form schema as-map]
+(defmacro wrap-result-channel+schema [form schema output]
   `(wrap-result-channel
     ~form
     #(if ~schema
-       (casyn.schema/decode-result % ~schema ~as-map)
+       (casyn.schema/decode-result % ~schema ~output)
        %)))
 
 ;; Objects
@@ -287,20 +287,20 @@ The :super key and specify a supercolumn name"
 (defn get-column
   ""
   [^Cassandra$AsyncClient client cf row-key c
-   & {:keys [super consistency schema as-map]}]
+   & {:keys [super consistency schema output]}]
   (wrap-result-channel+schema
    (.get client
          ^ByteBuffer (codecs/clojure->byte-buffer row-key)
          (path cf super c)
          (consistency-level consistency))
-   schema as-map))
+   schema output))
 
 (defn get-slice
   "Returns a slice of columns. Accepts optional slice-predicate arguments :columns, :start, :finish, :count,
 :reversed, if you specify :columns the other slice args will be ignored (as
 defined by the cassandra api)"
   [^Cassandra$AsyncClient client cf row-key
-   & {:keys [super consistency schema as-map]
+   & {:keys [super consistency schema output]
       :as opts}]
   (wrap-result-channel+schema
    (.get_slice client
@@ -308,7 +308,7 @@ defined by the cassandra api)"
                (parent cf super)
                (slice-predicate opts)
                (consistency-level consistency))
-   schema as-map))
+   schema output))
 
 (defn mget-slice
   "Returns a collection of slices of columns.
@@ -316,7 +316,7 @@ defined by the cassandra api)"
    arguments :columns, :start, :finish, :count, :reversed, if you
    specify :columns the other slice args will be ignored (as defined by the cassandra api)"
   [^Cassandra$AsyncClient client cf row-keys
-   & {:keys [super consistency schema as-map]
+   & {:keys [super consistency schema output]
       :as opts}]
   (wrap-result-channel+schema
    (.multiget_slice client
@@ -324,14 +324,14 @@ defined by the cassandra api)"
                     (parent cf super)
                     (slice-predicate opts)
                     (consistency-level consistency))
-   schema as-map))
+   schema output))
 
 (defn get-count
   "Accepts optional slice-predicate arguments :columns, :start, :finish, :count,
 :reversed, if you specify :columns the other slice args will be ignored (as
 defined by the cassandra api)"
   [^Cassandra$AsyncClient client cf row-key
-   & {:keys [super consistency schema as-map]
+   & {:keys [super consistency schema output]
       :as opts}]
   (wrap-result-channel+schema
    (.get_count client
@@ -339,14 +339,14 @@ defined by the cassandra api)"
                (parent cf super)
                (slice-predicate opts)
                (consistency-level consistency))
-   schema as-map))
+   schema output))
 
 (defn mget-count
   "Accepts optional slice-predicate arguments :columns, :start, :finish, :count,
 :reversed, if you specify :columns the other slice args will be ignored (as
 defined by the cassandra api)"
   [^Cassandra$AsyncClient client cf row-keys
-   & {:keys [super consistency schema as-map]
+   & {:keys [super consistency schema output]
       :as opts}]
   (wrap-result-channel+schema
    (.multiget_count client
@@ -354,7 +354,7 @@ defined by the cassandra api)"
                     (parent cf super)
                     (slice-predicate opts)
                     (consistency-level consistency))
-   schema as-map))
+   schema output))
 
 (defn insert-column
   ""
@@ -421,7 +421,7 @@ defined by the cassandra api)"
 defined by the cassandra api). Accepts optional key-range arguments :start-token
 :start-key :end-token :end-key :count-key :row-filter (vector of index-expressions)"
   [^Cassandra$AsyncClient client cf
-   & {:keys [super consistency schema as-map]
+   & {:keys [super consistency schema output]
       :as opts}]
   (wrap-result-channel+schema
    (.get_range_slices client
@@ -429,14 +429,14 @@ defined by the cassandra api). Accepts optional key-range arguments :start-token
                       (slice-predicate opts)
                       (key-range opts)
                       (consistency-level consistency))
-   schema as-map))
+   schema output))
 
 (defn get-indexed-slice
   "Accepts optional slice-predicate arguments :columns, :start, :finish, :count,
 :reversed, if you specify :columns the other slice args will be ignored (as
 defined by the cassandra api)"
   [^Cassandra$AsyncClient client cf index-clause-args
-   & {:keys [super consistency schema as-map]
+   & {:keys [super consistency schema output]
       :as opts}]
   (wrap-result-channel+schema
    (.get_indexed_slices client
@@ -444,13 +444,13 @@ defined by the cassandra api)"
                         (index-clause index-clause-args)
                         (slice-predicate opts)
                         (consistency-level consistency))
-   schema as-map))
+   schema output))
 
 (defn get-paged-slice
   "Accepts optional key-range arguments :start-token :start-key :end-token
 :end-key :count-key :row-filter (vector of index-expressions) and takes an additional :start-column name"
   [^Cassandra$AsyncClient client cf
-   & {:keys [super consistency schema as-map]
+   & {:keys [super consistency schema output]
       :as opts}]
   (wrap-result-channel+schema
    (.get_paged_slice client
@@ -458,7 +458,7 @@ defined by the cassandra api)"
                      (key-range opts)
                      (-> opts :start-column codecs/clojure->byte-buffer)
                      (consistency-level consistency))
-   schema as-map))
+   schema output))
 
 (defn truncate
   ""
@@ -528,21 +528,21 @@ defined by the cassandra api)"
 
 (defn execute-cql-query
   ""
-  [^Cassandra$AsyncClient client query & {:keys [schema as-map]}]
+  [^Cassandra$AsyncClient client query & {:keys [schema output]}]
   (wrap-result-channel+schema
    (.execute_cql_query client
                        (codecs/clojure->byte-buffer query)
                        Compression/NONE)
-   schema as-map))
+   schema output))
 
 (defn execute-prepared-cql-query
   ""
-  [^Cassandra$AsyncClient client item-id values & {:keys [schema as-map]}]
+  [^Cassandra$AsyncClient client item-id values & {:keys [schema output]}]
   (wrap-result-channel+schema
    (.execute_prepared_cql_query client
                                 (int item-id)
                                 (map codecs/clojure->byte-buffer values))
-   schema as-map))
+   schema output))
 
 ;; Sugar
 

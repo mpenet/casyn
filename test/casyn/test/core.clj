@@ -11,6 +11,7 @@
 (def ks "casyn_test_ks")
 (def cf "test_cf")
 (def ccf "counter_cf")
+(def cocf "composite_cf")
 
 (defn print-line []
   (print "\n--------------------------------------------------------------------------------\n"))
@@ -40,9 +41,7 @@
                 :clj :clj
                 :clj2 :clj
                 :uuid :uuid
-                :comp [:string :long :double]
-                :crazy-nested-comp [:string :long [:string [:string :long :double] :double]]
-                }})
+                :comp [:string :long :double]}})
 
 (def test-coerce-data
   {:long 1
@@ -56,15 +55,11 @@
    :clj #clj{:foo "bar"}
    :clj2 #clj[1 2 3]
    :comp #composite["dwa" (long 216) (double 3.14)]
-   :uuid (java.util.UUID/randomUUID)
-   :crazy-nested-comp  #composite ["dwa1"
-                                  (long 216)
-                                  #composite ["dwa2"
-                                             #composite ["dwa3"
-                                                        (long 217)
-                                                        (double 3.141)]
-                                             (double 3.1415)]]
-   })
+   :uuid (java.util.UUID/randomUUID)})
+
+(defschema composite-cf-schema
+  :row [:long :long :long]
+  :columns {:default [[:long :long :long] :string]})
 
 
 (defn setup-test []
@@ -73,7 +68,23 @@
   @(c insert-column cf "1" "n1" "value1")
   @(c insert-column cf "1" "n2-nil" nil)
   @(c put cf "2" test-coerce-data)
-  @(c increment ccf "5" "c0" 2))
+  @(c increment ccf "5" "c0" 2)
+
+  @(c put cocf 0
+      {#composite[2 3 4] "0"
+       #composite[5 6 7] "1"
+       #composite[6 8 9] "2"})
+
+  ;; @(c insert-column cocf
+  ;;     0
+  ;;     #composite[3 4 5]
+  ;;     "1")
+
+  ;; @(c insert-column cocf
+  ;;     0
+  ;;     #composite[4 5 6]
+  ;;     "2")
+  )
 
 (defn teardown-test []
   @(c truncate cf))
@@ -98,6 +109,11 @@
                                         [:n1 :utf-8 :n1_index :utf-8]]]
                      [ccf
                       :default-validation-class :counter
+                      :replicate-on-write true]
+                     [cocf
+                      :default-validation-class :utf-8
+                      :key-validation-class :long
+                      :comparator-type "CompositeType(LongType, LongType, LongType)"
                       :replicate-on-write true]]
                     :strategy-options {"replication_factor" "1"})
      (println  "Keyspace created, waiting for the change to propagate to other nodes")
@@ -208,11 +224,11 @@
 
 (deftest codecs
   (is (= test-coerce-data
-         @(c get-row cf "2" :schema test-codec-schema :as-map true)))
+         @(c get-row cf "2" :schema test-codec-schema :output :as-map)))
   (is (= {"n0" "value0" "n00" "value00"}
-         @(c get-row cf "0" :schema test-schema :as-map true)))
+         @(c get-row cf "0" :schema test-schema :output :as-map)))
   (is (= {"0" {"n0" "value0", "n00" "value00"}, "1" {"n1" "value1", "n2-nil" nil}}
-         @(c get-rows cf ["0" "1"] :schema test-schema :as-map true))))
+         @(c get-rows cf ["0" "1"] :schema test-schema :output :as-map))))
 
 (deftest test-index
   (is (= '({"1" {"n1" "value1"}})
@@ -220,14 +236,14 @@
             [[:eq? :n1 "value1"]]
             :columns ["n1"]
             :schema test-schema
-            :as-map true)))
+            :output :as-map)))
 
   (is (= 1 (count @(c get-indexed-slice
                       cf
                       [[:eq? :n1 "value1"]]
                       :columns ["n1"]
                       :schema test-schema
-                      :as-map true)))))
+                      :output :as-map)))))
 
 (deftest error-handlers
   (is (= nil @(lc/run-pipeline
@@ -248,13 +264,13 @@
 (deftest test-cql
   (is @(lc/run-pipeline
         (c execute-cql-query "SELECT * FROM test_cf;"
-           :schema test-codec-schema :as-map true)
+           :schema test-codec-schema :output :as-map)
         #(= "value0" (-> % :rows first :n0))))
   (let [prepared-statement @(c prepare-cql-query "SELECT * FROM test_cf WHERE KEY=?;")]
       (is (not-empty prepared-statement))
       (is @(lc/run-pipeline
             (c execute-prepared-cql-query (:item-id prepared-statement) ["0"]
-               :schema test-codec-schema :as-map true)
+               :schema test-codec-schema :output :as-map)
             #(= "value0" (-> % :rows first :n0))))))
 
 
@@ -262,10 +278,31 @@
   (is @(with-client c
          (lc/run-pipeline
           (execute-cql-query "SELECT * FROM test_cf;"
-                             :schema test-codec-schema :as-map true)
+                             :schema test-codec-schema :output :as-map)
           #(= "value0" (-> % :rows first :n0)))))
     (is @(with-client2 c
          (lc/run-pipeline
           (execute-cql-query "SELECT * FROM test_cf;"
-                             :schema test-codec-schema :as-map true)
+                             :schema test-codec-schema :output :as-map)
           #(= "value0" (-> % :rows first :n0))))))
+
+
+(deftest test-composites
+
+  ;; (println @(c get-row cocf 0))
+
+  ;; (println @(c get-range-slice cocf
+  ;;              :start-key 0
+  ;;              :end-key 0
+  ;;              :columns [(composite-expression [:eq? 2] [:eq? 3] [:eq? 4])]
+  ;;              ;; :row-filter [[:eq? "n0" "value0"]]
+  ;;              ;; :columns [(composite-expression [:eq? 2])]
+  ;;              ))
+
+  ;; (is (= [2 3 4]  (:name (get @(c get-row cocf 0
+  ;;                                 :schema composite-cf-schema
+  ;;                                 :output :as-map) 0))))
+
+  ;; (println )
+
+  )
