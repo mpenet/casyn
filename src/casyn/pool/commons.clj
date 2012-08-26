@@ -78,16 +78,16 @@
     :min-evictable-idle-time-ms    (.setMinEvictableIdleTimeMillis pool v))
   pool)
 
-(def pool-options-defaults
+(def defaults
   {:when-exhausted-action GenericKeyedObjectPool/WHEN_EXHAUSTED_BLOCK})
 
 (defn create-pool
   "Create a connection pool. For option documentation see
   http://commons.apache.org/pool/apidocs/org/apache/commons/pool/impl/GenericKeyedObjectPool.html"
   ^GenericKeyedObjectPool
-  [port keyspace cf-pool & pool-options]
+  [port keyspace cf-pool & options]
   (reduce set-pool-option
           (GenericKeyedObjectPool. (make-factory port
                                                  keyspace
                                                  cf-pool))
-          (merge pool-options-defaults (apply hash-map pool-options))))
+          (merge options-defaults (apply hash-map options))))

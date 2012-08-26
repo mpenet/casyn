@@ -50,9 +50,24 @@
                :client-timeout 5000})
 
 (defn make-cluster
-  "hosts can be a sequence or a single value, port will be the same
-  for all the hosts, you can manage a fixed sized cluster with
-  predetermined ips by turning auto-discovery off"
+  "Returns a cluster instance, this will be used to spawn client-fns and set
+defaults configurations for nodes balancer, client timeouts, nodes discovery,
+and manage the selector threads pool.
+
+hosts can be a sequence or a single value, port will be the same for
+all the hosts, you can manage a fixed sized cluster with predetermined
+ips by turning auto-discovery off.
+
+  options are:
+
+   + :auto-discovery -> true (updates balancer with new/lost nodes)
+
+   + :load-balancer-strategy -> :round-robin or :least-loaded (sets balancer strategy)
+
+   + :selector-threads-num -> 3 (numer of Selector Threads to be used by clients)
+
+   + :pool -> see casyn.pool/set-pool-options (client pool options,
+     forwarded to casyn.pool.commons/create-pool)"
   [hosts port keyspace & options]
   (let [opts (merge defaults (apply array-map options))
         {:keys [auto-discovery load-balancer-strategy
