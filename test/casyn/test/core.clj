@@ -107,7 +107,7 @@
                      [cocf
                       :default-validation-class :utf-8
                       :key-validation-class :long
-                      :comparator-type "CompositeType(LongType, LongType, LongType)"
+                      :comparator-type {:composite [:long :long :long]}
                       :replicate-on-write true]]
                     :strategy-options {"replication_factor" "1"})
      (println  "Keyspace created, waiting for the change to propagate to other nodes")
@@ -292,3 +292,10 @@
               :start (composite-expression [:eq? 2] [:gt? 6])
               :finish (composite-expression [:lt? 4])
               :schema composite-cf-schema :output :as-map))))
+
+(deftest type-converter
+  (is (= "UTF8Type" (clj->cassandra-type :utf-8)))
+  (is (= "UTF8Type" (clj->cassandra-type "UTF8Type")))
+  (is (= "UTF8Type,LongType" (clj->cassandra-type [:utf-8 :long])))
+  (is (= "CompositeType(UTF8Type,LongType)"
+         (clj->cassandra-type {:composite [:utf-8 :long]}))))

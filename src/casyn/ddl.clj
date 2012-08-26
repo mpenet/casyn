@@ -28,22 +28,46 @@
 ;; LexicalUUIDType	128 bit UUID compared by byte value
 ;; TimeUUIDType	Timestamp compared 128 bit version 1 UUID
 
-(defn cassandra-types [t]
-  (get {:ascii             "AsciiType"
-        :bytes             "BytesType"
-        :composite         "CompositeType"
-        :counter           "CounterColumnType"
-        :double            "DoubleType"
-        :dynamic-composite "DynamicCompositeTYpe"
-        :integer           "IntegerType"
-        :lexical-uuid      "LeixcalUUIDType"
-        :local-partitioner "LocalByPartionerType"
-        :long              "LongType"
-        :time-uuid         "TimeUUIDType"
-        :utf-8             "UTF8Type"
-        :uuid              "UUIDType"}
-       t
-       t))
+(def cassandra-types
+  {:ascii             "AsciiType"
+   :bytes             "BytesType"
+   :composite         "CompositeType"
+   :counter           "CounterColumnType"
+   :double            "DoubleType"
+   :dynamic-composite "DynamicCompositeTYpe"
+   :integer           "IntegerType"
+   :lexical-uuid      "LeixcalUUIDType"
+   :local-partitioner "LocalByPartionerType"
+   :long              "LongType"
+   :time-uuid         "TimeUUIDType"
+   :utf-8             "UTF8Type"
+   :uuid              "UUIDType"})
+
+(def join-comma (partial clojure.string/join ","))
+
+(defprotocol PCassandraType
+  (clj->cassandra-type [td] "Converts a clj friendly type def to a proper cassandra type"))
+
+(extend-protocol PCassandraType
+
+  clojure.lang.IPersistentMap
+  (clj->cassandra-type [m]
+    (clojure.string/join "" (map clj->cassandra-type m)))
+
+  clojure.lang.MapEntry
+  (clj->cassandra-type [[k v]]
+    (format "%s(%s)" (clj->cassandra-type k) (clj->cassandra-type v)))
+
+  clojure.lang.Sequential
+  (clj->cassandra-type [s]
+    (join-comma (map clj->cassandra-type s)))
+
+  clojure.lang.Keyword
+  (clj->cassandra-type [k] (get cassandra-types k))
+
+  String
+  (clj->cassandra-type [s] s))
+
 
 (def column-type
   {:super "Super"
@@ -54,7 +78,7 @@
 (defn column-definition
   [col-name validation-class & [index-name]]
   (let [cdef (ColumnDef. (codecs/clojure->byte-buffer col-name)
-                         (cassandra-types validation-class))]
+                         (clj->cassandra-type validation-class))]
     (when index-name
       (.setIndex_name cdef (name index-name))
       (.setIndex_type cdef IndexType/KEYS))
@@ -73,15 +97,15 @@
     (when cf-type
       (.setColumn_type cfd (column-type cf-type)))
     (when comparator-type
-      (.setComparator_type cfd (cassandra-types comparator-type)))
+      (.setComparator_type cfd (clj->cassandra-type comparator-type)))
     (when default-validation-class
       (.setDefault_validation_class
        cfd
-       (cassandra-types default-validation-class )))
+       (clj->cassandra-type default-validation-class)))
     (when key-validation-class
       (.setKey_validation_class
        cfd
-       (cassandra-types key-validation-class)))
+       (clj->cassandra-type key-validation-class)))
     (when replicate-on-write
       (.setReplicate_on_write cfd replicate-on-write))
     (when column-metadata
