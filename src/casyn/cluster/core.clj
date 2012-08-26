@@ -21,6 +21,7 @@
 
   (get-pool [cluster] pool)
   (get-balancer [cluster] balancer)
+  (get-options [cluster] options)
 
   (select-node [cluster avoid-node-set]
     (b/select-node balancer pool avoid-node-set))
@@ -43,23 +44,29 @@
       (doseq [node-host (difference current-nodes-hosts active-nodes)]
         (remove-node cluster node-host)))))
 
+(def defaults {:auto-discovery true
+               :load-balancer-strategy :round-robin
+               :selector-threads-num 3
+               :client-timeout 5000})
+
 (defn make-cluster
   "hosts can be a sequence or a single value, port will be the same
   for all the hosts, you can manage a fixed sized cluster with
   predetermined ips by turning auto-discovery off"
-  [hosts port
-  keyspace & {:keys [auto-discovery load-balancer-strategy selector-threads-num]
-                          :or {auto-discovery true
-                               load-balancer-strategy :round-robin
-                               selector-threads-num 3}
-                          :as options}]
+  [hosts port keyspace & options]
+  (let [opts (merge defaults (apply array-map options))
+        {:keys [auto-discovery load-balancer-strategy
+                selector-threads-num pool]} opts
+        cf-pool (c/client-factory-pool selector-threads-num)
+        cluster (Cluster. (b/balancer load-balancer-strategy)
+                          (apply commons-pool/create-pool port keyspace cf-pool
+                                 (mapcat (juxt key val) pool))
+                          cf-pool
+                          opts)]
 
-  (let[cf-pool (c/client-factory-pool selector-threads-num)
-       cluster (Cluster. (b/balancer load-balancer-strategy)
-                         (apply commons-pool/create-pool port keyspace cf-pool
-                                (mapcat (juxt key val) (:pool options)))
-                         cf-pool
-                         options)]
+    (println opts auto-discovery load-balancer-strategy keyspace port
+                selector-threads-num pool)
+
 
     (if (sequential? hosts)
       (doseq [host hosts]

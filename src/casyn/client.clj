@@ -51,7 +51,6 @@
      (doto (.getAsyncClient ^Cassandra$AsyncClient$Factory (select pool)
                             (TNonblockingSocket. host port))
        (.setTimeout timeout)))
-
   ([host port pool]
      (make-client host
                   port
@@ -145,13 +144,10 @@
                         TApplicationException}
                       etype)
            [failover-stage (assoc state :error e)]
-
            :else
            [error-stage (assoc state :error e)]))))}
    (fn [_]
      (let [{:keys [f client args]} state]
-       (when-let [timeout (:client-timeout state)]
-         (set-timeout client timeout))
        (apply f client args)))
    #(do
       (dispose-pipeline state)
@@ -162,7 +158,8 @@
   (lc/run-pipeline
    (p/borrow (:pool state) (:node-host state))
    {:error-handler (fn [e] (lc/complete [failover-stage (assoc state :error e)]))}
-   #(vector run-command-stage (assoc state :client %))))
+   #(vector run-command-stage
+            (assoc state :client (set-timeout % (:client-timeout state))))))
 
 (defn select-pool-stage
   [state]
@@ -186,7 +183,7 @@
     (lc/run-pipeline
      (select-node-stage
       {:cluster cluster
-       :client-timeout nil
+       :client-timeout (or timeout (:client-timeout (c/get-options cluster)))
        :failover failover
        :f f
        :args more})
