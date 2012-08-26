@@ -1,13 +1,7 @@
 (ns casyn.schema
   (:require [casyn.codecs :as codecs])
-  (:import [casyn.types
-            Column
-            CounterColumn
-            SuperColumn
-            CounterSuperColumn
-            KeySlice
-            CqlResult
-            CqlRow]))
+  (:import [casyn.types Column CounterColumn SuperColumn CounterSuperColumn
+            KeySlice CqlResult CqlRow]))
 
 (defn cols->map
   "Turns a collection of columns into an array-map with column name mapped to key"

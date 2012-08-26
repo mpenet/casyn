@@ -23,14 +23,14 @@ http://javasourcecode.org/html/open-source/cassandra/cassandra-0.8.1/org/apache/
 
 (defn consistency-level [c]
   ((or c *consistency-default*)
-   {:all ConsistencyLevel/ALL
-    :any ConsistencyLevel/ANY
-    :each-quorum ConsistencyLevel/EACH_QUORUM
+   {:all          ConsistencyLevel/ALL
+    :any          ConsistencyLevel/ANY
+    :each-quorum  ConsistencyLevel/EACH_QUORUM
     :local-quorum ConsistencyLevel/LOCAL_QUORUM
-    :one ConsistencyLevel/ONE
-    :quorum ConsistencyLevel/QUORUM
-    :three ConsistencyLevel/THREE
-    :two ConsistencyLevel/TWO}))
+    :one          ConsistencyLevel/ONE
+    :quorum       ConsistencyLevel/QUORUM
+    :three        ConsistencyLevel/THREE
+    :two          ConsistencyLevel/TWO}))
 
 (defmacro with-consistency
   "Binds consistency level for the enclosed body"

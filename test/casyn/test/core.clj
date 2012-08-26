@@ -4,7 +4,8 @@
    clojure.test)
   (:require
    [casyn.utils :as utils]
-   [lamina.core :as lc]))
+   [lamina.core :as lc]
+   [tardis.core :as uuid]))
 
 
 (def c nil)
@@ -41,6 +42,7 @@
                 :clj :clj
                 :clj2 :clj
                 :uuid :uuid
+                :tuuid :time-uuid
                 :comp [:string :long :double]}})
 
 (def test-coerce-data
@@ -55,7 +57,8 @@
    :clj #clj{:foo "bar"}
    :clj2 #clj[1 2 3]
    :comp #composite["dwa" (long 216) (double 3.14)]
-   :uuid (java.util.UUID/randomUUID)})
+   :uuid (java.util.UUID/randomUUID)
+   :tuuid (uuid/unique-time-uuid)})
 
 (defschema composite-cf-schema
   :row :long

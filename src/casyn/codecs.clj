@@ -1,6 +1,7 @@
 (ns casyn.codecs
   (:require casyn.types
-            [taoensso.nippy :as nippy])
+            [taoensso.nippy :as nippy]
+            [tardis.core :as uuid])
   (:import
    [org.apache.cassandra.utils ByteBufferUtil]
    [org.apache.cassandra.thrift
@@ -155,6 +156,10 @@
   (clojure->byte-buffer [u]
     (clojure->byte-buffer (.toString u)))
 
+  com.eaio.uuid.UUID
+  (clojure->byte-buffer [u]
+    (clojure->byte-buffer (str u)))
+
   Object
   (clojure->byte-buffer [o]
     ;; try to find out if it a custom type else just serialize as :clj
@@ -198,6 +203,9 @@
 
 (defmethod bytes->clojure :uuid [_ b]
   (java.util.UUID/fromString (bytes->clojure :string b)))
+
+(defmethod bytes->clojure :time-uuid [_ b]
+  (uuid/to-uuid (bytes->clojure :string b)))
 
 (defmethod bytes->clojure :clj [_ b]
   (nippy/thaw-from-bytes b))
