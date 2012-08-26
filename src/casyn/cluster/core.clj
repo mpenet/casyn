@@ -63,11 +63,6 @@
                                  (mapcat (juxt key val) pool))
                           cf-pool
                           opts)]
-
-    (println opts auto-discovery load-balancer-strategy keyspace port
-                selector-threads-num pool)
-
-
     (if (sequential? hosts)
       (doseq [host hosts]
         (add-node cluster (u/host->ip host)))
