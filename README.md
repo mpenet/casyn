@@ -4,18 +4,14 @@ Clojure client for Cassandra using Thrift AsyncClient.
 
 [![Build Status](https://secure.travis-ci.org/mpenet/casyn.png?branch=master)](http://travis-ci.org/mpenet/casyn)
 
-It relies on the perf branch of
-[Lamina](https://github.com/ztellman/lamina) which hasn't been
-officialy released yet.
-
-The entire [Cassandra Thrift Api](http://wiki.apache.org/cassandra/API) is
+The entire [Cassandra Thrift Api (1.1.4)](http://wiki.apache.org/cassandra/API) is
 supported, this includes CQL support.
 
 Pooling is using Apache commons pools, but it is open to other
 implementations from clojure Protocols/multimethods, the same is true for almost
 every part of the library (cluster, balancer, codecs, failover).
 
-It is a work in progress. Contributions and suggestions are welcome.
+It is a work in progress. Contributions, suggestions and bug reports  are welcome.
 
 
 ## Installation
@@ -34,11 +30,12 @@ or if you want to try the dev version:
 [cc.qbits/casyn "0.1.6-SNAPSHOT"]
 ```
 
-Note: It runs on Clojure 1.4+
+Note: It runs on Clojure 1.4+ and is being tested with Cassandra 1.1.4
+(it should work fine with 1.x.x versions).
 
 ## Usage
 
-Start by creating a playground for this introduction:
+Start by creating a playground:
 
 ```clojure
 (use 'casyn.core)
@@ -62,14 +59,14 @@ user> < ... >
 ;; We now create a client function for our future requests
 ;; This will manage the node selection, connection pooling, and client
 ;; workflow for every command. It also allows you to set failover and
-;; timeout at this level, separately from the cluster definition
+;; timeout at this level or inherit thesse from cluster settings.
 
 (def c (client-fn cl))
 ```
 
 [More details about cluster configuration](http://mpenet.github.com/casyn/casyn.cluster.core.html)
 
-API calls return result-channels.
+API calls return [Lamina](https://github.com/ztellman/lamina) result-channels.
 This is an example of this. From there you have multiple choices
 you can just have the call block and wait for a result/error by dereferencing it.
 
@@ -85,7 +82,7 @@ or since we want to play asynchronously register a callback
            #(println "It failed, error:" %))
 ```
 
-or use a pipeline to compose async/sync operations.
+but it is advised to  use a pipeline to compose async/sync operations.
 Here a write then reading the entire row.
 A pipeline also returns a result-channel and can be nested with other
 pipelines, making async workflow and error handling easier to deal with.
@@ -108,9 +105,9 @@ Cassandra/Thrift column name/values are returned as bytes, but you can
 supply a schema for decoding.
 Encoding of clojure data is automatic.
 Encoding/decoding is open and extendable, see codecs.clj.
-This also works for CQL queries.
+This also works with CQL queries.
 
-The same example as before with a simple schema:
+A simple example with a schema:
 
 ```clojure
 (defschema test-schema
