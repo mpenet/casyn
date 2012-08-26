@@ -317,16 +317,13 @@ ex: (composite-expression [:eq? 12] [:gt? \"meh\"] [:lt? 12])"
 ;; Prepare for cassandra 1.2 new collections types
 
 (defn clist
-  ""
   [x]
   (mark-as x :list))
 
 (defn cset
-  ""
   [x]
   (mark-as x :set))
 
 (defn cset
-  ""
   [x]
   (mark-as x :map))
