@@ -48,7 +48,8 @@
   (idle-clients [pool]
     (.getNumIdle pool)))
 
-(defn make-factory [port keyspace cf-pool]
+(defn make-factory
+  [port keyspace cf-pool]
   (reify KeyedPoolableObjectFactory
     (makeObject [this node-host]
       (when-let [client (c/make-client node-host port cf-pool)]
@@ -61,7 +62,8 @@
     (passivateObject [this node-host client])))
 
 ;; borrowed from ptaoussanis/accession
-(defn set-pool-option [^GenericKeyedObjectPool pool [opt v]]
+(defn set-pool-option
+  [^GenericKeyedObjectPool pool [opt v]]
   (case opt
     :max-active                    (.setMaxActive pool v)
     :max-total                     (.setMaxTotal pool v)
@@ -82,8 +84,26 @@
   {:when-exhausted-action GenericKeyedObjectPool/WHEN_EXHAUSTED_BLOCK})
 
 (defn create-pool
-  "Create a connection pool. For option documentation see
-  http://commons.apache.org/pool/apidocs/org/apache/commons/pool/impl/GenericKeyedObjectPool.html"
+  "Create a connection pool.
+
+List of supported options are:
+
++ :max-active
++ :max-total
++ :min-idle
++ :max-idle
++ :max-wait
++ :lifo
++ :test-on-borrow
++ :test-on-return
++ :test-while-idle
++ :when-exhausted-action
++ :num-tests-per-eviction-run
++ :time-between-eviction-runs-ms                                          )
++ :min-evictable-idle-time-ms
+
+They map to the equivalents you can find on the apache commons pool documentation:
+http://commons.apache.org/pool/apidocs/org/apache/commons/pool/impl/GenericKeyedObjectPool.html"
   ^GenericKeyedObjectPool
   [port keyspace cf-pool & options]
   (reduce set-pool-option
