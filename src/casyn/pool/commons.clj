@@ -99,7 +99,7 @@ List of supported options are:
 + :test-while-idle
 + :when-exhausted-action
 + :num-tests-per-eviction-run
-+ :time-between-eviction-runs-ms                                          )
++ :time-between-eviction-runs-ms
 + :min-evictable-idle-time-ms
 
 They map to the equivalents you can find on the apache commons pool documentation:
