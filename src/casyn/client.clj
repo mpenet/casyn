@@ -176,8 +176,11 @@
    #(vector select-pool-stage (assoc state :node-host %))))
 
 (defn client-fn
-  "Returns a fn that will execute its first arg against the
-   rest of args handling the client borrow/return/sanity/timeouts checks"
+  "Returns a fn that will execute its first arg against the rest of
+   args. handles the client borrow/return/sanity/timeouts checks,
+   returns a result-channel.
+   :timeout is in ms
+   :failover can be :try-all, or :try-next, disabled by default"
   [cluster & {:keys [timeout failover]}]
   (fn [f & more]
     (lc/run-pipeline
