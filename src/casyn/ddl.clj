@@ -73,7 +73,7 @@
   {:super "Super"
    :standard "Standard"})
 
-;; :: TODO
+;; TODO: docstrings
 
 (defn column-definition
   [col-name validation-class & [index-name]]

@@ -46,7 +46,7 @@
 
 (def defaults {:auto-discovery true
                :load-balancer-strategy :round-robin
-               :selector-threads 3
+               :num-selector-threads 3
                :client-timeout 5000})
 
 (defn make-cluster
@@ -64,15 +64,14 @@ ips by turning auto-discovery off.
 
    + :load-balancer-strategy -> :round-robin or :least-loaded (sets balancer strategy)
 
-   + :selector-threads -> 3 (numer of Selector Threads to be used by clients)
+   + :num-selector-threads -> 3 (numer of Selector Threads to be used by clients)
 
-   + :pool -> see casyn.pool/set-pool-options (client pool options,
-     forwarded to casyn.pool.commons/create-pool)"
+   + :pool -> see casyn.pool/create-pool options"
   [hosts port keyspace & options]
   (let [opts (merge defaults (apply array-map options))
         {:keys [auto-discovery load-balancer-strategy
-                selector-threads pool failover]} opts
-        cf-pool (c/client-factory-pool selector-threads)
+                num-selector-threads pool failover]} opts
+        cf-pool (c/client-factory-pool num-selector-threads)
         cluster (Cluster. (b/balancer load-balancer-strategy)
                           (apply commons-pool/create-pool port keyspace cf-pool
                                  (mapcat (juxt key val) pool))
