@@ -66,14 +66,14 @@ ips by turning auto-discovery off.
 
    + :num-selector-threads -> 3 (numer of Selector Threads to be used by clients)
 
-   + :pool -> see casyn.pool/create-pool options"
+   + :pool -> see casyn.pool.commons/make-pool options"
   [hosts port keyspace & options]
   (let [opts (merge defaults (apply array-map options))
         {:keys [auto-discovery load-balancer-strategy
                 num-selector-threads pool failover]} opts
         cf-pool (c/client-factory-pool num-selector-threads)
         cluster (Cluster. (b/balancer load-balancer-strategy)
-                          (apply commons-pool/create-pool port keyspace cf-pool
+                          (apply commons-pool/make-pool port keyspace cf-pool
                                  (mapcat (juxt key val) pool))
                           cf-pool
                           opts)]
