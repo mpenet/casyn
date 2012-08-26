@@ -79,10 +79,9 @@ ips by turning auto-discovery off.
 
    + :load-balancer-strategy -&gt; :round-robin or :least-loaded (sets balancer strategy)
 
-   + :selector-threads -&gt; 3 (numer of Selector Threads to be used by clients)
+   + :num-selector-threads -&gt; 3 (numer of Selector Threads to be used by clients)
 
-   + :pool -&gt; see casyn.pool/set-pool-options (client pool options,
-     forwarded to casyn.pool.commons/create-pool)</pre></div><div class="public" id="var-map-%3ESchema"><h3>map-&gt;Schema</h3><div class="usage"><code>(map-&gt;Schema m__5665__auto__)</code></div><pre class="doc">Factory function for class casyn.schema.Schema, taking a map of keywords to field values.
+   + :pool -&gt; see casyn.pool/create-pool options</pre></div><div class="public" id="var-map-%3ESchema"><h3>map-&gt;Schema</h3><div class="usage"><code>(map-&gt;Schema m__5665__auto__)</code></div><pre class="doc">Factory function for class casyn.schema.Schema, taking a map of keywords to field values.
 </pre></div><div class="public" id="var-mark-as"><h3>mark-as</h3><div class="usage"><code>(mark-as x type-key)</code></div><pre class="doc">
 </pre></div><div class="public" id="var-mget-count"><h3>mget-count</h3><div class="usage"><code>(mget-count client cf row-keys &amp; {:keys [super consistency schema output], :as opts})</code></div><pre class="doc">Accepts optional slice-predicate arguments :columns, :start, :finish, :count,
 :reversed, if you specify :columns the other slice args will be ignored (as
