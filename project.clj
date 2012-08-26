@@ -1,4 +1,4 @@
-(defproject cc.qbits/casyn "0.1.5-SNAPSHOT"
+(defproject cc.qbits/casyn "0.1.5"
   :description "Clojure client for Cassandra using Thrift AsyncClient + Lamina/perf"
   :url "https://github.com/mpenet/casyn"
   :license {:name "Eclipse Public License"}
