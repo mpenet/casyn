@@ -179,14 +179,17 @@
   "Returns a fn that will execute its first arg against the rest of
    args. handles the client borrow/return/sanity/timeouts checks,
    returns a result-channel.
-   :timeout is in ms
-   :failover can be :try-all, or :try-next, disabled by default"
-  [cluster & {:keys [timeout failover]}]
+   :client-timeout is in ms
+   :failover can be :try-all, or :try-next, disabled by default,
+  inherits cluster settings"
+  [cluster & {:keys [client-timeout failover]
+              :or {client-timeout (:client-timeout (c/get-options cluster))
+                   failover (:failover (c/get-options cluster))}}]
   (fn [f & more]
     (lc/run-pipeline
      (select-node-stage
       {:cluster cluster
-       :client-timeout (or timeout (:client-timeout (c/get-options cluster)))
+       :client-timeout client-timeout
        :failover failover
        :f f
        :args more})

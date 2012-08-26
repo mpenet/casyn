@@ -71,7 +71,7 @@ ips by turning auto-discovery off.
   [hosts port keyspace & options]
   (let [opts (merge defaults (apply array-map options))
         {:keys [auto-discovery load-balancer-strategy
-                selector-threads-num pool]} opts
+                selector-threads-num pool failover]} opts
         cf-pool (c/client-factory-pool selector-threads-num)
         cluster (Cluster. (b/balancer load-balancer-strategy)
                           (apply commons-pool/create-pool port keyspace cf-pool

@@ -90,4 +90,4 @@
           (GenericKeyedObjectPool. (make-factory port
                                                  keyspace
                                                  cf-pool))
-          (merge options-defaults (apply hash-map options))))
+          (merge defaults (apply hash-map options))))
