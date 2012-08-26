@@ -67,6 +67,8 @@ user> < ... >
 (def c (client-fn cl))
 ```
 
+[More details about cluster configuration](http://mpenet.github.com/casyn/casyn.cluster.core.html)
+
 API calls return result-channels.
 This is an example of this. From there you have multiple choices
 you can just have the call block and wait for a result/error by dereferencing it.
@@ -99,7 +101,7 @@ pipelines, making async workflow and error handling easier to deal with.
 user> (#casyn.types.Column{:name #<byte[] [B@7cc09980>, :value #<byte[] [B@489de27c>, :ttl 0, :timestamp 1332535710069564})
   ```
 
-[Lamina](https://github.com/ztellman/lamina) offers a lot of possibilities. I encourage you to check what is possible with it.
+[Lamina](https://github.com/ztellman/lamina) offers a lot of possibilities.
 
 
 Cassandra/Thrift column name/values are returned as bytes, but you can
@@ -181,6 +183,17 @@ respective values if you prefer that to explicit arguments.
 ## Documentation
 
 See the [API documentation](http://mpenet.github.com/casyn/) or [tests](https://github.com/mpenet/casyn/blob/master/test/casyn/test/core.clj) for more details.
+
+Some useful pages:
+
+* [commands API](http://mpenet.github.com/casyn/casyn.api.html)
+
+* [ddl API](http://mpenet.github.com/casyn/casyn.ddl.html)
+
+* [cluster](http://mpenet.github.com/casyn/casyn.cluster.core.html)
+
+Note: (almost) the entire lib is aliased from `casyn.core` so that you
+can have everything you need with a single `require`, as seen on the examples.
 
 ## License
 
