@@ -371,7 +371,7 @@ defined by the cassandra api)"
          (counter-column column-name value)
          (consistency-level consistency))))
 
-(defn remove
+(defn delete
   ""
   [^Cassandra$AsyncClient client cf row-key
    & {:keys [column super timestamp consistency type]
