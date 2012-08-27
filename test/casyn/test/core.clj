@@ -56,6 +56,7 @@
    :boo true
    :clj #clj{:foo "bar"}
    :clj2 #clj[1 2 3]
+   :nil-value nil
    :comp #composite["dwa" (long 216) (double 3.14)]
    :uuid (java.util.UUID/randomUUID)
    :tuuid (uuid/unique-time-uuid)})
