@@ -155,7 +155,7 @@ mark the collection as composite and encode it accordingly when you execute the
 query.
 
 ```clojure
-(c insert-column "colFamily1" "1"  (composite ["meh"  3.14]) "value0")
+(c insert-column "colFamily1" "1"  (composite ["meh" 1001  3.14]) "value0")
   ;; consistency is tunable per query
   :consistency :all)
 ```
