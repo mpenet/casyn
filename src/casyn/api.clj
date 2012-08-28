@@ -110,7 +110,7 @@ partial call)"
   "Returns a Thrift Column instance"
   [name value & {:keys [type ttl timestamp]
                  :or {type :column}}]
-  (condp = type
+  (case type
     :column (let [col (Column. ^ByteBuffer (codecs/clojure->byte-buffer name))]
       (.setValue col ^ByteBuffer (codecs/clojure->byte-buffer value))
       (.setTimestamp col (or timestamp (utils/ts)))
@@ -211,7 +211,7 @@ Ex: (slice-predicate {:columns [\"foo\" \"bar\"]} :start 100 :finish 200 :revers
   (doto (Mutation.)
     (.setColumn_or_supercolumn
      (let [c (ColumnOrSuperColumn.)]
-       (condp = type
+       (case type
          :super (.setSuper_column c (column name value
                                             :ttl ttl
                                             :timestamp timestamp
@@ -334,7 +334,7 @@ defined by the cassandra api)"
    (.insert client
             (codecs/clojure->byte-buffer row-key)
             (column-parent cf super)
-            (condp = type
+            (case type
               :column (column name value :ttl ttl :timestamp timestamp)
               :counter (column name value :type :counter)
               :super (column super value :type :super) ;; values is a collection of columns
