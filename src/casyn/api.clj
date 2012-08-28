@@ -108,32 +108,20 @@ partial call)"
 
 (defn column
   "Returns a Thrift Column instance"
-  [name value & {:keys [ttl timestamp]}]
-  (let [col (Column. ^ByteBuffer (codecs/clojure->byte-buffer name))]
-    (.setValue col ^ByteBuffer (codecs/clojure->byte-buffer value))
-    (.setTimestamp col (or timestamp (utils/ts)))
-    (when ttl (.setTtl col (int ttl)))
-    col))
-
-(defn counter-column
-  "Returns a Thrift CounterColumn instance"
-  ^CounterColumn
-  [name value]
-  (CounterColumn. (codecs/clojure->byte-buffer name)
-                  (long value)))
-
-(defn super-column
-  "Returns a Thrift SuperColumn instance"
-  ^SuperColumn
-  [name columns]
-  (SuperColumn. (codecs/clojure->byte-buffer name)
-                (map #(apply column %) columns)))
-
-(defn counter-super-column
-  "Returns a Thrift CounterSuperColumn instance"
-  [name columns]
-  (CounterSuperColumn. (codecs/clojure->byte-buffer name)
-                       (map #(apply counter-column %) columns)))
+  [name value & {:keys [type ttl timestamp]
+                 :or {type :column}}]
+  (condp = type
+    :column (let [col (Column. ^ByteBuffer (codecs/clojure->byte-buffer name))]
+      (.setValue col ^ByteBuffer (codecs/clojure->byte-buffer value))
+      (.setTimestamp col (or timestamp (utils/ts)))
+      (when ttl (.setTtl col (int ttl)))
+      col)
+    :counter (CounterColumn. (codecs/clojure->byte-buffer name)
+                             (long value))
+    :super (SuperColumn. (codecs/clojure->byte-buffer name)
+                         (map #(apply column %) value))
+    :counter-super-column (CounterSuperColumn. (codecs/clojure->byte-buffer name)
+                                               (map #(apply column :counter %) value))))
 
 (defn column-parent
   "Returns a Thrift ColumnParent instance, works for common columns or
@@ -224,10 +212,18 @@ Ex: (slice-predicate {:columns [\"foo\" \"bar\"]} :start 100 :finish 200 :revers
     (.setColumn_or_supercolumn
      (let [c (ColumnOrSuperColumn.)]
        (condp = type
-         :super (.setSuper_column c (super-column name value :ttl ttl :timestamp timestamp))
-         :counter (.setCounter_column c (counter-column name value))
-         :counter-super (.setCounter_super_column_column c (counter-super-column name value))
-         (.setColumn c (column name value :ttl ttl :timestamp timestamp)))))))
+         :super (.setSuper_column c (column name value
+                                            :ttl ttl
+                                            :timestamp timestamp
+                                            :type :super))
+         :counter (.setCounter_column c ^CounterColumn.(column name value
+                                                :type :counter))
+         :counter-super (.setCounter_super_column c ^CounterSuperColumn (column name value
+                                                                                       :type :counter-super))
+         (.setColumn c ^Column (column name value
+                               :ttl ttl
+                               :timestamp timestamp)))
+       c))))
 
 (defn delete-mutation
   "Accepts optional slice-predicate arguments :columns, :start, :finish, :count,
@@ -337,10 +333,10 @@ defined by the cassandra api)"
    (.insert client
             (codecs/clojure->byte-buffer row-key)
             (column-parent cf super)
-            (cond
-              (= type :counter) (counter-column name value)
-              super (super-column super value) ;; values is a collection of columns
-              :else (column name value :ttl ttl :timestamp timestamp))
+            (condp = type
+              :counter (column name value :type :counter)
+              :super (column super value :type :super) ;; values is a collection of columns
+              (column name value :ttl ttl :timestamp timestamp))
             (consistency-level consistency))))
 
 (defn increment
@@ -351,7 +347,7 @@ defined by the cassandra api)"
    (.add client
          (codecs/clojure->byte-buffer row-key)
          (column-parent cf super)
-         (counter-column column-name value)
+         (column column-name value :type :counter)
          (consistency-level consistency))))
 
 (defn delete
