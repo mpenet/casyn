@@ -40,17 +40,16 @@ defined by the cassandra api)</pre></div><div class="public" id="var-increment">
 </pre></div><div class="public" id="var-index-clause"><h3>index-clause</h3><div class="usage"><code>(index-clause expressions &amp; {:keys [start-key count], :or {count 100}})</code></div><pre class="doc">Defines one or more IndexExpressions for get_indexed_slices. An
 IndexExpression containing an EQ IndexOperator must be present</pre></div><div class="public" id="var-index-expressions"><h3>index-expressions</h3><div class="usage"><code>(index-expressions expressions)</code></div><pre class="doc">Returns and IndexExpression instance for a sequence of clauses:
 Ex: [[:eq? :foo &quot;bar&quot;]
-     [:gt? &quot;baz&quot; 1]]</pre></div><div class="public" id="var-insert-column"><h3>insert-column</h3><div class="usage"><code>(insert-column client cf row-key name value &amp; {:keys [super type consistency ttl timestamp]})</code></div><pre class="doc">
-</pre></div><div class="public" id="var-key-range"><h3>key-range</h3><div class="usage"><code>(key-range {:keys [start-token start-key end-token end-key count-key row-filter]})</code></div><pre class="doc">Returns a Thrift KeyRange instance for a range of keys, row-filter accepts a sequence of index expressions, see index-expression
-</pre></div><div class="public" id="var-login"><h3>login</h3><div class="usage"><code>(login client auth-req)</code></div><pre class="doc">
+     [:gt? &quot;baz&quot; 1]]</pre></div><div class="public" id="var-insert-column"><h3>insert-column</h3><div class="usage"><code>(insert-column client cf row-key name value &amp; {:keys [super type consistency ttl timestamp], :or {type :column}})</code></div><pre class="doc">
+</pre></div><div class="public" id="var-key-range"><h3>key-range</h3><div class="usage"><code>(key-range {:keys [start-token start-key end-token end-key count-key row-filter]})</code></div><pre class="doc">Returns a Thrift KeyRange instance for a range of keys, row-filter
+accepts a sequence of index expressions, see index-expression</pre></div><div class="public" id="var-login"><h3>login</h3><div class="usage"><code>(login client auth-req)</code></div><pre class="doc">
 </pre></div><div class="public" id="var-mget-count"><h3>mget-count</h3><div class="usage"><code>(mget-count client cf row-keys &amp; {:keys [super consistency schema output], :as opts})</code></div><pre class="doc">Accepts optional slice-predicate arguments :columns, :start, :finish, :count,
 :reversed, if you specify :columns the other slice args will be ignored (as
 defined by the cassandra api)</pre></div><div class="public" id="var-mget-slice"><h3>mget-slice</h3><div class="usage"><code>(mget-slice client cf row-keys &amp; {:keys [super consistency schema output], :as opts})</code></div><pre class="doc">Returns a collection of slices of columns.
 Accepts optional slice-predicate
 arguments :columns, :start, :finish, :count, :reversed, if you
 specify :columns the other slice args will be ignored (as defined by the cassandra api)</pre></div><div class="public" id="var-mutation"><h3>mutation</h3><div class="usage"><code>(mutation name value &amp; {:keys [type ttl timestamp]})</code></div><pre class="doc">Takes column name, and value + optional :type that can have the
-following
-values :column (default) :super :counter :counter-super. :ttl
+following  values :column (default) :super :counter :counter-super. :ttl
 and :timestamp options are also available when dealing with super or
 regular columns, otherwise ignored.</pre></div><div class="public" id="var-prepare-cql-query"><h3>prepare-cql-query</h3><div class="usage"><code>(prepare-cql-query client query)</code></div><pre class="doc">
 </pre></div><div class="public" id="var-put"><h3>put</h3><div class="usage"><code>(put client cf row-key columns &amp; {:keys [consistency type]})</code></div><pre class="doc">Accepts cols as vectors or maps to be applied to cols
@@ -58,7 +57,8 @@ constructors (use maps for simple key vals, use vectors if you need
 to set ttl or timestamp</pre></div><div class="public" id="var-set-keyspace"><h3>set-keyspace</h3><div class="usage"><code>(set-keyspace client ks)</code></div><pre class="doc">
 </pre></div><div class="public" id="var-slice-predicate"><h3>slice-predicate</h3><div class="usage"><code>(slice-predicate {:keys [columns start finish reversed count]})</code></div><pre class="doc">Returns a SlicePredicate instance, takes a map, it can be either for named keys
 using the :columns key, or a range defined from :start :finish :reversed :count
-Ex: (slice-predicate {:columns [&quot;foo&quot; &quot;bar&quot;]} :start 100 :finish 200 :reversed true :count 10)</pre></div><div class="public" id="var-truncate"><h3>truncate</h3><div class="usage"><code>(truncate client cf)</code></div><pre class="doc">
+Ex: (slice-predicate {:columns [&quot;foo&quot; &quot;bar&quot;]})
+    (slice-predicate :start 100 :finish 200 :reversed true :count 10)</pre></div><div class="public" id="var-truncate"><h3>truncate</h3><div class="usage"><code>(truncate client cf)</code></div><pre class="doc">
 </pre></div><div class="public" id="var-with-client"><h3>with-client</h3><div class="usage"><code>(with-client client &amp; body)</code></div><pre class="doc">Binds client for the enclosed body, won't work if the body contains
 partial or apply of api functions, if you need to handle this cases
 you will have to pass *client* explicitly. This is a second class
