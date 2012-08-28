@@ -1,4 +1,3 @@
 * TODO add examples with the docstring, it is sometimes not very clear unless you read the source atm  :high:
-* TODO extend test coverage (issues with nil decoding?)  :high:
 * TODO test cluster management with ccm (failover, balancing)          :high:
 * TODO benchmark suite                                                  :low:
