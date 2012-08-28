@@ -328,15 +328,17 @@ defined by the cassandra api)"
 (defn insert-column
   ""
   [^Cassandra$AsyncClient client cf row-key name value
-   & {:keys [super type consistency ttl timestamp]}]
+   & {:keys [super type consistency ttl timestamp]
+      :or [type :column]}]
   (wrap-result-channel
    (.insert client
             (codecs/clojure->byte-buffer row-key)
             (column-parent cf super)
             (condp = type
+              :column (column name value :ttl ttl :timestamp timestamp)
               :counter (column name value :type :counter)
               :super (column super value :type :super) ;; values is a collection of columns
-              (column name value :ttl ttl :timestamp timestamp))
+              )
             (consistency-level consistency))))
 
 (defn increment
