@@ -329,7 +329,7 @@ defined by the cassandra api)"
   ""
   [^Cassandra$AsyncClient client cf row-key name value
    & {:keys [super type consistency ttl timestamp]
-      :or [type :column]}]
+      :or {type :column}}]
   (wrap-result-channel
    (.insert client
             (codecs/clojure->byte-buffer row-key)
