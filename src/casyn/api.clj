@@ -214,6 +214,11 @@ Ex: (slice-predicate {:columns [\"foo\" \"bar\"]} :start 100 :finish 200 :revers
     kr))
 
 (defn mutation
+  "Takes column name, and value + optional :type that can have the
+  following
+  values :column (default) :super :counter :counter-super. :ttl
+  and :timestamp options are also available when dealing with super or
+  regular columns, otherwise ignored."
   [name value & {:keys [type ttl timestamp]}]
   (doto (Mutation.)
     (.setColumn_or_supercolumn
