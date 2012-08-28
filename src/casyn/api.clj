@@ -176,7 +176,8 @@ IndexExpression containing an EQ IndexOperator must be present"
 (defn slice-predicate
   "Returns a SlicePredicate instance, takes a map, it can be either for named keys
 using the :columns key, or a range defined from :start :finish :reversed :count
-Ex: (slice-predicate {:columns [\"foo\" \"bar\"]} :start 100 :finish 200 :reversed true :count 10)"
+Ex: (slice-predicate {:columns [\"foo\" \"bar\"]})
+    (slice-predicate :start 100 :finish 200 :reversed true :count 10)"
   ^SlicePredicate
   [{:keys [columns
            start finish reversed count]}]
