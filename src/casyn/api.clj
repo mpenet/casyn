@@ -94,8 +94,7 @@ partial call)"
         result-ch#
         {:error-handler (fn [_#])}
         codecs/thrift->clojure
-        ~@(filter identity post-realize-fns)
-        ))))
+        ~@(filter identity post-realize-fns)))))
 
 (defmacro wrap-result-channel+schema [form schema output]
   `(wrap-result-channel
@@ -190,8 +189,10 @@ Ex: (slice-predicate {:columns [\"foo\" \"bar\"]} :start 100 :finish 200 :revers
                                        (int (or count 100)))))))
 
 (defn key-range
-  "Returns a Thrift KeyRange instance for a range of keys, row-filter accepts a sequence of index expressions, see index-expression"
-  [{:keys [start-token start-key end-token end-key count-key row-filter]}]
+  "Returns a Thrift KeyRange instance for a range of keys, row-filter
+  accepts a sequence of index expressions, see index-expression"
+  [{:keys [start-token start-key end-token end-key count-key
+  row-filter]}]
   (let [kr (KeyRange.)]
     (when start-token (.setStart_token kr ^String start-token))
     (when end-token (.setEnd_token kr ^String end-token))
@@ -203,8 +204,7 @@ Ex: (slice-predicate {:columns [\"foo\" \"bar\"]} :start 100 :finish 200 :revers
 
 (defn mutation
   "Takes column name, and value + optional :type that can have the
-  following
-  values :column (default) :super :counter :counter-super. :ttl
+  following  values :column (default) :super :counter :counter-super. :ttl
   and :timestamp options are also available when dealing with super or
   regular columns, otherwise ignored."
   [name value & {:keys [type ttl timestamp]}]
