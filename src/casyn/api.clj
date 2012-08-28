@@ -160,13 +160,16 @@ partial call)"
      (ColumnPath. cf)))
 
 (def index-operators
-  {:eq? IndexOperator/EQ
-   :lt? IndexOperator/LT
-   :gt? IndexOperator/GT
+  {:eq?  IndexOperator/EQ
+   :lt?  IndexOperator/LT
+   :gt?  IndexOperator/GT
    :lte? IndexOperator/LTE
    :gte? IndexOperator/GTE})
 
 (defn index-expressions
+  "Returns and IndexExpression instance for a sequence of clauses:
+Ex: [[:eq? :foo \"bar\"]
+     [:gt? \"baz\" 1]]"
   [expressions]
   (map (fn [[op k v]]
          (IndexExpression. (codecs/clojure->byte-buffer k)
@@ -186,7 +189,7 @@ IndexExpression containing an EQ IndexOperator must be present"
 (defn slice-predicate
   "Returns a SlicePredicate instance, takes a map, it can be either for named keys
 using the :columns key, or a range defined from :start :finish :reversed :count
-Ex: (slice-predicate {:columns [\"foo\" \"bar\"]})"
+Ex: (slice-predicate {:columns [\"foo\" \"bar\"]} :start 100 :finish 200 :reversed true :count 10)"
   ^SlicePredicate
   [{:keys [columns
            start finish reversed count]}]
@@ -199,7 +202,7 @@ Ex: (slice-predicate {:columns [\"foo\" \"bar\"]})"
                                        (int (or count 100)))))))
 
 (defn key-range
-  "Returns a Thrift KeyRange instance for a range of keys"
+  "Returns a Thrift KeyRange instance for a range of keys, row-filter accepts a sequence of index expressions, see index-expression"
   [{:keys [start-token start-key end-token end-key count-key row-filter]}]
   (let [kr (KeyRange.)]
     (when start-token (.setStart_token kr ^String start-token))
@@ -210,57 +213,32 @@ Ex: (slice-predicate {:columns [\"foo\" \"bar\"]})"
     (when row-filter (.setRow_filter kr (index-expressions row-filter)))
     kr))
 
-(defmacro doto-mutation
-  [& body]
-  `(doto (Mutation.)
-     (.setColumn_or_supercolumn
-      (doto (ColumnOrSuperColumn.)
-        ~@body))))
-
-(defn column-mutation
-  ""
-  [& c]
-  (doto-mutation
-    (.setColumn (apply column c))))
-
-(defn counter-column-mutation
-  ""
-  [n value]
-  (doto-mutation
-    (.setCounter_column (counter-column n value))))
-
-(defn super-column-mutation
-  ""
-  [& sc]
-  (doto-mutation
-    (.setSuper_column (apply super-column sc))))
-
-(defn super-counter-column-mutation
-  ""
-  [& sc]
-  (doto-mutation
-    (.setCounter_super_column ^CounterSuperColumn (apply counter-super-column sc))))
-
-(defn deletion
-  ^SlicePredicate
-  [{:keys [super]
-    :as opts}]
-  (let [d (Deletion.)]
-    (.setTimestamp d (utils/ts))
-    (.setPredicate d (slice-predicate opts))
-    (when super
-      (.setSuper_column d ^ByteBuffer (codecs/clojure->byte-buffer super)))
-    d))
+(defn mutation
+  [name value & {:keys [type ttl timestamp]}]
+  (doto (Mutation.)
+    (.setColumn_or_supercolumn
+     (let [c (ColumnOrSuperColumn.)]
+       (condp = type
+         :super (.setSuper_column c (super-column name value :ttl ttl :timestamp timestamp))
+         :counter (.setCounter_column c (counter-column name value))
+         :counter-super (.setCounter_super_column_column c (counter-super-column name value))
+         (.setColumn c (column name value :ttl ttl :timestamp timestamp)))))))
 
 (defn delete-mutation
   "Accepts optional slice-predicate arguments :columns, :start, :finish, :count,
 :reversed, if you specify :columns the other slice args will be ignored (as
 defined by thrift)
 The :super key and specify a supercolumn name"
-  [& args] ;; expects a pred and opt sc
+  [& {:keys [super]
+      :as opts}] ;; expects a pred and opt sc
   (doto (Mutation.)
-    (.setDeletion (deletion args))))
-
+    (.setDeletion
+     (let [d (Deletion.)]
+       (.setTimestamp d (utils/ts))
+       (.setPredicate d (slice-predicate opts))
+       (when super
+         (.setSuper_column d ^ByteBuffer (codecs/clojure->byte-buffer super)))
+       d))))
 
 ;; API
 
@@ -541,14 +519,7 @@ defined by the cassandra api)"
   (batch-mutate
    client
    {row-key
-    {cf (map #(apply
-               (condp = type
-                 :super-columns super-column-mutation
-                 :super-counters super-counter-column-mutation
-                 :counters counter-column-mutation
-                 column-mutation)
-               %)
-             columns)}}
+    {cf (map #(apply mutation %) columns)}}
    :consistency consistency))
 
 ;; aliases

@@ -180,10 +180,10 @@
   (is (nil?
        @(c batch-mutate
          {"0" {cf
-               [(column-mutation "n0" "un0")
-                (column-mutation "n00" "un00")]}
+               [(mutation "n0" "un0")
+                (mutation "n00" "un00")]}
           "1" {cf
-               [(column-mutation "n1" "n10")]}})))
+               [(mutation "n1" "n10")]}})))
 
   (is (nil?
        @(c batch-mutate
@@ -207,9 +207,7 @@
   (is (= nil (seq @(c delete cf "0" :column "n0"))))
   (is (= 1 (count @(c get-row cf "0"))))
   (is (= nil (seq @(c delete cf "0"))))
-  (is (= 0 (count @(c get-row cf "0"))))
-
-  )
+  (is (= 0 (count @(c get-row cf "0")))))
 
 (deftest test-ranges
   (is (= 1 (count @(c get-range-slice cf
@@ -231,7 +229,10 @@
   (is (= {"n0" "value0" "n00" "value00"}
          @(c get-row cf "0" :schema test-schema :output :as-map)))
   (is (= {"0" {"n0" "value0", "n00" "value00"}, "1" {"n1" "value1", "n2-nil" nil}}
-         @(c get-rows cf ["0" "1"] :schema test-schema :output :as-map))))
+         @(c get-rows cf ["0" "1"] :schema test-schema :output :as-map)))
+  (let [test-nils (reduce-kv (fn [m k v] (assoc m k nil)) (array-map) test-coerce-data)]
+    @(c put cf "66" test-nils)
+    (is (= test-nils @(c get-row cf "66" :schema test-codec-schema :output :as-map)))))
 
 (deftest test-index
   (is (= '({"1" {"n1" "value1"}})
