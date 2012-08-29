@@ -213,14 +213,19 @@ Ex: (slice-predicate {:columns [\"foo\" \"bar\"]})
     (.setColumn_or_supercolumn
      (let [c (ColumnOrSuperColumn.)]
        (case type
-         :super (.setSuper_column c (column name value
-                                            :ttl ttl
-                                            :timestamp timestamp
-                                            :type :super))
-         :counter (.setCounter_column c ^CounterColumn.(column name value
-                                                :type :counter))
-         :counter-super (.setCounter_super_column c ^CounterSuperColumn (column name value
-                                                                                       :type :counter-super))
+         :super
+         (.setSuper_column c (column name value
+                                     :ttl ttl
+                                     :timestamp timestamp
+                                     :type :super))
+
+         :counter
+         (.setCounter_column c ^CounterColumn (column name value :type :counter))
+
+         :counter-super
+         (.setCounter_super_column c ^CounterSuperColumn (column name value :type :counter-super))
+
+         ;; else
          (.setColumn c ^Column (column name value
                                :ttl ttl
                                :timestamp timestamp)))
@@ -267,8 +272,8 @@ The :super key and specify a supercolumn name"
 
 (defn get-slice
   "Returns a slice of columns. Accepts optional slice-predicate arguments :columns, :start, :finish, :count,
-:reversed, if you specify :columns the other slice args will be ignored (as
-defined by the cassandra api)"
+:reversed, if you specify :columns the other slice args will be
+ignored (as defined by the cassandra api)"
   [^Cassandra$AsyncClient client cf row-key
    & {:keys [super consistency schema output]
       :as opts}]
@@ -338,8 +343,8 @@ defined by the cassandra api)"
             (case type
               :column (column name value :ttl ttl :timestamp timestamp)
               :counter (column name value :type :counter)
-              :super (column super value :type :super) ;; values is a collection of columns
-              )
+               ;; values is a collection of columns for super-cols
+              :super (column super value :type :super))
             (consistency-level consistency))))
 
 (defn increment
@@ -486,6 +491,11 @@ defined by the cassandra api)"
   [^Cassandra$AsyncClient client]
   (wrap-result-channel (.describe_version client)))
 
+(defn set-cql-version
+  ""
+  [^Cassandra$AsyncClient client version]
+  (wrap-result-channel (.set_cql_version client version)))
+
 (defn prepare-cql-query
   ""
   [^Cassandra$AsyncClient client query]
@@ -496,7 +506,8 @@ defined by the cassandra api)"
 
 (defn execute-cql-query
   ""
-  [^Cassandra$AsyncClient client query & {:keys [schema output]}]
+  [^Cassandra$AsyncClient client query
+   & {:keys [schema output]}]
   (wrap-result-channel+schema
    (.execute_cql_query client
                        (codecs/clojure->byte-buffer query)
