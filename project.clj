@@ -16,5 +16,5 @@
              :dev  {:dependencies [[codox "0.6.1"]]}
              :test {:dependencies []}}
   :min-lein-version "2.0.0"
-  ;; :warn-on-reflection true
+  :warn-on-reflection true
   )
