@@ -36,7 +36,8 @@
 
   java.util.ArrayList
   (thrift->clojure [a]
-    (thrift->clojure (into-array a)))
+    (when (> (count a) 0)
+      (thrift->clojure (into-array a))))
 
   java.util.Map
   (thrift->clojure [a]

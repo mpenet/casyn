@@ -151,7 +151,8 @@
 (deftest test-get-slice
   (is (= 2 (count @(c get-slice cf "0" :columns ["n0" "n00"]))))
   (is (= 2 (count @(c get-slice cf "0" :start "n0" :finish "n00"))))
-  (is (= 2 (count @(c get-row cf "0" :schema test-schema)))))
+  (is (= 2 (count @(c get-row cf "0" :schema test-schema))))
+  (is (= nil @(c get-slice cf "1000" :columns ["n0" "n00"]))))
 
 (deftest test-mget-slice
   (is (= 2 (count @(c mget-slice cf ["0" "1"]
