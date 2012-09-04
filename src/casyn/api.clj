@@ -355,7 +355,7 @@ defined by the cassandra api)"
    (.add client
          (codecs/clojure->byte-buffer row-key)
          (column-parent cf super)
-         (column column-name (long value) :type :counter)
+         (column column-name value :type :counter)
          (consistency-level consistency))))
 
 (defn delete
