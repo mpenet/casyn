@@ -191,6 +191,8 @@ Some useful pages:
 
 * [cluster](http://mpenet.github.com/casyn/casyn.cluster.core.html)
 
+* [Mailing list](https://groups.google.com/forum/#!forum/casyn)
+
 Note: (almost) the entire lib is aliased from `casyn.core` so that you
 can have everything you need with a single `require`, as seen on the examples.
 
