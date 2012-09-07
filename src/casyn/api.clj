@@ -40,7 +40,7 @@ http://javasourcecode.org/html/open-source/cassandra/cassandra-0.8.1/org/apache/
 
 (def ^:dynamic *client*)
 
-(defn- api-fn?
+(defn ^:private api-fn?
   [v]
   (and (symbol? v)
        (= 'Cassandra$AsyncClient
@@ -48,7 +48,7 @@ http://javasourcecode.org/html/open-source/cassandra/cassandra-0.8.1/org/apache/
               meta :arglists
               ffirst meta :tag))))
 
-(defmacro with-client
+(defmacro ^:private with-client
   "Binds client for the enclosed body, won't work if the body contains
 partial or apply of api functions, if you need to handle this cases
 you will have to pass *client* explicitly. This is a second class
@@ -63,7 +63,7 @@ api-call args) form"
            %)
         body)))
 
-(defmacro with-client2
+(defmacro ^:private with-client2
   "Same as the with-client but supports apply/partial, slower though (cost of a
 partial call)"
   [client & body]

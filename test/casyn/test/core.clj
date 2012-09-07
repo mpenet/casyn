@@ -279,17 +279,17 @@
             #(= "value0" (-> % :rows first :n0))))))
 
 
-(deftest test-with*
-  (is @(with-client c
-         (lc/run-pipeline
-          (execute-cql-query "SELECT * FROM test_cf;"
-                             :schema test-codec-schema :output :as-map)
-          #(= "value0" (-> % :rows first :n0)))))
-    (is @(with-client2 c
-         (lc/run-pipeline
-          (execute-cql-query "SELECT * FROM test_cf;"
-                             :schema test-codec-schema :output :as-map)
-          #(= "value0" (-> % :rows first :n0))))))
+;; (deftest test-with*
+;;   (is @(with-client c
+;;          (lc/run-pipeline
+;;           (execute-cql-query "SELECT * FROM test_cf;"
+;;                              :schema test-codec-schema :output :as-map)
+;;           #(= "value0" (-> % :rows first :n0)))))
+;;     (is @(with-client2 c
+;;          (lc/run-pipeline
+;;           (execute-cql-query "SELECT * FROM test_cf;"
+;;                              :schema test-codec-schema :output :as-map)
+;;           #(= "value0" (-> % :rows first :n0))))))
 
 
 (deftest test-composites-expressions
