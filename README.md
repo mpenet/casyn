@@ -167,13 +167,9 @@ need to indicate :clj as decoding type in the schema.
 
 ### Convenience macros
 
-`with-consistency` or `with-client` can be used to bind their
-respective values if you prefer that to explicit arguments.
+`with-consistency` can be used if you prefer that to explicit arguments.
 
 ```clojure
-(with-client c
-  (execute-cql-query "SELECT * FROM test_cf;"))
-
 (with-consistency :all
   @(c get-row "colFamily1" "1")
   @(c get-row "colFamily1" "2"))
