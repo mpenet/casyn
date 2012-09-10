@@ -3,8 +3,17 @@
 </pre></div><div class="public" id="var--%3ESchema"><h3>-&gt;Schema</h3><div class="usage"><code>(-&gt;Schema name row super columns)</code></div><pre class="doc">Positional factory function for class casyn.schema.Schema.
 </pre></div><div class="public" id="var-add-column-family"><h3>add-column-family</h3><div class="usage"><code>(add-column-family client &amp; cf-args)</code></div><pre class="doc">
 </pre></div><div class="public" id="var-add-keyspace"><h3>add-keyspace</h3><div class="usage"><code>(add-keyspace client ks-name strategy-class column-family-defs &amp; more)</code></div><pre class="doc">
-</pre></div><div class="public" id="var-batch-mutate"><h3>batch-mutate</h3><div class="usage"><code>(batch-mutate client mutations &amp; {:keys [consistency]})</code></div><pre class="doc">
-</pre></div><div class="public" id="var-client-fn"><h3>client-fn</h3><div class="usage"><code>(client-fn cluster &amp; {:keys [client-timeout failover], :or {client-timeout (:client-timeout (c/get-options cluster)), failover (:failover (c/get-options cluster))}})</code></div><pre class="doc">Returns a fn that will execute its first arg against the rest of
+</pre></div><div class="public" id="var-batch-mutate"><h3>batch-mutate</h3><div class="usage"><code>(batch-mutate client mutations &amp; {:keys [consistency]})</code></div><pre class="doc">Executes the specified mutations on the keyspace.
+Expects a map of maps
+The outer map key is a row key, the inner map key is the column family name, its values are the mutations instances (see mutation &amp; delete-mutation fns):
+
+Example:
+ {&quot;row-0&quot; {&quot;cf&quot; [(mutation &quot;n0&quot; &quot;un0&quot;)
+                     (mutation &quot;n00&quot; &quot;un00&quot;)]}
+  &quot;row-1&quot; {cf [(mutation &quot;n1&quot; &quot;n10&quot;)]}}
+
+Optional kw args:
+  - :consistency : optional consistency-level, defaults to :one</pre></div><div class="public" id="var-client-fn"><h3>client-fn</h3><div class="usage"><code>(client-fn cluster &amp; {:keys [client-timeout failover], :or {client-timeout (:client-timeout (c/get-options cluster)), failover (:failover (c/get-options cluster))}})</code></div><pre class="doc">Returns a fn that will execute its first arg against the rest of
  args. handles the client borrow/return/sanity/timeouts checks,
  returns a result-channel.
  :client-timeout is in ms
@@ -13,56 +22,177 @@ inherits cluster settings</pre></div><div class="public" id="var-clj"><h3>clj</h
 </pre></div><div class="public" id="var-clj-%3Ecassandra-type"><h3>clj-&gt;cassandra-type</h3><div class="usage"><code>(clj-&gt;cassandra-type td)</code></div><pre class="doc">Converts a clj friendly type def to a proper cassandra type
 </pre></div><div class="public" id="var-clojure-%3Ebyte-buffer"><h3>clojure-&gt;byte-buffer</h3><div class="usage"><code>(clojure-&gt;byte-buffer v)</code></div><pre class="doc">Converts from clojure types to byte-buffers
 </pre></div><div class="public" id="var-cols-%3Emap"><h3>cols-&gt;map</h3><div class="usage"><code>(cols-&gt;map cols)</code></div><pre class="doc">Turns a collection of columns into an array-map with column name mapped to key
-</pre></div><div class="public" id="var-column"><h3>column</h3><div class="usage"><code>(column name value &amp; {:keys [type ttl timestamp], :or {type :column}})</code></div><pre class="doc">Returns a Thrift Column instance
-</pre></div><div class="public" id="var-column-family-definition"><h3>column-family-definition</h3><div class="usage"><code>(column-family-definition ks-name cf-name &amp; {:keys [cf-type comparator-type default-validation-class key-validation-class replicate-on-write column-metadata]})</code></div><pre class="doc">
+</pre></div><div class="public" id="var-column"><h3>column</h3><div class="usage"><code>(column name value &amp; {:keys [type ttl timestamp], :or {type :column}})</code></div><pre class="doc">Returns a Thrift Column instance.
+Optional kw args:
+  - :type (keyword): Represents the column type, defaults :column can also be :counter
+  - :ttl (integer): Allows to specify the Time to live value for the column
+  - :timestamp (long): Allows to specify the Timestamp for the column
+                       (in nanosecs), defaults to the value for the current time</pre></div><div class="public" id="var-column-family-definition"><h3>column-family-definition</h3><div class="usage"><code>(column-family-definition ks-name cf-name &amp; {:keys [cf-type comparator-type default-validation-class key-validation-class replicate-on-write column-metadata]})</code></div><pre class="doc">
 </pre></div><div class="public" id="var-column-parent"><h3>column-parent</h3><div class="usage"><code>(column-parent cf &amp; [super])</code></div><pre class="doc">Returns a Thrift ColumnParent instance, works for common columns or
-super columns depending on arity used</pre></div><div class="public" id="var-column-path"><h3>column-path</h3><div class="usage"><code>(column-path cf &amp; {:keys [super column]})</code><code>(column-path cf)</code></div><pre class="doc">Returns a Thrift ColumnPath instance, works for common columns or
-super columns depending on arity used</pre></div><div class="public" id="var-composite"><h3>composite</h3><div class="usage"><code>(composite x)</code></div><pre class="doc">Mark a column value|name|key value as composite
+super columns depending on arity used. The &quot;super&quot; argument wil be
+used as super column name (can be of any supported type)</pre></div><div class="public" id="var-column-path"><h3>column-path</h3><div class="usage"><code>(column-path cf &amp; {:keys [super column]})</code><code>(column-path cf)</code></div><pre class="doc">Returns a Thrift ColumnPath instance, works for common columns or
+  super columns depending on arity used.
+Optional kw args:
+  - :type (keyword): Represents the column type, defaults :column can also be :counter
+  - :super : super column name (can be of any supported type), must be present
+             if type is :super</pre></div><div class="public" id="var-composite"><h3>composite</h3><div class="usage"><code>(composite x)</code></div><pre class="doc">Mark a column value|name|key value as composite
 </pre></div><div class="public" id="var-composite-%3Ebytes-values"><h3>composite-&gt;bytes-values</h3><div class="usage"><code>(composite-&gt;bytes-values ba)</code></div><pre class="doc">Takes a composite byte-array returned by thrift and transforms it
 to a collection of byte-arrays holding actual values for decoding</pre></div><div class="public" id="var-composite-expression"><h3>composite-expression</h3><div class="usage"><code>(composite-expression &amp; values)</code></div><pre class="doc">Takes a sequence of values pairs holding operator and actual clojure value to
 be encoded as a composite type. Returns a ByteBuffer
 ex: (composite-expression [:eq? 12] [:gt? &quot;meh&quot;] [:lt? 12])</pre></div><div class="public" id="var-composite-value"><h3>composite-value</h3><div class="usage"><code>(composite-value raw-value suffix)</code></div><pre class="doc">Create a composite value as a ByteBuffer from a raw clojure value
 and a composite operator</pre></div><div class="public" id="var-decode-result"><h3>decode-result</h3><div class="usage"><code>(decode-result result schema)</code><code>(decode-result result schema output)</code></div><pre class="doc">Decodes a result according to supplied schema
 </pre></div><div class="public" id="var-defschema"><h3>defschema</h3><div class="usage"><code>(defschema name &amp; {:keys [row super columns]})</code></div><pre class="doc">Create a var holding a Schema instance to be used as an argument to
-decode-result. TODO: add schema sync such as ks/sc/c definitions</pre></div><div class="public" id="var-delete"><h3>delete</h3><div class="usage"><code>(delete client cf row-key &amp; {:keys [column super timestamp consistency type], :or {timestamp (utils/ts)}})</code></div><pre class="doc">
-</pre></div><div class="public" id="var-delete-mutation"><h3>delete-mutation</h3><div class="usage"><code>(delete-mutation &amp; {:keys [super], :as opts})</code></div><pre class="doc">Accepts optional slice-predicate arguments :columns, :start, :finish, :count,
+decode-result. TODO: add schema sync such as ks/sc/c definitions</pre></div><div class="public" id="var-delete"><h3>delete</h3><div class="usage"><code>(delete client cf row-key &amp; {:keys [column super timestamp consistency type], :or {timestamp (utils/ts)}})</code></div><pre class="doc">Delete column(s), works on regular columns or counters.
+
+Optional kw args:
+  - :type (keyword): Represents the column type, defaults :column can also be :counter, :super
+  - :super :  used as the super column name if specified
+  - :ttl (integer): Allows to specify the Time to live value for the column
+  - :timestamp (long): Allows to specify the Timestamp for the column
+                       (in nanosecs), defaults to the value for the current time
+  - :consistency : optional consistency-level, defaults to :one</pre></div><div class="public" id="var-delete-mutation"><h3>delete-mutation</h3><div class="usage"><code>(delete-mutation &amp; {:keys [super], :as opts})</code></div><pre class="doc">Accepts optional slice-predicate arguments :columns, :start, :finish, :count,
 :reversed, if you specify :columns the other slice args will be ignored (as
 defined by thrift)
-The :super key and specify a supercolumn name</pre></div><div class="public" id="var-describe-cluster-name"><h3>describe-cluster-name</h3><div class="usage"><code>(describe-cluster-name client)</code></div><pre class="doc">
-</pre></div><div class="public" id="var-describe-keyspace"><h3>describe-keyspace</h3><div class="usage"><code>(describe-keyspace client ks)</code></div><pre class="doc">
-</pre></div><div class="public" id="var-describe-keyspaces"><h3>describe-keyspaces</h3><div class="usage"><code>(describe-keyspaces client)</code></div><pre class="doc">
-</pre></div><div class="public" id="var-describe-partitioner"><h3>describe-partitioner</h3><div class="usage"><code>(describe-partitioner client)</code></div><pre class="doc">
-</pre></div><div class="public" id="var-describe-ring"><h3>describe-ring</h3><div class="usage"><code>(describe-ring client ks)</code></div><pre class="doc">
-</pre></div><div class="public" id="var-describe-schema-versions"><h3>describe-schema-versions</h3><div class="usage"><code>(describe-schema-versions client)</code></div><pre class="doc">
-</pre></div><div class="public" id="var-describe-snitch"><h3>describe-snitch</h3><div class="usage"><code>(describe-snitch client)</code></div><pre class="doc">
+
+Optional kw args:
+  - :super : optional super column name
+  - :start : The column name to start the slice with.
+  - :finish : The column name to stop the slice at
+  - :reversed (bool): Whether the results should be ordered in reversed order.
+  - :count : How many columns to return, defaults to 100
+  - :columns: A list of column names to retrieve</pre></div><div class="public" id="var-describe-cluster-name"><h3>describe-cluster-name</h3><div class="usage"><code>(describe-cluster-name client)</code></div><pre class="doc">Gets the name of the cluster.
+</pre></div><div class="public" id="var-describe-keyspace"><h3>describe-keyspace</h3><div class="usage"><code>(describe-keyspace client ks)</code></div><pre class="doc">Gets information about the specified keyspace.
+</pre></div><div class="public" id="var-describe-keyspaces"><h3>describe-keyspaces</h3><div class="usage"><code>(describe-keyspaces client)</code></div><pre class="doc">Gets a list of all the keyspaces configured for the cluster.
+</pre></div><div class="public" id="var-describe-partitioner"><h3>describe-partitioner</h3><div class="usage"><code>(describe-partitioner client)</code></div><pre class="doc">Gets the name of the partitioner for the cluster.
+</pre></div><div class="public" id="var-describe-ring"><h3>describe-ring</h3><div class="usage"><code>(describe-ring client ks)</code></div><pre class="doc">Gets the token ring; a map of ranges to host addresses. Represented
+as a set of TokenRange instead of a map from range to list of
+endpoints, because you can't use Thrift structs as map keys:
+https://issues.apache.org/jira/browse/THRIFT-162 for the same
+reason, we can't return a set here, even though order is neither
+important nor predictable.</pre></div><div class="public" id="var-describe-schema-versions"><h3>describe-schema-versions</h3><div class="usage"><code>(describe-schema-versions client)</code></div><pre class="doc">For each schema version present in the cluster, returns a list of
+nodes at that version. Hosts that do not respond will be under the
+key DatabaseDescriptor.INITIAL_VERSION. The cluster is all on the
+same version if the size of the map is 1</pre></div><div class="public" id="var-describe-snitch"><h3>describe-snitch</h3><div class="usage"><code>(describe-snitch client)</code></div><pre class="doc">Gets the name of the snitch used for the cluster.
 </pre></div><div class="public" id="var-describe-splits"><h3>describe-splits</h3><div class="usage"><code>(describe-splits client cf start-token end-token keys-per-split)</code></div><pre class="doc">
 </pre></div><div class="public" id="var-describe-token-map"><h3>describe-token-map</h3><div class="usage"><code>(describe-token-map client)</code></div><pre class="doc">
-</pre></div><div class="public" id="var-describe-version"><h3>describe-version</h3><div class="usage"><code>(describe-version client)</code></div><pre class="doc">
+</pre></div><div class="public" id="var-describe-version"><h3>describe-version</h3><div class="usage"><code>(describe-version client)</code></div><pre class="doc">Gets the Thrift API version.
 </pre></div><div class="public" id="var-drop-column-family"><h3>drop-column-family</h3><div class="usage"><code>(drop-column-family client cf-name)</code></div><pre class="doc">
 </pre></div><div class="public" id="var-drop-keyspace"><h3>drop-keyspace</h3><div class="usage"><code>(drop-keyspace client ks-name)</code></div><pre class="doc">
-</pre></div><div class="public" id="var-execute-cql-query"><h3>execute-cql-query</h3><div class="usage"><code>(execute-cql-query client query &amp; {:keys [schema output]})</code></div><pre class="doc">
-</pre></div><div class="public" id="var-execute-prepared-cql-query"><h3>execute-prepared-cql-query</h3><div class="usage"><code>(execute-prepared-cql-query client item-id values &amp; {:keys [schema output]})</code></div><pre class="doc">
-</pre></div><div class="public" id="var-get-column"><h3>get-column</h3><div class="usage"><code>(get-column client cf row-key c &amp; {:keys [super consistency schema output]})</code></div><pre class="doc">
-</pre></div><div class="public" id="var-get-count"><h3>get-count</h3><div class="usage"><code>(get-count client cf row-key &amp; {:keys [super consistency schema output], :as opts})</code></div><pre class="doc">Accepts optional slice-predicate arguments :columns, :start, :finish, :count,
+</pre></div><div class="public" id="var-execute-cql-query"><h3>execute-cql-query</h3><div class="usage"><code>(execute-cql-query client query &amp; {:keys [schema output]})</code></div><pre class="doc">Executes a CQL (Cassandra Query Language) statement.
+Optional kw args:
+  - :schema : schema used for result decoding
+  - :output : output format (if nil it will return casyn types,
+              if :as-map it will try to turn collections to maps</pre></div><div class="public" id="var-execute-prepared-cql-query"><h3>execute-prepared-cql-query</h3><div class="usage"><code>(execute-prepared-cql-query client item-id values &amp; {:keys [schema output]})</code></div><pre class="doc">Executes a prepared CQL (Cassandra Query Language) statement by
+  passing an id token and a list of variables to bind.
+
+Optional kw args:
+  - :schema : schema used for result decoding
+  - :output : output format (if nil it will return casyn types,
+              if :as-map it will try to turn collections to maps</pre></div><div class="public" id="var-get-column"><h3>get-column</h3><div class="usage"><code>(get-column client cf row-key col &amp; {:keys [super consistency schema output]})</code></div><pre class="doc">Returns a single column.
+Optional kw args:
+  - :consistency : optional consistency-level, defaults to :one
+  - :super : optional super column name
+  - :schema : schema used for result decoding
+  - :output : output format (if nil it will return casyn types,
+              if :as-map it will try to turn collections to maps</pre></div><div class="public" id="var-get-count"><h3>get-count</h3><div class="usage"><code>(get-count client cf row-key &amp; {:keys [super consistency schema output], :as opts})</code></div><pre class="doc">Accepts optional slice-predicate arguments :columns, :start, :finish, :count,
 :reversed, if you specify :columns the other slice args will be ignored (as
-defined by the cassandra api)</pre></div><div class="public" id="var-get-indexed-slice"><h3>get-indexed-slice</h3><div class="usage"><code>(get-indexed-slice client cf index-clause-args &amp; {:keys [super consistency schema output], :as opts})</code></div><pre class="doc">Accepts optional slice-predicate arguments :columns, :start, :finish, :count,
+defined by the cassandra api).
+
+Optional kw args:
+  - :super : optional super column name
+  - :start : The column name to start the slice with.
+  - :finish : The column name to stop the slice at
+  - :reversed (bool): Whether the results should be ordered in reversed order.
+  - :count : How many columns to return, defaults to 100
+  - :columns: A list of column names to retrieve
+  - :consistency : optional consistency-level, defaults to :one
+  - :schema : schema used for result decoding
+  - :output : output format (if nil it will return casyn types,
+              if :as-map it will try to turn collections to maps</pre></div><div class="public" id="var-get-indexed-slice"><h3>get-indexed-slice</h3><div class="usage"><code>(get-indexed-slice client cf index-clause-args &amp; {:keys [super consistency schema output], :as opts})</code></div><pre class="doc">Accepts optional slice-predicate arguments :columns, :start, :finish, :count,
 :reversed, if you specify :columns the other slice args will be ignored (as
-defined by the cassandra api)</pre></div><div class="public" id="var-get-paged-slice"><h3>get-paged-slice</h3><div class="usage"><code>(get-paged-slice client cf &amp; {:keys [super consistency schema output], :as opts})</code></div><pre class="doc">Accepts optional key-range arguments :start-token :start-key :end-token
-:end-key :count-key :row-filter (vector of index-expressions) and takes an additional :start-column name</pre></div><div class="public" id="var-get-range-slice"><h3>get-range-slice</h3><div class="usage"><code>(get-range-slice client cf &amp; {:keys [super consistency schema output], :as opts})</code></div><pre class="doc">Accepts optional slice-predicate arguments :columns, :start, :finish, :count,
+defined by the cassandra api).
+
+Optional kw args:
+  - :super :  used as the super column name if specified
+  - :start : The column name to start the slice with.
+  - :finish : The column name to stop the slice at
+  - :reversed (bool): Whether the results should be ordered in reversed order.
+  - :count : How many columns to return, defaults to 100
+  - :columns: A list of column names to retrieve
+
+  - :consistency : optional consistency-level, defaults to :one
+  - :schema : schema used for result decoding
+  - :output : output format (if nil it will return casyn types,
+              if :as-map it will try to turn collections to maps</pre></div><div class="public" id="var-get-paged-slice"><h3>get-paged-slice</h3><div class="usage"><code>(get-paged-slice client cf &amp; {:keys [super consistency schema output], :as opts})</code></div><pre class="doc">DEPRECATED: use get-range-slice instead
+</pre></div><div class="public" id="var-get-range-slice"><h3>get-range-slice</h3><div class="usage"><code>(get-range-slice client cf &amp; {:keys [super consistency schema output], :as opts})</code></div><pre class="doc">Accepts optional slice-predicate arguments :columns, :start, :finish, :count,
 :reversed, if you specify :columns the other slice args will be ignored (as
 defined by the cassandra api). Accepts optional key-range arguments :start-token
-:start-key :end-token :end-key :count-key :row-filter (vector of index-expressions)</pre></div><div class="public" id="var-get-row"><h3>get-row</h3><div class="usage"></div><pre class="doc">Alias to get-slice
+:start-key :end-token :end-key :count-key :row-filter (vector of index-expressions).
+
+Optional kw args:
+  - :super :  used as the super column name if specified
+  - :start : The column name to start the slice with.
+  - :finish : The column name to stop the slice at
+  - :reversed (bool): Whether the results should be ordered in reversed order.
+  - :count : How many columns to return, defaults to 100
+  - :columns: A list of column names to retrieve
+
+  - :start-token : The first token in the exclusive KeyRange.
+  - :end-token : The last token in the exclusive KeyRange.
+  - :start-key: The first key in the inclusive KeyRange.
+  - :end-key : The last key in the inclusive KeyRange.
+  - :count : The total number of keys to permit in the KeyRange.
+  - :row-filter: The list of index expressions vectors
+
+  - :consistency : optional consistency-level, defaults to :one
+  - :schema : schema used for result decoding
+  - :output : output format (if nil it will return casyn types,
+              if :as-map it will try to turn collections to maps</pre></div><div class="public" id="var-get-row"><h3>get-row</h3><div class="usage"></div><pre class="doc">Alias to get-slice
 </pre></div><div class="public" id="var-get-rows"><h3>get-rows</h3><div class="usage"></div><pre class="doc">Alias to mget-slice
 </pre></div><div class="public" id="var-get-slice"><h3>get-slice</h3><div class="usage"><code>(get-slice client cf row-key &amp; {:keys [super consistency schema output], :as opts})</code></div><pre class="doc">Returns a slice of columns. Accepts optional slice-predicate arguments :columns, :start, :finish, :count,
-:reversed, if you specify :columns the other slice args will be
-ignored (as defined by the cassandra api)</pre></div><div class="public" id="var-increment"><h3>increment</h3><div class="usage"><code>(increment client cf row-key column-name value &amp; {:keys [super consistency]})</code></div><pre class="doc">
-</pre></div><div class="public" id="var-index-clause"><h3>index-clause</h3><div class="usage"><code>(index-clause expressions &amp; {:keys [start-key count], :or {count 100}})</code></div><pre class="doc">Defines one or more IndexExpressions for get_indexed_slices. An
-IndexExpression containing an EQ IndexOperator must be present</pre></div><div class="public" id="var-index-expressions"><h3>index-expressions</h3><div class="usage"><code>(index-expressions expressions)</code></div><pre class="doc">Returns and IndexExpression instance for a sequence of clauses:
-Ex: [[:eq? :foo &quot;bar&quot;]
-     [:gt? &quot;baz&quot; 1]]</pre></div><div class="public" id="var-insert-column"><h3>insert-column</h3><div class="usage"><code>(insert-column client cf row-key name value &amp; {:keys [super type consistency ttl timestamp], :or {type :column}})</code></div><pre class="doc">
-</pre></div><div class="public" id="var-key-range"><h3>key-range</h3><div class="usage"><code>(key-range {:keys [start-token start-key end-token end-key count-key row-filter]})</code></div><pre class="doc">Returns a Thrift KeyRange instance for a range of keys, row-filter
-accepts a sequence of index expressions, see index-expression</pre></div><div class="public" id="var-keyspace-definition"><h3>keyspace-definition</h3><div class="usage"><code>(keyspace-definition ks-name strategy-class column-family-definitions &amp; {:keys [durable-writes strategy-options]})</code></div><pre class="doc">
-</pre></div><div class="public" id="var-login"><h3>login</h3><div class="usage"><code>(login client auth-req)</code></div><pre class="doc">
+:reversed, if you specify :columns the other slice args will be ignored (as defined by the cassandra api).
+
+Optional kw args:
+  - :super : optional super column name
+  - :start : The column name to start the slice with.
+  - :finish : The column name to stop the slice at
+  - :reversed (bool): Whether the results should be ordered in reversed order.
+  - :count : How many columns to return, defaults to 100
+  - :columns: A list of column names to retrieve
+  - :consistency : optional consistency-level, defaults to :one
+  - :schema : schema used for result decoding
+  - :output : output format (if nil it will return casyn types,
+              if :as-map it will try to turn collections to maps</pre></div><div class="public" id="var-increment"><h3>increment</h3><div class="usage"><code>(increment client cf row-key column-name value &amp; {:keys [super consistency]})</code></div><pre class="doc">Increment the specified counter column value.
+
+Optional kw args:
+  - :super : this argument will be used as the super column name if specified
+  - :consistency : optional consistency-level, defaults to :one</pre></div><div class="public" id="var-index-clause"><h3>index-clause</h3><div class="usage"><code>(index-clause expressions &amp; {:keys [start-key count], :or {count 100}})</code></div><pre class="doc">Defines one or more IndexExpressions for get_indexed_slices. An
+IndexExpression containing an EQ IndexOperator must be present.
+Optional kw args:
+  - :start-key : The first key in the inclusive KeyRange
+  - :count (long): The total number of keys to permit in the KeyRange. defaults to 100</pre></div><div class="public" id="var-index-expressions"><h3>index-expressions</h3><div class="usage"><code>(index-expressions expressions)</code></div><pre class="doc">Returns and IndexExpression instance for a sequence of clauses.
+The first value in the expression vectors must be a valid index-operator: :eq?, :lt?, :lte?:, :gt?, :gte?
+
+Example: [[:eq? :foo &quot;bar&quot;]
+          [:gt? &quot;baz&quot; 1]]</pre></div><div class="public" id="var-insert-column"><h3>insert-column</h3><div class="usage"><code>(insert-column client cf row-key name value &amp; {:keys [super type consistency ttl timestamp], :or {type :column}})</code></div><pre class="doc">Inserts a single column.
+
+Optional kw args:
+  - :type (keyword): Represents the column type, defaults :column can also be :counter, :super
+  - :super : if type if :super this argument will be used as the super column name
+  - :ttl (integer): Allows to specify the Time to live value for the column
+  - :timestamp (long): Allows to specify the Timestamp for the column
+                       (in nanosecs), defaults to the value for the current time
+  - :consistency : optional consistency-level, defaults to :one</pre></div><div class="public" id="var-key-range"><h3>key-range</h3><div class="usage"><code>(key-range {:keys [start-token start-key end-token end-key count row-filter]})</code></div><pre class="doc">Returns a Thrift KeyRange instance for a range of keys, row-filter
+  accepts a sequence of index expressions, see index-expression
+
+Optional kw args:
+  - :start-token : The first token in the exclusive KeyRange.
+  - :end-token : The last token in the exclusive KeyRange.
+  - :start-key: The first key in the inclusive KeyRange.
+  - :end-key : The last key in the inclusive KeyRange.
+  - :count : The total number of keys to permit in the KeyRange.
+  - :row-filter: The list of index expressions vectors</pre></div><div class="public" id="var-keyspace-definition"><h3>keyspace-definition</h3><div class="usage"><code>(keyspace-definition ks-name strategy-class column-family-definitions &amp; {:keys [durable-writes strategy-options]})</code></div><pre class="doc">
+</pre></div><div class="public" id="var-login"><h3>login</h3><div class="usage"><code>(login client auth-req)</code></div><pre class="doc">Expect an AuthenticationRequest instance as argument
 </pre></div><div class="public" id="var-make-client"><h3>make-client</h3><div class="usage"><code>(make-client host port pool timeout)</code><code>(make-client host port pool)</code><code>(make-client host port)</code><code>(make-client host)</code><code>(make-client)</code></div><pre class="doc">Create client with its own socket
 </pre></div><div class="public" id="var-make-cluster"><h3>make-cluster</h3><div class="usage"><code>(make-cluster hosts port keyspace &amp; options)</code></div><pre class="doc">Returns a cluster instance, this will be used to spawn client-fns and set
 defaults configurations for nodes balancer, client timeouts, nodes discovery,
@@ -84,22 +214,67 @@ ips by turning auto-discovery off.
 </pre></div><div class="public" id="var-mark-as"><h3>mark-as</h3><div class="usage"><code>(mark-as x type-key)</code></div><pre class="doc">
 </pre></div><div class="public" id="var-mget-count"><h3>mget-count</h3><div class="usage"><code>(mget-count client cf row-keys &amp; {:keys [super consistency schema output], :as opts})</code></div><pre class="doc">Accepts optional slice-predicate arguments :columns, :start, :finish, :count,
 :reversed, if you specify :columns the other slice args will be ignored (as
-defined by the cassandra api)</pre></div><div class="public" id="var-mget-slice"><h3>mget-slice</h3><div class="usage"><code>(mget-slice client cf row-keys &amp; {:keys [super consistency schema output], :as opts})</code></div><pre class="doc">Returns a collection of slices of columns.
-Accepts optional slice-predicate
-arguments :columns, :start, :finish, :count, :reversed, if you
-specify :columns the other slice args will be ignored (as defined by the cassandra api)</pre></div><div class="public" id="var-mutation"><h3>mutation</h3><div class="usage"><code>(mutation name value &amp; {:keys [type ttl timestamp]})</code></div><pre class="doc">Takes column name, and value + optional :type that can have the
-following  values :column (default) :super :counter :counter-super. :ttl
-and :timestamp options are also available when dealing with super or
-regular columns, otherwise ignored.</pre></div><div class="public" id="var-prepare-cql-query"><h3>prepare-cql-query</h3><div class="usage"><code>(prepare-cql-query client query)</code></div><pre class="doc">
-</pre></div><div class="public" id="var-put"><h3>put</h3><div class="usage"><code>(put client cf row-key columns &amp; {:keys [consistency type]})</code></div><pre class="doc">Accepts cols as vectors or maps to be applied to cols
-constructors (use maps for simple key vals, use vectors if you need
-to set ttl or timestamp</pre></div><div class="public" id="var-set-cql-version"><h3>set-cql-version</h3><div class="usage"><code>(set-cql-version client version)</code></div><pre class="doc">
+defined by the cassandra api).
+
+Optional kw args:
+  - :super : optional super column name
+  - :start : The column name to start the slice with.
+  - :finish : The column name to stop the slice at
+  - :reversed (bool): Whether the results should be ordered in reversed order.
+  - :count : How many columns to return, defaults to 100
+  - :columns: A list of column names to retrieve
+  - :consistency : optional consistency-level, defaults to :one
+  - :schema : schema used for result decoding
+  - :output : output format (if nil it will return casyn types,
+              if :as-map it will try to turn collections to maps</pre></div><div class="public" id="var-mget-slice"><h3>mget-slice</h3><div class="usage"><code>(mget-slice client cf row-keys &amp; {:keys [super consistency schema output], :as opts})</code></div><pre class="doc">Returns a collection of slices of columns.
+   Accepts optional slice-predicate
+   arguments :columns, :start, :finish, :count, :reversed, if you
+   specify :columns the other slice args will be ignored (as defined by the cassandra api)
+
+Optional kw args:
+  - :super : optional super column name
+  - :start : The column name to start the slice with.
+  - :finish : The column name to stop the slice at
+  - :reversed (bool): Whether the results should be ordered in reversed order.
+  - :count : How many columns to return, defaults to 100
+  - :columns: A list of column names to retrieve
+  - :consistency : optional consistency-level, defaults to :one
+  - :schema : schema used for result decoding
+  - :output : output format (if nil it will return casyn types,
+              if :as-map it will try to turn collections to maps</pre></div><div class="public" id="var-mutation"><h3>mutation</h3><div class="usage"><code>(mutation name value &amp; {:keys [type ttl timestamp]})</code></div><pre class="doc">Takes column name, and value + optional :type that can have the
+  following  values :column (default) :super :counter :counter-super. :ttl
+  and :timestamp options are also available when dealing with super or
+  regular columns, otherwise ignored.
+
+Optional kw args:
+  - :type (keyword): Represents the column type
+                     defaults :column can also be :counter :super :counter-super
+  - :ttl (integer): Allows to specify the Time to live value for the column
+  - :timestamp (long): Allows to specify the Timestamp for the column
+                       (in nanosecs), defaults to the value for the current time</pre></div><div class="public" id="var-prepare-cql-query"><h3>prepare-cql-query</h3><div class="usage"><code>(prepare-cql-query client query)</code></div><pre class="doc">Prepare a CQL (Cassandra Query Language) statement by compiling and returning
+a casyn.types.CqlPreparedResult instance</pre></div><div class="public" id="var-put"><h3>put</h3><div class="usage"><code>(put client cf row-key columns &amp; {:keys [consistency type]})</code></div><pre class="doc">Accepts cols as vectors or maps to be applied to cols
+  constructors (use maps for simple key vals, use vectors if you need
+  to set mutations options:
+
+Optional kw args for mutations when passed as vectors:
+  - :type (keyword): Represents the column type
+                     defaults :column can also be :counter :super :counter-super
+  - :ttl (integer): Allows to specify the Time to live value for the column
+  - :timestamp (long): Allows to specify the Timestamp for the column
+                       (in nanosecs), defaults to the value for the current time</pre></div><div class="public" id="var-set-cql-version"><h3>set-cql-version</h3><div class="usage"><code>(set-cql-version client version)</code></div><pre class="doc">
 </pre></div><div class="public" id="var-set-keyspace"><h3>set-keyspace</h3><div class="usage"><code>(set-keyspace client ks)</code></div><pre class="doc">
 </pre></div><div class="public" id="var-slice-predicate"><h3>slice-predicate</h3><div class="usage"><code>(slice-predicate {:keys [columns start finish reversed count]})</code></div><pre class="doc">Returns a SlicePredicate instance, takes a map, it can be either for named keys
 using the :columns key, or a range defined from :start :finish :reversed :count
 Ex: (slice-predicate {:columns [&quot;foo&quot; &quot;bar&quot;]})
-    (slice-predicate :start 100 :finish 200 :reversed true :count 10)</pre></div><div class="public" id="var-thrift-%3Eclojure"><h3>thrift-&gt;clojure</h3><div class="usage"><code>(thrift-&gt;clojure v)</code></div><pre class="doc">Transforms a thrift type to clojure friendly type
-</pre></div><div class="public" id="var-truncate"><h3>truncate</h3><div class="usage"><code>(truncate client cf)</code></div><pre class="doc">
+    (slice-predicate :start 100 :finish 200 :reversed true :count 10)
+
+Optional kw args:
+  - :start : The column name to start the slice with.
+  - :finish : The column name to stop the slice at
+  - :reversed (bool): Whether the results should be ordered in reversed order.
+  - :count : How many columns to return, defaults to 100
+  - :columns: A list of column names to retrieve</pre></div><div class="public" id="var-thrift-%3Eclojure"><h3>thrift-&gt;clojure</h3><div class="usage"><code>(thrift-&gt;clojure v)</code></div><pre class="doc">Transforms a thrift type to clojure friendly type
+</pre></div><div class="public" id="var-truncate"><h3>truncate</h3><div class="usage"><code>(truncate client cf)</code></div><pre class="doc">Removes all the rows from the given column family.
 </pre></div><div class="public" id="var-update-column-family"><h3>update-column-family</h3><div class="usage"><code>(update-column-family client &amp; cf-args)</code></div><pre class="doc">
 </pre></div><div class="public" id="var-update-keyspace"><h3>update-keyspace</h3><div class="usage"><code>(update-keyspace client ks-name strategy-class column-family-defs &amp; more)</code></div><pre class="doc">
 </pre></div><div class="public" id="var-with-consistency"><h3>with-consistency</h3><div class="usage"><code>(with-consistency consistency &amp; body)</code></div><pre class="doc">Binds consistency level for the enclosed body
