@@ -106,7 +106,12 @@ partial call)"
 ;; Objects
 
 (defn column
-  "Returns a Thrift Column instance"
+  "Returns a Thrift Column instance.
+Optional kw args:
+  - :type (keyword): Represents the column type, defaults :column can also be :counter
+  - :ttl (integer): Allows to specify the Time to live value for the column
+  - :timestamp (long): Allows to specify the Timestamp for the column
+                       (in nanosecs), defaults to the value for the current time"
   [name value & {:keys [type ttl timestamp]
                  :or {type :column}}]
   (case type
@@ -124,9 +129,9 @@ partial call)"
 
 (defn column-parent
   "Returns a Thrift ColumnParent instance, works for common columns or
-  super columns depending on arity used"
-  ^ColumnParent
-  [^String cf & [super]]
+  super columns depending on arity used. The \"super\" argument wil be
+  used as super column name (can be of any supported type)"
+  ^ColumnParent [^String cf & [super]]
   (let [cp (ColumnParent. cf)]
     (when super
       (.setSuper_column cp ^ByteBuffer (codecs/clojure->byte-buffer super)))
@@ -134,7 +139,11 @@ partial call)"
 
 (defn column-path
   "Returns a Thrift ColumnPath instance, works for common columns or
-  super columns depending on arity used"
+  super columns depending on arity used.
+Optional kw args:
+  - :type (keyword): Represents the column type, defaults :column can also be :counter
+  - :super : super column name (can be of any supported type), must be present
+             if type is :super"
   ^ColumnPath
   ([^String cf & {:keys [super column]}]
      (let [cp ^ColumnPath (column-path cf)]
@@ -154,9 +163,11 @@ partial call)"
    :gte? IndexOperator/GTE})
 
 (defn index-expressions
-  "Returns and IndexExpression instance for a sequence of clauses:
-Ex: [[:eq? :foo \"bar\"]
-     [:gt? \"baz\" 1]]"
+  "Returns and IndexExpression instance for a sequence of clauses.
+The first value in the expression vectors must be a valid index-operator: :eq?, :lt?, :lte?:, :gt?, :gte?
+
+Example: [[:eq? :foo \"bar\"]
+          [:gt? \"baz\" 1]]"
   [expressions]
   (map (fn [[op k v]]
          (IndexExpression. (codecs/clojure->byte-buffer k)
@@ -166,7 +177,10 @@ Ex: [[:eq? :foo \"bar\"]
 
 (defn index-clause
   "Defines one or more IndexExpressions for get_indexed_slices. An
-IndexExpression containing an EQ IndexOperator must be present"
+IndexExpression containing an EQ IndexOperator must be present.
+Optional kw args:
+  - :start-key : The first key in the inclusive KeyRange
+  - :count (long): The total number of keys to permit in the KeyRange. defaults to 100"
   [expressions & {:keys [start-key count]
                   :or {count 100}}]
   (IndexClause. (index-expressions expressions)
@@ -177,10 +191,16 @@ IndexExpression containing an EQ IndexOperator must be present"
   "Returns a SlicePredicate instance, takes a map, it can be either for named keys
 using the :columns key, or a range defined from :start :finish :reversed :count
 Ex: (slice-predicate {:columns [\"foo\" \"bar\"]})
-    (slice-predicate :start 100 :finish 200 :reversed true :count 10)"
+    (slice-predicate :start 100 :finish 200 :reversed true :count 10)
+
+Optional kw args:
+  - :start : The column name to start the slice with.
+  - :finish : The column name to stop the slice at
+  - :reversed (bool): Whether the results should be ordered in reversed order.
+  - :count : How many columns to return, defaults to 100
+  - :columns: A list of column names to retrieve"
   ^SlicePredicate
-  [{:keys [columns
-           start finish reversed count]}]
+  [{:keys [columns start finish reversed count]}]
   (let [sp (SlicePredicate.)]
     (if columns
       (.setColumn_names sp (map codecs/clojure->byte-buffer columns))
@@ -191,15 +211,22 @@ Ex: (slice-predicate {:columns [\"foo\" \"bar\"]})
 
 (defn key-range
   "Returns a Thrift KeyRange instance for a range of keys, row-filter
-  accepts a sequence of index expressions, see index-expression"
-  [{:keys [start-token start-key end-token end-key count-key
-  row-filter]}]
+  accepts a sequence of index expressions, see index-expression
+
+Optional kw args:
+  - :start-token : The first token in the exclusive KeyRange.
+  - :end-token : The last token in the exclusive KeyRange.
+  - :start-key: The first key in the inclusive KeyRange.
+  - :end-key : The last key in the inclusive KeyRange.
+  - :count : The total number of keys to permit in the KeyRange.
+  - :row-filter: The list of index expressions vectors"
+  [{:keys [start-token start-key end-token end-key count row-filter]}]
   (let [kr (KeyRange.)]
     (when start-token (.setStart_token kr ^String start-token))
     (when end-token (.setEnd_token kr ^String end-token))
     (when start-key (.setStart_key kr ^ByteBuffer (codecs/clojure->byte-buffer start-key)))
     (when end-key (.setEnd_key kr ^ByteBuffer (codecs/clojure->byte-buffer end-key)))
-    (when count-key (.setCount kr (int count-key)))
+    (when count (.setCount kr (int count)))
     (when row-filter (.setRow_filter kr (index-expressions row-filter)))
     kr))
 
@@ -207,7 +234,14 @@ Ex: (slice-predicate {:columns [\"foo\" \"bar\"]})
   "Takes column name, and value + optional :type that can have the
   following  values :column (default) :super :counter :counter-super. :ttl
   and :timestamp options are also available when dealing with super or
-  regular columns, otherwise ignored."
+  regular columns, otherwise ignored.
+
+Optional kw args:
+  - :type (keyword): Represents the column type
+                     defaults :column can also be :counter :super :counter-super
+  - :ttl (integer): Allows to specify the Time to live value for the column
+  - :timestamp (long): Allows to specify the Timestamp for the column
+                       (in nanosecs), defaults to the value for the current time"
   [name value & {:keys [type ttl timestamp]}]
   (doto (Mutation.)
     (.setColumn_or_supercolumn
@@ -235,7 +269,14 @@ Ex: (slice-predicate {:columns [\"foo\" \"bar\"]})
   "Accepts optional slice-predicate arguments :columns, :start, :finish, :count,
 :reversed, if you specify :columns the other slice args will be ignored (as
 defined by thrift)
-The :super key and specify a supercolumn name"
+
+Optional kw args:
+  - :super : optional super column name
+  - :start : The column name to start the slice with.
+  - :finish : The column name to stop the slice at
+  - :reversed (bool): Whether the results should be ordered in reversed order.
+  - :count : How many columns to return, defaults to 100
+  - :columns: A list of column names to retrieve"
   [& {:keys [super]
       :as opts}] ;; expects a pred and opt sc
   (doto (Mutation.)
@@ -250,7 +291,7 @@ The :super key and specify a supercolumn name"
 ;; API
 
 (defn login
-  ""
+  "Expect an AuthenticationRequest instance as argument"
   [^Cassandra$AsyncClient client ^AuthenticationRequest auth-req]
   (wrap-result-channel (.login client auth-req)))
 
@@ -260,20 +301,37 @@ The :super key and specify a supercolumn name"
   (wrap-result-channel (.set_keyspace client ks)))
 
 (defn get-column
-  ""
-  [^Cassandra$AsyncClient client cf row-key c
+  "Returns a single column.
+Optional kw args:
+  - :consistency : optional consistency-level, defaults to :one
+  - :super : optional super column name
+  - :schema : schema used for result decoding
+  - :output : output format (if nil it will return casyn types,
+              if :as-map it will try to turn collections to maps"
+  [^Cassandra$AsyncClient client cf row-key col
    & {:keys [super consistency schema output]}]
   (wrap-result-channel+schema
    (.get client
          ^ByteBuffer (codecs/clojure->byte-buffer row-key)
-         (column-path cf :super super :column c)
+         (column-path cf :super super :column col)
          (consistency-level consistency))
    schema output))
 
 (defn get-slice
   "Returns a slice of columns. Accepts optional slice-predicate arguments :columns, :start, :finish, :count,
-:reversed, if you specify :columns the other slice args will be
-ignored (as defined by the cassandra api)"
+:reversed, if you specify :columns the other slice args will be ignored (as defined by the cassandra api).
+
+Optional kw args:
+  - :super : optional super column name
+  - :start : The column name to start the slice with.
+  - :finish : The column name to stop the slice at
+  - :reversed (bool): Whether the results should be ordered in reversed order.
+  - :count : How many columns to return, defaults to 100
+  - :columns: A list of column names to retrieve
+  - :consistency : optional consistency-level, defaults to :one
+  - :schema : schema used for result decoding
+  - :output : output format (if nil it will return casyn types,
+              if :as-map it will try to turn collections to maps"
   [^Cassandra$AsyncClient client cf row-key
    & {:keys [super consistency schema output]
       :as opts}]
@@ -289,7 +347,19 @@ ignored (as defined by the cassandra api)"
   "Returns a collection of slices of columns.
    Accepts optional slice-predicate
    arguments :columns, :start, :finish, :count, :reversed, if you
-   specify :columns the other slice args will be ignored (as defined by the cassandra api)"
+   specify :columns the other slice args will be ignored (as defined by the cassandra api)
+
+Optional kw args:
+  - :super : optional super column name
+  - :start : The column name to start the slice with.
+  - :finish : The column name to stop the slice at
+  - :reversed (bool): Whether the results should be ordered in reversed order.
+  - :count : How many columns to return, defaults to 100
+  - :columns: A list of column names to retrieve
+  - :consistency : optional consistency-level, defaults to :one
+  - :schema : schema used for result decoding
+  - :output : output format (if nil it will return casyn types,
+              if :as-map it will try to turn collections to maps"
   [^Cassandra$AsyncClient client cf row-keys
    & {:keys [super consistency schema output]
       :as opts}]
@@ -304,7 +374,19 @@ ignored (as defined by the cassandra api)"
 (defn get-count
   "Accepts optional slice-predicate arguments :columns, :start, :finish, :count,
 :reversed, if you specify :columns the other slice args will be ignored (as
-defined by the cassandra api)"
+defined by the cassandra api).
+
+Optional kw args:
+  - :super : optional super column name
+  - :start : The column name to start the slice with.
+  - :finish : The column name to stop the slice at
+  - :reversed (bool): Whether the results should be ordered in reversed order.
+  - :count : How many columns to return, defaults to 100
+  - :columns: A list of column names to retrieve
+  - :consistency : optional consistency-level, defaults to :one
+  - :schema : schema used for result decoding
+  - :output : output format (if nil it will return casyn types,
+              if :as-map it will try to turn collections to maps"
   [^Cassandra$AsyncClient client cf row-key
    & {:keys [super consistency schema output]
       :as opts}]
@@ -319,7 +401,19 @@ defined by the cassandra api)"
 (defn mget-count
   "Accepts optional slice-predicate arguments :columns, :start, :finish, :count,
 :reversed, if you specify :columns the other slice args will be ignored (as
-defined by the cassandra api)"
+defined by the cassandra api).
+
+Optional kw args:
+  - :super : optional super column name
+  - :start : The column name to start the slice with.
+  - :finish : The column name to stop the slice at
+  - :reversed (bool): Whether the results should be ordered in reversed order.
+  - :count : How many columns to return, defaults to 100
+  - :columns: A list of column names to retrieve
+  - :consistency : optional consistency-level, defaults to :one
+  - :schema : schema used for result decoding
+  - :output : output format (if nil it will return casyn types,
+              if :as-map it will try to turn collections to maps"
   [^Cassandra$AsyncClient client cf row-keys
    & {:keys [super consistency schema output]
       :as opts}]
@@ -332,7 +426,15 @@ defined by the cassandra api)"
    schema output))
 
 (defn insert-column
-  ""
+  "Inserts a single column.
+
+Optional kw args:
+  - :type (keyword): Represents the column type, defaults :column can also be :counter, :super
+  - :super : if type if :super this argument will be used as the super column name
+  - :ttl (integer): Allows to specify the Time to live value for the column
+  - :timestamp (long): Allows to specify the Timestamp for the column
+                       (in nanosecs), defaults to the value for the current time
+  - :consistency : optional consistency-level, defaults to :one"
   [^Cassandra$AsyncClient client cf row-key name value
    & {:keys [super type consistency ttl timestamp]
       :or {type :column}}]
@@ -348,7 +450,11 @@ defined by the cassandra api)"
             (consistency-level consistency))))
 
 (defn increment
-  ""
+  "Increment the specified counter column value.
+
+Optional kw args:
+  - :super : this argument will be used as the super column name if specified
+  - :consistency : optional consistency-level, defaults to :one"
   [^Cassandra$AsyncClient client cf row-key column-name value
    & {:keys [super consistency]}]
   (wrap-result-channel
@@ -359,7 +465,15 @@ defined by the cassandra api)"
          (consistency-level consistency))))
 
 (defn delete
-  ""
+  "Delete column(s), works on regular columns or counters.
+
+Optional kw args:
+  - :type (keyword): Represents the column type, defaults :column can also be :counter, :super
+  - :super :  used as the super column name if specified
+  - :ttl (integer): Allows to specify the Time to live value for the column
+  - :timestamp (long): Allows to specify the Timestamp for the column
+                       (in nanosecs), defaults to the value for the current time
+  - :consistency : optional consistency-level, defaults to :one"
   [^Cassandra$AsyncClient client cf row-key
    & {:keys [column super timestamp consistency type]
       :or {timestamp (utils/ts)}}]
@@ -377,7 +491,17 @@ defined by the cassandra api)"
               (consistency-level consistency)))))
 
 (defn batch-mutate
-  ""
+  "Executes the specified mutations on the keyspace.
+Expects a map of maps
+The outer map key is a row key, the inner map key is the column family name, its values are the mutations instances (see mutation & delete-mutation fns):
+
+Example:
+ {\"row-0\" {\"cf\" [(mutation \"n0\" \"un0\")
+                     (mutation \"n00\" \"un00\")]}
+  \"row-1\" {cf [(mutation \"n1\" \"n10\")]}}
+
+Optional kw args:
+  - :consistency : optional consistency-level, defaults to :one"
   [^Cassandra$AsyncClient client mutations
    & {:keys [consistency]}]
   (wrap-result-channel
@@ -392,7 +516,27 @@ defined by the cassandra api)"
   "Accepts optional slice-predicate arguments :columns, :start, :finish, :count,
 :reversed, if you specify :columns the other slice args will be ignored (as
 defined by the cassandra api). Accepts optional key-range arguments :start-token
-:start-key :end-token :end-key :count-key :row-filter (vector of index-expressions)"
+:start-key :end-token :end-key :count-key :row-filter (vector of index-expressions).
+
+Optional kw args:
+  - :super :  used as the super column name if specified
+  - :start : The column name to start the slice with.
+  - :finish : The column name to stop the slice at
+  - :reversed (bool): Whether the results should be ordered in reversed order.
+  - :count : How many columns to return, defaults to 100
+  - :columns: A list of column names to retrieve
+
+  - :start-token : The first token in the exclusive KeyRange.
+  - :end-token : The last token in the exclusive KeyRange.
+  - :start-key: The first key in the inclusive KeyRange.
+  - :end-key : The last key in the inclusive KeyRange.
+  - :count : The total number of keys to permit in the KeyRange.
+  - :row-filter: The list of index expressions vectors
+
+  - :consistency : optional consistency-level, defaults to :one
+  - :schema : schema used for result decoding
+  - :output : output format (if nil it will return casyn types,
+              if :as-map it will try to turn collections to maps"
   [^Cassandra$AsyncClient client cf
    & {:keys [super consistency schema output]
       :as opts}]
@@ -407,7 +551,20 @@ defined by the cassandra api). Accepts optional key-range arguments :start-token
 (defn get-indexed-slice
   "Accepts optional slice-predicate arguments :columns, :start, :finish, :count,
 :reversed, if you specify :columns the other slice args will be ignored (as
-defined by the cassandra api)"
+defined by the cassandra api).
+
+Optional kw args:
+  - :super :  used as the super column name if specified
+  - :start : The column name to start the slice with.
+  - :finish : The column name to stop the slice at
+  - :reversed (bool): Whether the results should be ordered in reversed order.
+  - :count : How many columns to return, defaults to 100
+  - :columns: A list of column names to retrieve
+
+  - :consistency : optional consistency-level, defaults to :one
+  - :schema : schema used for result decoding
+  - :output : output format (if nil it will return casyn types,
+              if :as-map it will try to turn collections to maps"
   [^Cassandra$AsyncClient client cf index-clause-args
    & {:keys [super consistency schema output]
       :as opts}]
@@ -420,8 +577,7 @@ defined by the cassandra api)"
    schema output))
 
 (defn get-paged-slice
-  "Accepts optional key-range arguments :start-token :start-key :end-token
-:end-key :count-key :row-filter (vector of index-expressions) and takes an additional :start-column name"
+  "DEPRECATED: use get-range-slice instead"
   [^Cassandra$AsyncClient client cf
    & {:keys [super consistency schema output]
       :as opts}]
@@ -434,42 +590,50 @@ defined by the cassandra api)"
    schema output))
 
 (defn truncate
-  ""
+  "Removes all the rows from the given column family."
   [^Cassandra$AsyncClient client cf]
   (wrap-result-channel (.truncate client cf)))
 
 (defn describe-cluster-name
-  ""
+  "Gets the name of the cluster."
   [^Cassandra$AsyncClient client]
   (wrap-result-channel (.describe_cluster_name client)))
 
 (defn describe-keyspace
-  ""
+  "Gets information about the specified keyspace."
   [^Cassandra$AsyncClient client ks]
   (wrap-result-channel (.describe_keyspace client ks)))
 
 (defn describe-keyspaces
-  ""
+  "Gets a list of all the keyspaces configured for the cluster."
   [^Cassandra$AsyncClient client]
   (wrap-result-channel (.describe_keyspaces client)))
 
 (defn describe-partitioner
-  ""
+  "Gets the name of the partitioner for the cluster."
   [^Cassandra$AsyncClient client]
   (wrap-result-channel (.describe_partitioner client)))
 
 (defn describe-ring
-  ""
+  "Gets the token ring; a map of ranges to host addresses. Represented
+  as a set of TokenRange instead of a map from range to list of
+  endpoints, because you can't use Thrift structs as map keys:
+  https://issues.apache.org/jira/browse/THRIFT-162 for the same
+  reason, we can't return a set here, even though order is neither
+  important nor predictable."
   [^Cassandra$AsyncClient client ks]
   (wrap-result-channel (.describe_ring client ks)))
 
 (defn describe-schema-versions
-  ""
+  "For each schema version present in the cluster, returns a list of
+  nodes at that version. Hosts that do not respond will be under the
+  key DatabaseDescriptor.INITIAL_VERSION. The cluster is all on the
+  same version if the size of the map is 1"
   [^Cassandra$AsyncClient client]
   (wrap-result-channel (.describe_schema_versions client)))
 
 (defn describe-snitch
-  ""
+  "Gets the name of the snitch used for the cluster."
   [^Cassandra$AsyncClient client]
   (wrap-result-channel (.describe_snitch client)))
 
@@ -487,7 +651,7 @@ defined by the cassandra api)"
   (wrap-result-channel (.describe_token_map client)))
 
 (defn describe-version
-  ""
+  "Gets the Thrift API version."
   [^Cassandra$AsyncClient client]
   (wrap-result-channel (.describe_version client)))
 
@@ -497,7 +661,8 @@ defined by the cassandra api)"
   (wrap-result-channel (.set_cql_version client version)))
 
 (defn prepare-cql-query
-  ""
+  "Prepare a CQL (Cassandra Query Language) statement by compiling and returning
+a casyn.types.CqlPreparedResult instance"
   [^Cassandra$AsyncClient client query]
   (wrap-result-channel
    (.prepare_cql_query client
@@ -505,7 +670,11 @@ defined by the cassandra api)"
                        Compression/NONE)))
 
 (defn execute-cql-query
-  ""
+  "Executes a CQL (Cassandra Query Language) statement.
+Optional kw args:
+  - :schema : schema used for result decoding
+  - :output : output format (if nil it will return casyn types,
+              if :as-map it will try to turn collections to maps"
   [^Cassandra$AsyncClient client query
    & {:keys [schema output]}]
   (wrap-result-channel+schema
@@ -515,8 +684,15 @@ defined by the cassandra api)"
    schema output))
 
 (defn execute-prepared-cql-query
-  ""
-  [^Cassandra$AsyncClient client item-id values & {:keys [schema output]}]
+  "Executes a prepared CQL (Cassandra Query Language) statement by
+  passing an id token and a list of variables to bind.
+
+Optional kw args:
+  - :schema : schema used for result decoding
+  - :output : output format (if nil it will return casyn types,
+              if :as-map it will try to turn collections to maps"
+  [^Cassandra$AsyncClient client item-id values
+   & {:keys [schema output]}]
   (wrap-result-channel+schema
    (.execute_prepared_cql_query client
                                 (int item-id)
@@ -528,7 +704,14 @@ defined by the cassandra api)"
 (defn put
   "Accepts cols as vectors or maps to be applied to cols
   constructors (use maps for simple key vals, use vectors if you need
-  to set ttl or timestamp"
+  to set mutations options:
+
+Optional kw args for mutations when passed as vectors:
+  - :type (keyword): Represents the column type
+                     defaults :column can also be :counter :super :counter-super
+  - :ttl (integer): Allows to specify the Time to live value for the column
+  - :timestamp (long): Allows to specify the Timestamp for the column
+                       (in nanosecs), defaults to the value for the current time"
   [^Cassandra$AsyncClient client cf row-key columns
    & {:keys [consistency type]}]
   (batch-mutate
