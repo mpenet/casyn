@@ -5,7 +5,8 @@
   (:require
    [casyn.utils :as utils]
    [lamina.core :as lc]
-   [tardis.core :as uuid]))
+   [tardis.core :as uuid]
+   [clj-time.core :as ctc]))
 
 
 (def c nil)
@@ -37,6 +38,7 @@
                 :float :float
                 :str :string
                 :date :date
+                :dt :date-time
                 :kw :keyword
                 :boo :boolean
                 :clj :clj
@@ -51,6 +53,7 @@
    :float (float 0.2)
    :double 0.3
    :date (java.util.Date.)
+   :dt (ctc/now)
    :str "meh"
    :kw :keyword
    :boo true
