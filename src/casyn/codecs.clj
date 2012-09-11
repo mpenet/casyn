@@ -8,7 +8,7 @@
             SuperColumn KeySlice CqlResult CqlRow CqlResultType CqlPreparedResult]
            [java.nio ByteBuffer]))
 
-(declare composite-expression meta-encodable)
+(declare meta-encodable)
 
 (defprotocol ThriftDecodable
   (thrift->clojure [v] "Transforms a thrift type to clojure friendly type"))
