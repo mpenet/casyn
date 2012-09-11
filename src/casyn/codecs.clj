@@ -1,8 +1,7 @@
 (ns casyn.codecs
   (:require casyn.types
             [taoensso.nippy :as nippy]
-            [tardis.core :as uuid]
-            [clj-time.coerce :as ct-c])
+            [tardis.core :as uuid])
   (:import [org.apache.cassandra.utils ByteBufferUtil]
            [org.apache.cassandra.thrift
             ColumnOrSuperColumn Column CounterColumn CounterSuperColumn
@@ -153,10 +152,6 @@
   (clojure->byte-buffer [d]
     (clojure->byte-buffer (.getTime d)))
 
-  org.joda.time.DateTime
-  (clojure->byte-buffer [dt]
-    (clojure->byte-buffer (ct-c/to-long dt)))
-
   java.util.UUID
   (clojure->byte-buffer [u]
     (clojure->byte-buffer (.toString u)))
@@ -205,9 +200,6 @@
 
 (defmethod bytes->clojure :date [_ b]
   (java.util.Date. ^long (bytes->clojure :long b)))
-
-(defmethod bytes->clojure :date-time [_ b]
-  (ct-c/from-long (bytes->clojure :long b)))
 
 (defmethod bytes->clojure :uuid [_ b]
   (java.util.UUID/fromString (bytes->clojure :string b)))

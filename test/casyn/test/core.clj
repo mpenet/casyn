@@ -4,6 +4,7 @@
    clojure.test)
   (:require
    [casyn.utils :as utils]
+   [casyn.codecs.joda ]
    [lamina.core :as lc]
    [tardis.core :as uuid]
    [clj-time.core :as ctc]))

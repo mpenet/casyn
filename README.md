@@ -137,9 +137,11 @@ user> {:age 35
        :created #inst "2012-08-22T22:34:41.079-00:00"}
 ```
 
-Supported types are `:string` `:long`  `:float`  `:double` `:int` `:boolean` `:keyword` `:bytes` `:date` `:date-time` (joda) `:uuid` `:time-uuid` `:composite` `:clj`
+Supported types are `:string` `:long`  `:float`  `:double` `:int` `:boolean` `:keyword` `:bytes` `:date` `:uuid` `:time-uuid` `:composite` `:clj`
 
 TimeUUIDs are supported from [tardis](https://github.com/mpenet/tardis), you will need to use its API to create Type 1 UUIDs, from there encoding/decoding is automatic.
+
+Joda time support is available, you need to require/use `casyn.codecs.joda`, and use `date-time` in your schemas.
 
 Composite types are also supported and use the same type definitions
 (they can be used as keys, names, values):
