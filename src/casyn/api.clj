@@ -129,7 +129,7 @@ Optional kw args:
 
 (defn column-parent
   "Returns a Thrift ColumnParent instance, works for common columns or
-  super columns depending on arity used. The \"super\" argument wil be
+  super columns depending on arity used. The \"super\" argument will be
   used as super column name (can be of any supported type)"
   ^ColumnParent [^String cf & [super]]
   (let [cp (ColumnParent. cf)]
