@@ -1,8 +1,6 @@
-# casyn
+# casyn [![Build Status](https://secure.travis-ci.org/mpenet/casyn.png?branch=master)](http://travis-ci.org/mpenet/casyn)
 
 Clojure client for Cassandra using Thrift AsyncClient.
-
-[![Build Status](https://secure.travis-ci.org/mpenet/casyn.png?branch=master)](http://travis-ci.org/mpenet/casyn)
 
 The entire [Cassandra Thrift Api (1.1.4)](http://wiki.apache.org/cassandra/API) is
 supported, this includes CQL support.
@@ -11,7 +9,7 @@ Pooling is using Apache commons pools, but it is open to other
 implementations from clojure Protocols/multimethods, the same is true for almost
 every part of the library (cluster, balancer, codecs, failover).
 
-It is a work in progress. Contributions, suggestions and bug reports  are welcome.
+Contributions, suggestions and bug reports  are welcome.
 
 
 ## Installation
