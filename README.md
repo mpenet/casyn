@@ -192,6 +192,16 @@ Some useful pages:
 Note: (almost) the entire lib is aliased from `casyn.core` so that you
 can have everything you need with a single `require`, as seen on the examples.
 
+## YourKit
+
+Casyn is being develpped with the help of YourKit profiler.
+
+> YourKit is kindly supporting open source projects with its full-featured Java Profiler.
+YourKit, LLC is the creator of innovative and intelligent tools for profiling
+Java and .NET applications. Take a look at YourKit's leading software products:
+[YourKit Java Profiler](http://www.yourkit.com/java/profiler/index.jsp)
+[YourKit .NET Profiler](http://www.yourkit.com/.net/profiler/index.jsp).
+
 ## License
 
 Copyright (C) 2012 Max Penet
