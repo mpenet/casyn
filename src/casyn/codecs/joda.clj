@@ -1,8 +1,9 @@
 (ns casyn.codecs.joda
-  (:require [casyn.codecs :refer [ByteBufferEncodable
-                                  bytes->clojure
-                                  clojure->byte-buffer]]
-            [clj-time.coerce :as ct-c]))
+  (:require
+   [casyn.codecs :refer [ByteBufferEncodable
+                         bytes->clojure
+                         clojure->byte-buffer]]
+   [clj-time.coerce :as ct-c]))
 
 (extend-protocol ByteBufferEncodable
   org.joda.time.DateTime

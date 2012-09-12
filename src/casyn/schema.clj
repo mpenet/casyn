@@ -1,6 +1,8 @@
 (ns casyn.schema
-  (:require [casyn.codecs :as codecs])
-  (:import [casyn.types Column CounterColumn SuperColumn CounterSuperColumn
+  (:require
+   [casyn.codecs :as codecs])
+  (:import
+   [casyn.types Column CounterColumn SuperColumn CounterSuperColumn
             KeySlice CqlResult CqlRow]))
 
 (defn cols->map

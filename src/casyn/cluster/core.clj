@@ -14,7 +14,8 @@
    [casyn.auto-discovery :as discovery]
    [casyn.pool.commons :as commons-pool])
 
-  (:import [org.apache.commons.pool.impl GenericKeyedObjectPool]))
+  (:import
+   [org.apache.commons.pool.impl GenericKeyedObjectPool]))
 
 (deftype Cluster [balancer pool cf-pool options]
   PCluster

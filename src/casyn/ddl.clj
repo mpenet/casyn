@@ -1,8 +1,10 @@
 (ns casyn.ddl
-  (:require [casyn.api :as api]
-            [casyn.codecs :as codecs])
-  (:import [org.apache.cassandra.thrift CfDef KsDef ColumnDef
-            Cassandra$AsyncClient IndexType]))
+  (:require
+   [casyn.api :as api]
+   [casyn.codecs :as codecs])
+  (:import
+   [org.apache.cassandra.thrift CfDef KsDef ColumnDef
+    Cassandra$AsyncClient IndexType]))
 
 
 ;; AbstractCommutativeType, AbstractCompositeType, AbstractUUIDType,

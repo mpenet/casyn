@@ -2,7 +2,8 @@
   (:require
    [casyn.balancer :refer [PBalancer balancer]]
    [casyn.pool :as p])
-  (:import [java.util.concurrent LinkedBlockingQueue]))
+  (:import
+   [java.util.concurrent LinkedBlockingQueue]))
 
 (deftype LeastLoadedBalancer [^LinkedBlockingQueue nodes]
 

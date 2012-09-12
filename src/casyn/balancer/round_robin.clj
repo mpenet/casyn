@@ -1,7 +1,9 @@
 (ns casyn.balancer.round-robin
-  (:require [casyn.balancer :refer [PBalancer balancer]])
-  (:import [java.util.concurrent LinkedBlockingQueue]
-           [java.util Collection]))
+  (:require
+   [casyn.balancer :refer [PBalancer balancer]])
+  (:import
+   [java.util.concurrent LinkedBlockingQueue]
+   [java.util Collection]))
 
 (deftype RoundRobinBalancer [^LinkedBlockingQueue nodes]
 

@@ -7,7 +7,8 @@
    [useful.exception :as uex]
    [clojure.tools.logging :as log]
    tron)
-  (:import [org.apache.cassandra.thrift KsDef TokenRange EndpointDetails]))
+  (:import
+   [org.apache.cassandra.thrift KsDef TokenRange EndpointDetails]))
 
 (defn discover
   [cluster]
