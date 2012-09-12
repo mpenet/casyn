@@ -194,7 +194,7 @@ can have everything you need with a single `require`, as seen on the examples.
 
 ## YourKit
 
-Casyn is being develpped with the help of YourKit profiler.
+Casyn is being developed with the help of YourKit profiler.
 
 > YourKit is kindly supporting open source projects with its full-featured Java Profiler.
 YourKit, LLC is the creator of innovative and intelligent tools for profiling
