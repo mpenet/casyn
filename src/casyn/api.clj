@@ -144,7 +144,6 @@ Optional kw args:
   - :type (keyword): Represents the column type, defaults :column can also be :counter
   - :super : super column name (can be of any supported type), must be present
              if type is :super"
-  ^ColumnPath
   ([^String cf & {:keys [super column]}]
      (let [cp ^ColumnPath (column-path cf)]
        (when super
@@ -199,7 +198,6 @@ Optional kw args:
   - :reversed (bool): Whether the results should be ordered in reversed order.
   - :count : How many columns to return, defaults to 100
   - :columns: A list of column names to retrieve"
-  ^SlicePredicate
   [{:keys [columns start finish reversed count]}]
   (let [sp (SlicePredicate.)]
     (if columns
