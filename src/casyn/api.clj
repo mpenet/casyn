@@ -49,6 +49,10 @@ http://javasourcecode.org/html/open-source/cassandra/cassandra-0.8.1/org/apache/
               meta :arglists
               ffirst meta :tag))))
 
+
+;; Macros that rewrite code using a dynamic var as client, but it is a
+;; broken hack in some circumstances, hence the ^:private for now.
+
 (defmacro ^:private with-client
   "Binds client for the enclosed body, won't work if the body contains
 partial or apply of api functions, if you need to handle this cases
