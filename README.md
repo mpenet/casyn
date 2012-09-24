@@ -57,7 +57,7 @@ user> < ... >
 ;; We now create a client function for our future requests
 ;; This will manage the node selection, connection pooling, and client
 ;; workflow for every command. It also allows you to set failover and
-;; timeout at this level or inherit thesse from cluster settings.
+;; timeout at this level or inherit these from cluster settings.
 
 (def c (client-fn cl))
 ```
