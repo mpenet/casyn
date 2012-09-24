@@ -1,4 +1,4 @@
-(ns casyn.codecs.joda
+(ns casyn.codecs.joda-time
   (:require
    [casyn.codecs :refer [ByteBufferEncodable
                          bytes->clojure
