@@ -7,6 +7,7 @@ http://javasourcecode.org/html/open-source/cassandra/cassandra-0.8.1/org/apache/
    [lamina.core :as lc]
    [casyn.utils :as utils]
    [casyn.codecs :as codecs]
+   [casyn.types :as t]
    [casyn.schema :as schema]
    [clojure.walk :as w])
 
@@ -93,7 +94,7 @@ partial call)"
        (lc/run-pipeline
         result-ch#
         {:error-handler (fn [_#])}
-        codecs/thrift->clojure
+        t/thrift->casyn
         ~@(filter identity post-realize-fns)))))
 
 (defmacro wrap-result-channel+schema [form schema output]
