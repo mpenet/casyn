@@ -70,16 +70,14 @@
 
   org.apache.cassandra.thrift.SuperColumn
   (thrift->casyn [sc]
-    (SuperColumn.
-     (.getName sc)
-     (thrift->casyn (.getColumns sc))))
+    (SuperColumn. (.getName sc)
+                  (thrift->casyn (.getColumns sc))))
 
 
   org.apache.cassandra.thrift.CounterSuperColumn
   (thrift->casyn [sc]
-    (CounterSuperColumn.
-     (.getName sc)
-     (thrift->casyn (.getColumns sc))))
+    (CounterSuperColumn. (.getName sc)
+                         (thrift->casyn (.getColumns sc))))
 
   org.apache.cassandra.thrift.KeySlice
   (thrift->casyn [ks]
