@@ -5,9 +5,6 @@
    [tardis.core :as uuid])
   (:import
    [org.apache.cassandra.utils ByteBufferUtil]
-   [org.apache.cassandra.thrift
-    ColumnOrSuperColumn Column CounterColumn CounterSuperColumn
-    SuperColumn KeySlice CqlResult CqlRow CqlResultType CqlPreparedResult]
    [java.nio ByteBuffer]))
 
 (declare meta-encodable)
