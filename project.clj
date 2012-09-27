@@ -9,7 +9,7 @@
                  [tron "0.5.3"]
                  [useful "0.8.4"]
                  [commons-pool "1.6"]
-                 [com.taoensso/nippy "0.10.2"]
+                 [com.taoensso/nippy "0.10.3"]
                  [cc.qbits/tardis "0.1.0"]
                  [clj-time "0.4.4"]]
   :profiles {:1.4  {:dependencies [[org.clojure/clojure "1.4.0"]]}
