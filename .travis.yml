@@ -9,6 +9,7 @@ jdk:
   - openjdk7
   - oraclejdk7
 
+
 branches:
   only:
     - master
