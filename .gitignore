@@ -10,3 +10,4 @@
 /updoc.sh
 /src/log4j.properties
 /target/stale/dependencies
+/resources/bench.clj
