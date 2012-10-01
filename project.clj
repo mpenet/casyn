@@ -9,19 +9,12 @@
                  [tron "0.5.3"]
                  [useful "0.8.4"]
                  [commons-pool "1.6"]
-                 [com.taoensso/nippy "0.10.3"]
+                 [com.taoensso/nippy "0.10.4"]
                  [cc.qbits/tardis "0.1.0"]
                  [clj-time "0.4.4"]]
   :profiles {:1.4  {:dependencies [[org.clojure/clojure "1.4.0"]]}
              :1.5  {:dependencies [[org.clojure/clojure "1.5.0-master-SNAPSHOT"]]}
-             :dev  {:dependencies [[codox "0.6.1"]
-                                   [org.xerial.snappy/snappy-java "1.0.5-SNAPSHOT"]]}
+             :dev  {:dependencies [[codox "0.6.1"]]}
              :test {:dependencies []}}
-  :repositories {"sonatype" {:url "http://oss.sonatype.org/content/repositories/releases"
-                             :snapshots false
-                             :releases {:checksum :fail :update :always}}
-                 "sonatype-snapshots" {:url "http://oss.sonatype.org/content/repositories/snapshots"
-                                       :snapshots true
-                                       :releases {:checksum :fail :update :always}}}
   :min-lein-version "2.0.0"
   :warn-on-reflection true)
