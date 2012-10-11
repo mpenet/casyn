@@ -69,6 +69,8 @@ ips by turning auto-discovery off.
 
    :num-selector-threads -> 3 (numer of Selector Threads to be used by clients)
 
+   :callback-executor -> Task Executor on which the callbacks will run, defaults to a newCachedThreadPool
+
    :pool -> see casyn.pool.commons/make-pool options"
   [hosts port keyspace & options]
   (let [opts (merge defaults (apply array-map options))
