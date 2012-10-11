@@ -273,8 +273,7 @@
   (is (= nil @(lc/run-pipeline
                (c get-column cf "1" "meh")
                :foo
-               :bar)))
-    (println :err-handlers3))
+               :bar))))
 
 (deftest test-cql
   (is @(lc/run-pipeline

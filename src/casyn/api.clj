@@ -41,14 +41,6 @@ http://javasourcecode.org/html/open-source/cassandra/cassandra-0.8.1/org/apache/
   `(binding [casyn.api/*consistency-default* ~consistency]
      ~@body))
 
-(defn ^:private api-fn?
-  [v]
-  (and (symbol? v)
-       (= 'Cassandra$AsyncClient
-          (-> (ns-resolve 'casyn.api v)
-              meta :arglists
-              ffirst meta :tag))))
-
 ;; Async helper
 (defmacro wrap-result-channel
   "Wraps a form in a Lamina result-channel, and make the last arg of the form an
@@ -75,10 +67,6 @@ http://javasourcecode.org/html/open-source/cassandra/cassandra-0.8.1/org/apache/
         {:error-handler (fn [_#])}
         t/thrift->casyn
         ~@(filter identity post-realize-fns)))))
-
-
-
-
 
 (defmacro wrap-result-channel+schema [form schema output]
   `(wrap-result-channel

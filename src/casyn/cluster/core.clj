@@ -9,6 +9,7 @@
    [casyn.balancer :as b]
    [casyn.pool :as p]
    [casyn.client :as c]
+   [casyn.executor :as x]
    [casyn.balancer.least-loaded :as bll]
    [casyn.balancer.round-robin :as brr]
    [casyn.auto-discovery :as discovery]
@@ -48,7 +49,8 @@
 (def defaults {:auto-discovery true
                :load-balancer-strategy :round-robin
                :num-selector-threads 3
-               :client-timeout 5000})
+               :client-timeout 5000
+               :callback-executor x/default-executor})
 
 (defn make-cluster
   "Returns a cluster instance, this will be used to spawn client-fns and set
@@ -71,10 +73,10 @@ ips by turning auto-discovery off.
   [hosts port keyspace & options]
   (let [opts (merge defaults (apply array-map options))
         {:keys [auto-discovery load-balancer-strategy
-                num-selector-threads pool failover]} opts
+                num-selector-threads pool callback-executor failover]} opts
         cf-pool (c/client-factory-pool num-selector-threads)
         cluster (Cluster. (b/balancer load-balancer-strategy)
-                          (apply commons-pool/make-pool port keyspace cf-pool
+                          (apply commons-pool/make-pool port keyspace cf-pool callback-executor
                                  (mapcat (juxt key val) pool))
                           cf-pool
                           opts)]

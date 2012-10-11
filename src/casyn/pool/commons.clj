@@ -50,10 +50,10 @@
     (.getNumIdle pool)))
 
 (defn make-factory
-  [port keyspace cf-pool]
+  [port keyspace cf-pool callback-executor]
   (reify KeyedPoolableObjectFactory
     (makeObject [this node-host]
-      (when-let [client (c/make-client node-host port cf-pool)]
+      (when-let [client (c/make-client node-host port cf-pool callback-executor)]
         @(api/set-keyspace client keyspace)
         client))
     (destroyObject [this node-host client]
@@ -106,9 +106,10 @@ List of supported options are:
 They map to the equivalents you can find on the apache commons pool documentation:
 http://commons.apache.org/pool/apidocs/org/apache/commons/pool/impl/GenericKeyedObjectPool.html"
   ^GenericKeyedObjectPool
-  [port keyspace cf-pool & options]
+  [port keyspace cf-pool callback-executor & options]
   (reduce set-pool-option
           (GenericKeyedObjectPool. (make-factory port
                                                  keyspace
-                                                 cf-pool))
+                                                 cf-pool
+                                                 callback-executor))
           (merge defaults (apply hash-map options))))
