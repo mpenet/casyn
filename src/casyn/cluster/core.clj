@@ -63,13 +63,13 @@ ips by turning auto-discovery off.
 
   options are:
 
-   + :auto-discovery -> true (updates balancer with new/lost nodes)
+   :auto-discovery -> true (updates balancer with new/lost nodes)
 
-   + :load-balancer-strategy -> :round-robin or :least-loaded (sets balancer strategy)
+   :load-balancer-strategy -> :round-robin or :least-loaded (sets balancer strategy)
 
-   + :num-selector-threads -> 3 (numer of Selector Threads to be used by clients)
+   :num-selector-threads -> 3 (numer of Selector Threads to be used by clients)
 
-   + :pool -> see casyn.pool.commons/make-pool options"
+   :pool -> see casyn.pool.commons/make-pool options"
   [hosts port keyspace & options]
   (let [opts (merge defaults (apply array-map options))
         {:keys [auto-discovery load-balancer-strategy

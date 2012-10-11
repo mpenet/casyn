@@ -80,9 +80,9 @@ http://javasourcecode.org/html/open-source/cassandra/cassandra-0.8.1/org/apache/
 (defn column
   "Returns a Thrift Column instance.
 Optional kw args:
-  - :type (keyword): Represents the column type, defaults :column can also be :counter
-  - :ttl (integer): Allows to specify the Time to live value for the column
-  - :timestamp (long): Allows to specify the Timestamp for the column
+  :type (keyword): Represents the column type, defaults :column can also be :counter
+  :ttl (integer): Allows to specify the Time to live value for the column
+  :timestamp (long): Allows to specify the Timestamp for the column
                        (in nanosecs), defaults to the value for the current time"
   [name value & {:keys [type ttl timestamp]
                  :or {type :column}}]
@@ -113,8 +113,8 @@ Optional kw args:
   "Returns a Thrift ColumnPath instance, works for common columns or
   super columns depending on arity used.
 Optional kw args:
-  - :type (keyword): Represents the column type, defaults :column can also be :counter
-  - :super : super column name (can be of any supported type), must be present
+  :type (keyword): Represents the column type, defaults :column can also be :counter
+  :super : super column name (can be of any supported type), must be present
              if type is :super"
   ([^String cf & {:keys [super column]}]
      (let [cp ^ColumnPath (column-path cf)]
@@ -150,8 +150,8 @@ Example: [[:eq? :foo \"bar\"]
   "Defines one or more IndexExpressions for get_indexed_slices. An
 IndexExpression containing an EQ IndexOperator must be present.
 Optional kw args:
-  - :start-key : The first key in the inclusive KeyRange
-  - :count (long): The total number of keys to permit in the KeyRange. defaults to 100"
+  :start-key : The first key in the inclusive KeyRange
+  :count (long): The total number of keys to permit in the KeyRange. defaults to 100"
   [expressions & {:keys [start-key count]
                   :or {count 100}}]
   (IndexClause. (index-expressions expressions)
@@ -165,11 +165,11 @@ Ex: (slice-predicate {:columns [\"foo\" \"bar\"]})
     (slice-predicate :start 100 :finish 200 :reversed true :count 10)
 
 Optional kw args:
-  - :start : The column name to start the slice with.
-  - :finish : The column name to stop the slice at
-  - :reversed (bool): Whether the results should be ordered in reversed order.
-  - :count : How many columns to return, defaults to 100
-  - :columns: A list of column names to retrieve"
+  :start : The column name to start the slice with.
+  :finish : The column name to stop the slice at
+  :reversed (bool): Whether the results should be ordered in reversed order.
+  :count : How many columns to return, defaults to 100
+  :columns: A list of column names to retrieve"
   [{:keys [columns start finish reversed count]}]
   (let [sp (SlicePredicate.)]
     (if columns
@@ -184,12 +184,12 @@ Optional kw args:
   accepts a sequence of index expressions, see index-expression
 
 Optional kw args:
-  - :start-token : The first token in the exclusive KeyRange.
-  - :end-token : The last token in the exclusive KeyRange.
-  - :start-key: The first key in the inclusive KeyRange.
-  - :end-key : The last key in the inclusive KeyRange.
-  - :count : The total number of keys to permit in the KeyRange.
-  - :row-filter: The list of index expressions vectors"
+  :start-token : The first token in the exclusive KeyRange.
+  :end-token : The last token in the exclusive KeyRange.
+  :start-key: The first key in the inclusive KeyRange.
+  :end-key : The last key in the inclusive KeyRange.
+  :count : The total number of keys to permit in the KeyRange.
+  :row-filter: The list of index expressions vectors"
   [{:keys [start-token start-key end-token end-key count row-filter]}]
   (let [kr (KeyRange.)]
     (when start-token (.setStart_token kr ^String start-token))
@@ -207,10 +207,10 @@ Optional kw args:
   regular columns, otherwise ignored.
 
 Optional kw args:
-  - :type (keyword): Represents the column type
+  :type (keyword): Represents the column type
                      defaults :column can also be :counter :super :counter-super
-  - :ttl (integer): Allows to specify the Time to live value for the column
-  - :timestamp (long): Allows to specify the Timestamp for the column
+  :ttl (integer): Allows to specify the Time to live value for the column
+  :timestamp (long): Allows to specify the Timestamp for the column
                        (in nanosecs), defaults to the value for the current time"
   [name value & {:keys [type ttl timestamp]}]
   (doto (Mutation.)
@@ -241,12 +241,12 @@ Optional kw args:
 defined by thrift)
 
 Optional kw args:
-  - :super : optional super column name
-  - :start : The column name to start the slice with.
-  - :finish : The column name to stop the slice at
-  - :reversed (bool): Whether the results should be ordered in reversed order.
-  - :count : How many columns to return, defaults to 100
-  - :columns: A list of column names to retrieve"
+  :super : optional super column name
+  :start : The column name to start the slice with.
+  :finish : The column name to stop the slice at
+  :reversed (bool): Whether the results should be ordered in reversed order.
+  :count : How many columns to return, defaults to 100
+  :columns: A list of column names to retrieve"
   [& {:keys [super]
       :as opts}] ;; expects a pred and opt sc
   (doto (Mutation.)
@@ -273,10 +273,10 @@ Optional kw args:
 (defn get-column
   "Returns a single column.
 Optional kw args:
-  - :consistency : optional consistency-level, defaults to :one
-  - :super : optional super column name
-  - :schema : schema used for result decoding
-  - :output : output format (if nil it will return casyn types,
+  :consistency : optional consistency-level, defaults to :one
+  :super : optional super column name
+  :schema : schema used for result decoding
+  :output : output format (if nil it will return casyn types,
               if :as-map it will try to turn collections to maps"
   [^Client client cf row-key col
    & {:keys [super consistency schema output]}]
@@ -292,15 +292,15 @@ Optional kw args:
 :reversed, if you specify :columns the other slice args will be ignored (as defined by the cassandra api).
 
 Optional kw args:
-  - :super : optional super column name
-  - :start : The column name to start the slice with.
-  - :finish : The column name to stop the slice at
-  - :reversed (bool): Whether the results should be ordered in reversed order.
-  - :count : How many columns to return, defaults to 100
-  - :columns: A list of column names to retrieve
-  - :consistency : optional consistency-level, defaults to :one
-  - :schema : schema used for result decoding
-  - :output : output format (if nil it will return casyn types,
+  :super : optional super column name
+  :start : The column name to start the slice with.
+  :finish : The column name to stop the slice at
+  :reversed (bool): Whether the results should be ordered in reversed order.
+  :count : How many columns to return, defaults to 100
+  :columns: A list of column names to retrieve
+  :consistency : optional consistency-level, defaults to :one
+  :schema : schema used for result decoding
+  :output : output format (if nil it will return casyn types,
               if :as-map it will try to turn collections to maps"
   [^Client client cf row-key
    & {:keys [super consistency schema output]
@@ -320,15 +320,15 @@ Optional kw args:
    specify :columns the other slice args will be ignored (as defined by the cassandra api)
 
 Optional kw args:
-  - :super : optional super column name
-  - :start : The column name to start the slice with.
-  - :finish : The column name to stop the slice at
-  - :reversed (bool): Whether the results should be ordered in reversed order.
-  - :count : How many columns to return, defaults to 100
-  - :columns: A list of column names to retrieve
-  - :consistency : optional consistency-level, defaults to :one
-  - :schema : schema used for result decoding
-  - :output : output format (if nil it will return casyn types,
+  :super : optional super column name
+  :start : The column name to start the slice with.
+  :finish : The column name to stop the slice at
+  :reversed (bool): Whether the results should be ordered in reversed order.
+  :count : How many columns to return, defaults to 100
+  :columns: A list of column names to retrieve
+  :consistency : optional consistency-level, defaults to :one
+  :schema : schema used for result decoding
+  :output : output format (if nil it will return casyn types,
               if :as-map it will try to turn collections to maps"
   [^Client client cf row-keys
    & {:keys [super consistency schema output]
@@ -347,15 +347,15 @@ Optional kw args:
 defined by the cassandra api).
 
 Optional kw args:
-  - :super : optional super column name
-  - :start : The column name to start the slice with.
-  - :finish : The column name to stop the slice at
-  - :reversed (bool): Whether the results should be ordered in reversed order.
-  - :count : How many columns to return, defaults to 100
-  - :columns: A list of column names to retrieve
-  - :consistency : optional consistency-level, defaults to :one
-  - :schema : schema used for result decoding
-  - :output : output format (if nil it will return casyn types,
+  :super : optional super column name
+  :start : The column name to start the slice with.
+  :finish : The column name to stop the slice at
+  :reversed (bool): Whether the results should be ordered in reversed order.
+  :count : How many columns to return, defaults to 100
+  :columns: A list of column names to retrieve
+  :consistency : optional consistency-level, defaults to :one
+  :schema : schema used for result decoding
+  :output : output format (if nil it will return casyn types,
               if :as-map it will try to turn collections to maps"
   [^Client client cf row-key
    & {:keys [super consistency schema output]
@@ -374,15 +374,15 @@ Optional kw args:
 defined by the cassandra api).
 
 Optional kw args:
-  - :super : optional super column name
-  - :start : The column name to start the slice with.
-  - :finish : The column name to stop the slice at
-  - :reversed (bool): Whether the results should be ordered in reversed order.
-  - :count : How many columns to return, defaults to 100
-  - :columns: A list of column names to retrieve
-  - :consistency : optional consistency-level, defaults to :one
-  - :schema : schema used for result decoding
-  - :output : output format (if nil it will return casyn types,
+  :super : optional super column name
+  :start : The column name to start the slice with.
+  :finish : The column name to stop the slice at
+  :reversed (bool): Whether the results should be ordered in reversed order.
+  :count : How many columns to return, defaults to 100
+  :columns: A list of column names to retrieve
+  :consistency : optional consistency-level, defaults to :one
+  :schema : schema used for result decoding
+  :output : output format (if nil it will return casyn types,
               if :as-map it will try to turn collections to maps"
   [^Client client cf row-keys
    & {:keys [super consistency schema output]
@@ -399,12 +399,12 @@ Optional kw args:
   "Inserts a single column.
 
 Optional kw args:
-  - :type (keyword): Represents the column type, defaults :column can also be :counter, :super
-  - :super : if type if :super this argument will be used as the super column name
-  - :ttl (integer): Allows to specify the Time to live value for the column
-  - :timestamp (long): Allows to specify the Timestamp for the column
+  :type (keyword): Represents the column type, defaults :column can also be :counter, :super
+  :super : if type if :super this argument will be used as the super column name
+  :ttl (integer): Allows to specify the Time to live value for the column
+  :timestamp (long): Allows to specify the Timestamp for the column
                        (in nanosecs), defaults to the value for the current time
-  - :consistency : optional consistency-level, defaults to :one"
+  :consistency : optional consistency-level, defaults to :one"
   [^Client client cf row-key name value
    & {:keys [super type consistency ttl timestamp]
       :or {type :column}}]
@@ -423,8 +423,8 @@ Optional kw args:
   "Increment the specified counter column value.
 
 Optional kw args:
-  - :super : this argument will be used as the super column name if specified
-  - :consistency : optional consistency-level, defaults to :one"
+  :super : this argument will be used as the super column name if specified
+  :consistency : optional consistency-level, defaults to :one"
   [^Client client cf row-key column-name value
    & {:keys [super consistency]}]
   (wrap-result-channel
@@ -438,12 +438,12 @@ Optional kw args:
   "Delete column(s), works on regular columns or counters.
 
 Optional kw args:
-  - :type (keyword): Represents the column type, defaults :column can also be :counter, :super
-  - :super :  used as the super column name if specified
-  - :ttl (integer): Allows to specify the Time to live value for the column
-  - :timestamp (long): Allows to specify the Timestamp for the column
+  :type (keyword): Represents the column type, defaults :column can also be :counter, :super
+  :super :  used as the super column name if specified
+  :ttl (integer): Allows to specify the Time to live value for the column
+  :timestamp (long): Allows to specify the Timestamp for the column
                        (in nanosecs), defaults to the value for the current time
-  - :consistency : optional consistency-level, defaults to :one"
+  :consistency : optional consistency-level, defaults to :one"
   [^Client client cf row-key
    & {:keys [column super timestamp consistency type]
       :or {timestamp (utils/ts)}}]
@@ -471,7 +471,7 @@ Example:
   \"row-1\" {cf [(mutation \"n1\" \"n10\")]}}
 
 Optional kw args:
-  - :consistency : optional consistency-level, defaults to :one"
+  :consistency : optional consistency-level, defaults to :one"
   [^Client client mutations
    & {:keys [consistency]}]
   (wrap-result-channel
@@ -489,23 +489,23 @@ defined by the cassandra api). Accepts optional key-range arguments :start-token
 :start-key :end-token :end-key :count-key :row-filter (vector of index-expressions).
 
 Optional kw args:
-  - :super :  used as the super column name if specified
-  - :start : The column name to start the slice with.
-  - :finish : The column name to stop the slice at
-  - :reversed (bool): Whether the results should be ordered in reversed order.
-  - :count : How many columns to return, defaults to 100
-  - :columns: A list of column names to retrieve
+  :super :  used as the super column name if specified
+  :start : The column name to start the slice with.
+  :finish : The column name to stop the slice at
+  :reversed (bool): Whether the results should be ordered in reversed order.
+  :count : How many columns to return, defaults to 100
+  :columns: A list of column names to retrieve
 
-  - :start-token : The first token in the exclusive KeyRange.
-  - :end-token : The last token in the exclusive KeyRange.
-  - :start-key: The first key in the inclusive KeyRange.
-  - :end-key : The last key in the inclusive KeyRange.
-  - :count : The total number of keys to permit in the KeyRange.
-  - :row-filter: The list of index expressions vectors
+  :start-token : The first token in the exclusive KeyRange.
+  :end-token : The last token in the exclusive KeyRange.
+  :start-key: The first key in the inclusive KeyRange.
+  :end-key : The last key in the inclusive KeyRange.
+  :count : The total number of keys to permit in the KeyRange.
+  :row-filter: The list of index expressions vectors
 
-  - :consistency : optional consistency-level, defaults to :one
-  - :schema : schema used for result decoding
-  - :output : output format (if nil it will return casyn types,
+  :consistency : optional consistency-level, defaults to :one
+  :schema : schema used for result decoding
+  :output : output format (if nil it will return casyn types,
               if :as-map it will try to turn collections to maps"
   [^Client client cf
    & {:keys [super consistency schema output]
@@ -524,16 +524,16 @@ Optional kw args:
 defined by the cassandra api).
 
 Optional kw args:
-  - :super :  used as the super column name if specified
-  - :start : The column name to start the slice with.
-  - :finish : The column name to stop the slice at
-  - :reversed (bool): Whether the results should be ordered in reversed order.
-  - :count : How many columns to return, defaults to 100
-  - :columns: A list of column names to retrieve
+  :super :  used as the super column name if specified
+  :start : The column name to start the slice with.
+  :finish : The column name to stop the slice at
+  :reversed (bool): Whether the results should be ordered in reversed order.
+  :count : How many columns to return, defaults to 100
+  :columns: A list of column names to retrieve
 
-  - :consistency : optional consistency-level, defaults to :one
-  - :schema : schema used for result decoding
-  - :output : output format (if nil it will return casyn types,
+  :consistency : optional consistency-level, defaults to :one
+  :schema : schema used for result decoding
+  :output : output format (if nil it will return casyn types,
               if :as-map it will try to turn collections to maps"
   [^Client client cf index-clause-args
    & {:keys [super consistency schema output]
@@ -642,8 +642,8 @@ a casyn.types.CqlPreparedResult instance"
 (defn execute-cql-query
   "Executes a CQL (Cassandra Query Language) statement.
 Optional kw args:
-  - :schema : schema used for result decoding
-  - :output : output format (if nil it will return casyn types,
+  :schema : schema used for result decoding
+  :output : output format (if nil it will return casyn types,
               if :as-map it will try to turn collections to maps"
   [^Client client  query
    & {:keys [schema output]}]
@@ -658,8 +658,8 @@ Optional kw args:
   passing an id token and a list of variables to bind.
 
 Optional kw args:
-  - :schema : schema used for result decoding
-  - :output : output format (if nil it will return casyn types,
+  :schema : schema used for result decoding
+  :output : output format (if nil it will return casyn types,
               if :as-map it will try to turn collections to maps"
   [^Client client item-id values
    & {:keys [schema output]}]
@@ -677,10 +677,10 @@ Optional kw args:
   to set mutations options:
 
 Optional kw args for mutations when passed as vectors:
-  - :type (keyword): Represents the column type
+  :type (keyword): Represents the column type
                      defaults :column can also be :counter :super :counter-super
-  - :ttl (integer): Allows to specify the Time to live value for the column
-  - :timestamp (long): Allows to specify the Timestamp for the column
+  :ttl (integer): Allows to specify the Time to live value for the column
+  :timestamp (long): Allows to specify the Timestamp for the column
                        (in nanosecs), defaults to the value for the current time"
   [^Client client cf row-key columns
    & {:keys [consistency type]}]

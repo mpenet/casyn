@@ -89,19 +89,19 @@
 
 List of supported options are:
 
-+ :max-active
-+ :max-total
-+ :min-idle
-+ :max-idle
-+ :max-wait
-+ :lifo
-+ :test-on-borrow
-+ :test-on-return
-+ :test-while-idle
-+ :when-exhausted-action
-+ :num-tests-per-eviction-run
-+ :time-between-eviction-runs-ms
-+ :min-evictable-idle-time-ms
+:max-active
+:max-total
+:min-idle
+:max-idle
+:max-wait
+:lifo
+:test-on-borrow
+:test-on-return
+:test-while-idle
+:when-exhausted-action
+:num-tests-per-eviction-run
+:time-between-eviction-runs-ms
+:min-evictable-idle-time-ms
 
 They map to the equivalents you can find on the apache commons pool documentation:
 http://commons.apache.org/pool/apidocs/org/apache/commons/pool/impl/GenericKeyedObjectPool.html"
