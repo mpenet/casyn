@@ -261,8 +261,6 @@
                (c get-row cf "mehhhhh" :super "meh" :schema test-schema)
                {:error-handler
                 (fn [e]
-                  (println e)
-
                   (if-not (instance? org.apache.cassandra.thrift.InvalidRequestException e)
                     (throw (Exception. "meh"))
                     (lc/complete nil))
