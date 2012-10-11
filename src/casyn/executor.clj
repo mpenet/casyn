@@ -3,14 +3,17 @@
   (:import [java.util.concurrent Future ThreadFactory Executors ExecutorService
             ScheduledThreadPoolExecutor TimeUnit]))
 
-(defn thread-factory [& {:keys [daemon]
-                         :or {daemon true}}]
+(defn thread-factory
+  ""
+  [& {:keys [daemon]
+      :or {daemon true}}]
   (reify ThreadFactory
     (newThread [_ f]
       (doto (Thread. f)
         (.setDaemon daemon)))))
 
 (defn ^Future execute
+  ""
   [^ExecutorService executor ^Callable f]
   (.submit executor f))
 
