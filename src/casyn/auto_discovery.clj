@@ -6,7 +6,7 @@
    [lamina.core :as lc]
    [useful.exception :as uex]
    [clojure.tools.logging :as log]
-   tron)
+   [casyn.executor :as x])
   (:import
    [org.apache.cassandra.thrift KsDef TokenRange EndpointDetails]))
 
@@ -35,8 +35,7 @@
 
 (defn start-worker
   ([cluster interval]
-     (tron/periodically
-      :casyn.auto-discovery.worker
+     (x/periodically
       #(when-let [nodes (discover cluster)]
          (clu/refresh cluster nodes))
       interval))

@@ -142,8 +142,6 @@
    nil
    {:error-handler
     (fn [e]
-      (println e)
-
       (dispose-pipeline state)
       (let [etype (type e)]
         (lc/complete

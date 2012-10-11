@@ -6,7 +6,6 @@
   :dependencies [[org.clojure/clojure "1.4.0"]
                  [lamina "0.5.0-beta6"]
                  [org.apache.cassandra/cassandra-all "1.1.5"]
-                 [tron "0.5.3"]
                  [useful "0.8.4"]
                  [commons-pool "1.6"]
                  [com.taoensso/nippy "0.10.4"]

@@ -1,6 +1,6 @@
 (ns casyn.executor
-  (:import [java.util.concurrent Callable Future ExecutorService Executors ThreadFactory
-            CancellationException ExecutionException TimeoutException]))
+  (:import [java.util.concurrent Callable Future ExecutorService Executors
+            ThreadFactory ScheduledThreadPoolExecutor TimeUnit]))
 
 (defn thread-factory [& {:keys [daemon]
                          :or {daemon true}}]
@@ -14,3 +14,13 @@
   (.submit executor f))
 
 (def default-executor (Executors/newCachedThreadPool (thread-factory)))
+
+(defn periodically
+  "Executes fn at specified interval, fn execution offsets the delay"
+  [f delay & {:keys [init pool-size]
+              :or {init 0 pool-size 1}}]
+  (.scheduleWithFixedDelay (ScheduledThreadPoolExecutor. pool-size)
+                           ^Runnable f
+                           ^long init
+                           ^long delay
+                           TimeUnit/MILLISECONDS))
