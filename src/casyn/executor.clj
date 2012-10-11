@@ -1,4 +1,5 @@
 (ns casyn.executor
+  ""
   (:import [java.util.concurrent Future ThreadFactory Executors ExecutorService
             ScheduledThreadPoolExecutor TimeUnit]))
 
@@ -13,7 +14,7 @@
   [^ExecutorService executor ^Callable f]
   (.submit executor f))
 
-(def default-executor (Executors/newCachedThreadPool (thread-factory)))
+(defonce default-executor (Executors/newCachedThreadPool (thread-factory)))
 
 (defn periodically
   "Executes fn at specified interval, fn execution offsets the delay"

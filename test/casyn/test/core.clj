@@ -222,12 +222,6 @@
                       :end-key "1"
                       :columns ["n0" "n00"]
                       :row-filter [[:eq? "n0" "value0"]]
-                      :schema test-schema))))
-
-  (is (= 1 (count @(c get-paged-slice cf
-                      :start-key "0"
-                      :end-key "0"
-                      :start-column "n0"
                       :schema test-schema)))))
 
 (deftest codecs

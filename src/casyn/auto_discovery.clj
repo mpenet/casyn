@@ -1,12 +1,13 @@
 (ns casyn.auto-discovery
+  ""
   (:require
+   [casyn.client :as c]
    [casyn.api :as api]
    [casyn.cluster :as clu]
-   [casyn.client :as c]
+   [casyn.executor :as x]
    [lamina.core :as lc]
    [useful.exception :as uex]
-   [clojure.tools.logging :as log]
-   [casyn.executor :as x])
+   [clojure.tools.logging :as log])
   (:import
    [org.apache.cassandra.thrift KsDef TokenRange EndpointDetails]))
 

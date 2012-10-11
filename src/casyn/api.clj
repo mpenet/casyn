@@ -6,6 +6,7 @@ http://javasourcecode.org/html/open-source/cassandra/cassandra-0.8.1/org/apache/
   (:require
    [lamina.core :as lc]
    [casyn.utils :as utils]
+   [casyn.client :as c]
    [casyn.executor :as x]
    [casyn.codecs :as codecs]
    [casyn.types :as t]
@@ -544,19 +545,6 @@ Optional kw args:
                         (index-clause index-clause-args)
                         (slice-predicate opts)
                         (consistency-level consistency))
-    schema output))
-
-(defn get-paged-slice
-  "DEPRECATED: use get-range-slice instead"
-  [^Client client cf
-   & {:keys [super consistency schema output]
-      :as opts}]
-  (wrap-result-channel+schema
-   (.get_paged_slice client
-                     cf
-                     (key-range opts)
-                     (-> opts :start-column codecs/clojure->byte-buffer)
-                     (consistency-level consistency))
     schema output))
 
 (defn truncate
