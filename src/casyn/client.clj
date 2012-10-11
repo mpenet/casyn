@@ -3,7 +3,8 @@
    [lamina.core :as lc]
    [casyn.cluster :as c]
    [casyn.pool :as p]
-   [casyn.balancer :as b])
+   [casyn.balancer :as b]
+   [casyn.executor :as x])
 
   (:import
    [org.apache.cassandra.thrift Cassandra$AsyncClient Cassandra$AsyncClient$Factory
@@ -148,7 +149,7 @@
            [error-stage (assoc state :error e)]))))}
    (fn [_]
      (let [{:keys [f client args]} state]
-       (apply f client args)))
+       (apply f client x/default-executor args)))
    #(do
       (dispose-pipeline state)
       [nil %])))

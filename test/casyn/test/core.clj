@@ -99,7 +99,7 @@
 
    (try
      (println "trying to drop" ks)
-     @(drop-keyspace (make-client "127.0.0.1" 9160) ks)
+     @(drop-keyspace (make-client "127.0.0.1" 9160)  ks)
      (println "droped" ks)
      (catch Exception e
        (print-line)

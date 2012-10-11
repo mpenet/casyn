@@ -1,5 +1,5 @@
 (defproject cc.qbits/casyn "0.1.7-SNAPSHOT"
-  :description "Clojure client for Cassandra using Thrift AsyncClient + Lamina/perf"
+  :description "Cassandra client with support for asynchronous operations"
   :url "https://github.com/mpenet/casyn"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
@@ -9,6 +9,7 @@
                  [tron "0.5.3"]
                  [useful "0.8.4"]
                  [commons-pool "1.6"]
+                 [pallet-thread "0.1.0"]
                  [com.taoensso/nippy "0.10.4"]
                  [cc.qbits/tardis "0.1.0"]
                  [clj-time "0.4.4"]]

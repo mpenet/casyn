@@ -2,7 +2,8 @@
   (:require
    [casyn.pool :refer [PPool returnable? return invalidate]]
    [casyn.client :as c]
-   [casyn.api :as api])
+   [casyn.api :as api]
+   [casyn.executor :as x])
 
   (:import
    [org.apache.commons.pool KeyedPoolableObjectFactory]
@@ -53,7 +54,7 @@
   (reify KeyedPoolableObjectFactory
     (makeObject [this node-host]
       (when-let [client (c/make-client node-host port cf-pool)]
-        @(api/set-keyspace client keyspace)
+        @(api/set-keyspace client x/default-executor keyspace)
         client))
     (destroyObject [this node-host client]
       (c/kill client))
