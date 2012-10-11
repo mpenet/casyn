@@ -1,6 +1,6 @@
 (ns casyn.executor
-  (:import [java.util.concurrent Callable Future ExecutorService Executors
-            ThreadFactory ScheduledThreadPoolExecutor TimeUnit]))
+  (:import [java.util.concurrent Future ThreadFactory
+            ScheduledThreadPoolExecutor TimeUnit]))
 
 (defn thread-factory [& {:keys [daemon]
                          :or {daemon true}}]
