@@ -3,9 +3,9 @@
    [casyn.api :as api]
    [casyn.codecs :as codecs])
   (:import
+   [casyn.client Client]
    [org.apache.cassandra.thrift CfDef KsDef ColumnDef
-    Cassandra$AsyncClient IndexType]
-   [java.util.concurrent ThreadPoolExecutor]))
+    Cassandra$AsyncClient IndexType]))
 
 
 ;; AbstractCommutativeType, AbstractCompositeType, AbstractUUIDType,
@@ -129,8 +129,7 @@
     ksd))
 
 (defn add-keyspace
-  ""
-  [^Cassandra$AsyncClient client ^ThreadPoolExecutor executor ks-name strategy-class column-family-defs & more]
+  [^Client client ks-name strategy-class column-family-defs & more]
   (api/wrap-result-channel
    (.system_add_keyspace
     client
@@ -138,12 +137,11 @@
            ks-name strategy-class
            (map #(cons ks-name %)
                 column-family-defs)
-           more))
-   executor))
+           more))))
 
 (defn update-keyspace
   ""
-  [^Cassandra$AsyncClient client ^ThreadPoolExecutor executor ks-name strategy-class column-family-defs & more]
+  [^Client client ks-name strategy-class column-family-defs & more]
   (api/wrap-result-channel
    (.system_update_keyspace
     client
@@ -151,37 +149,32 @@
            ks-name strategy-class
            (map #(cons ks-name %)
                 column-family-defs)
-           more))
-   executor))
+           more))))
 
 (defn drop-keyspace
   ""
-  [^Cassandra$AsyncClient client ^ThreadPoolExecutor executor ks-name]
+  [^Client client ks-name]
   (api/wrap-result-channel
-   (.system_drop_keyspace client ks-name)
-   executor))
+   (.system_drop_keyspace client ks-name)))
 
 (defn add-column-family
   ""
-  [^Cassandra$AsyncClient client ^ThreadPoolExecutor executor & cf-args]
+  [^Client client & cf-args]
   (api/wrap-result-channel
    (.system_add_column_family
     client
-    (apply column-family-definition cf-args))
-   executor))
+    (apply column-family-definition cf-args))))
 
 (defn update-column-family
   ""
-  [^Cassandra$AsyncClient client ^ThreadPoolExecutor executor & cf-args]
+  [^Client client & cf-args]
   (api/wrap-result-channel
    (.system_update_column_family
     client
-    (apply column-family-definition cf-args))
-   executor))
+    (apply column-family-definition cf-args))))
 
 (defn drop-column-family
   ""
-  [^Cassandra$AsyncClient client ^ThreadPoolExecutor executor cf-name]
+  [^Client client cf-name]
   (api/wrap-result-channel
-   (.system_drop_column_family client cf-name)
-   executor))
+   (.system_drop_column_family client cf-name)))

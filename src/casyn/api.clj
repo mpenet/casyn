@@ -5,8 +5,8 @@ See: http://wiki.apache.org/cassandra/API \nand
 http://javasourcecode.org/html/open-source/cassandra/cassandra-0.8.1/org/apache/cassandra/thrift/Cassandra.AsyncClient.html"
   (:require
    [lamina.core :as lc]
-   [pallet.thread.executor :as x]
    [casyn.utils :as utils]
+   [casyn.executor :as x]
    [casyn.codecs :as codecs]
    [casyn.types :as t]
    [casyn.schema :as schema]
@@ -18,9 +18,9 @@ http://javasourcecode.org/html/open-source/cassandra/cassandra-0.8.1/org/apache/
     ColumnOrSuperColumn ColumnParent Mutation Deletion SlicePredicate
     SliceRange KeyRange AuthenticationRequest Cassandra$AsyncClient
     IndexClause IndexExpression IndexOperator ConsistencyLevel Compression]
-   [org.apache.thrift.async AsyncMethodCallback TAsyncClient]
+   [org.apache.thrift.async AsyncMethodCallback]
    [java.nio ByteBuffer]
-   [java.util.concurrent ThreadPoolExecutor]))
+   [casyn.client Client]))
 
 (def ^:dynamic *consistency-default* :one)
 
@@ -53,30 +53,36 @@ http://javasourcecode.org/html/open-source/cassandra/cassandra-0.8.1/org/apache/
 (defmacro wrap-result-channel
   "Wraps a form in a Lamina result-channel, and make the last arg of the form an
    AsyncMethodCallback with error/complete callback bound to a result-channel"
-  [form executor & post-realize-fns]
+  [form & post-realize-fns]
   (let [thrift-cmd-call (gensym)
+        [method client & args] form
         result-hint (format "org.apache.cassandra.thrift.Cassandra$AsyncClient$%s_call"
                             (-> form first str (subs 1)))]
     `(let [result-ch# (lc/result-channel)]
-       (~@form ^"org.apache.thrift.async.AsyncMethodCallback"
-               (reify AsyncMethodCallback
-                 (onComplete [_ ~thrift-cmd-call]
-                   (x/execute ~executor
-                              #(lc/success result-ch#
-                                          (.getResult ~(with-meta thrift-cmd-call {:tag result-hint})))))
-                 (onError [_ error#]
-                   (x/execute ~executor
-                              #(lc/error result-ch# error#)))))
+       (~method ^"org.apache.cassandra.thrift.Cassandra$AsyncClient" (.thrift-client ~client)
+                ~@args ^"org.apache.thrift.async.AsyncMethodCallback"
+                (reify AsyncMethodCallback
+                  (onComplete [_ ~thrift-cmd-call]
+                    (let [result# (.getResult ~(with-meta thrift-cmd-call
+                                                           {:tag result-hint}))]
+                      (x/execute (.executor ~client)
+                                 #(lc/success result-ch# result#))))
+                  (onError [_ error#]
+                    (x/execute (.executor ~client)
+                               #(lc/error result-ch# error#)))))
        (lc/run-pipeline
         result-ch#
         {:error-handler (fn [_#])}
         t/thrift->casyn
         ~@(filter identity post-realize-fns)))))
 
-(defmacro wrap-result-channel+schema [form executor schema output]
+
+
+
+
+(defmacro wrap-result-channel+schema [form schema output]
   `(wrap-result-channel
     ~form
-    ~executor
     #(if ~schema
        (casyn.schema/decode-result % ~schema ~output)
        %)))
@@ -268,13 +274,13 @@ Optional kw args:
 
 (defn login
   "Expect an AuthenticationRequest instance as argument"
-  [^Cassandra$AsyncClient client ^ThreadPoolExecutor executor ^AuthenticationRequest auth-req]
-  (wrap-result-channel (.login client auth-req) executor))
+  [^Client client ^AuthenticationRequest auth-req]
+  (wrap-result-channel (.login client auth-req) ))
 
 (defn set-keyspace
   ""
-  [^Cassandra$AsyncClient client ^ThreadPoolExecutor executor ^String ks]
-  (wrap-result-channel (.set_keyspace client ks) executor))
+  [^Client client  ^String ks]
+  (wrap-result-channel (.set_keyspace client ks)))
 
 (defn get-column
   "Returns a single column.
@@ -284,14 +290,13 @@ Optional kw args:
   - :schema : schema used for result decoding
   - :output : output format (if nil it will return casyn types,
               if :as-map it will try to turn collections to maps"
-  [^Cassandra$AsyncClient client ^ThreadPoolExecutor executor cf row-key col
+  [^Client client cf row-key col
    & {:keys [super consistency schema output]}]
   (wrap-result-channel+schema
    (.get client
          ^ByteBuffer (codecs/clojure->byte-buffer row-key)
          (column-path cf :super super :column col)
          (consistency-level consistency))
-   executor
    schema output))
 
 (defn get-slice
@@ -309,7 +314,7 @@ Optional kw args:
   - :schema : schema used for result decoding
   - :output : output format (if nil it will return casyn types,
               if :as-map it will try to turn collections to maps"
-  [^Cassandra$AsyncClient client ^ThreadPoolExecutor executor cf row-key
+  [^Client client cf row-key
    & {:keys [super consistency schema output]
       :as opts}]
   (wrap-result-channel+schema
@@ -318,7 +323,7 @@ Optional kw args:
                (column-parent cf super)
                (slice-predicate opts)
                (consistency-level consistency))
-   executor schema output))
+    schema output))
 
 (defn mget-slice
   "Returns a collection of slices of columns.
@@ -337,7 +342,7 @@ Optional kw args:
   - :schema : schema used for result decoding
   - :output : output format (if nil it will return casyn types,
               if :as-map it will try to turn collections to maps"
-  [^Cassandra$AsyncClient client ^ThreadPoolExecutor executor cf row-keys
+  [^Client client cf row-keys
    & {:keys [super consistency schema output]
       :as opts}]
   (wrap-result-channel+schema
@@ -346,7 +351,7 @@ Optional kw args:
                     (column-parent cf super)
                     (slice-predicate opts)
                     (consistency-level consistency))
-   executor schema output))
+    schema output))
 
 (defn get-count
   "Accepts optional slice-predicate arguments :columns, :start, :finish, :count,
@@ -364,7 +369,7 @@ Optional kw args:
   - :schema : schema used for result decoding
   - :output : output format (if nil it will return casyn types,
               if :as-map it will try to turn collections to maps"
-  [^Cassandra$AsyncClient client ^ThreadPoolExecutor executor cf row-key
+  [^Client client cf row-key
    & {:keys [super consistency schema output]
       :as opts}]
   (wrap-result-channel+schema
@@ -373,7 +378,7 @@ Optional kw args:
                (column-parent cf super)
                (slice-predicate opts)
                (consistency-level consistency))
-   executor schema output))
+    schema output))
 
 (defn mget-count
   "Accepts optional slice-predicate arguments :columns, :start, :finish, :count,
@@ -391,7 +396,7 @@ Optional kw args:
   - :schema : schema used for result decoding
   - :output : output format (if nil it will return casyn types,
               if :as-map it will try to turn collections to maps"
-  [^Cassandra$AsyncClient client ^ThreadPoolExecutor executor cf row-keys
+  [^Client client cf row-keys
    & {:keys [super consistency schema output]
       :as opts}]
   (wrap-result-channel+schema
@@ -400,7 +405,7 @@ Optional kw args:
                     (column-parent cf super)
                     (slice-predicate opts)
                     (consistency-level consistency))
-   executor schema output))
+    schema output))
 
 (defn insert-column
   "Inserts a single column.
@@ -412,7 +417,7 @@ Optional kw args:
   - :timestamp (long): Allows to specify the Timestamp for the column
                        (in nanosecs), defaults to the value for the current time
   - :consistency : optional consistency-level, defaults to :one"
-  [^Cassandra$AsyncClient client ^ThreadPoolExecutor executor cf row-key name value
+  [^Client client cf row-key name value
    & {:keys [super type consistency ttl timestamp]
       :or {type :column}}]
   (wrap-result-channel
@@ -424,8 +429,7 @@ Optional kw args:
               :counter (column name value :type :counter)
                ;; values is a collection of columns for super-cols
               :super (column super value :type :super))
-            (consistency-level consistency))
-   executor))
+            (consistency-level consistency))))
 
 (defn increment
   "Increment the specified counter column value.
@@ -433,15 +437,14 @@ Optional kw args:
 Optional kw args:
   - :super : this argument will be used as the super column name if specified
   - :consistency : optional consistency-level, defaults to :one"
-  [^Cassandra$AsyncClient client ^ThreadPoolExecutor executor cf row-key column-name value
+  [^Client client cf row-key column-name value
    & {:keys [super consistency]}]
   (wrap-result-channel
    (.add client
          (codecs/clojure->byte-buffer row-key)
          (column-parent cf super)
          (column column-name value :type :counter)
-         (consistency-level consistency))
-   executor))
+         (consistency-level consistency))))
 
 (defn delete
   "Delete column(s), works on regular columns or counters.
@@ -453,7 +456,7 @@ Optional kw args:
   - :timestamp (long): Allows to specify the Timestamp for the column
                        (in nanosecs), defaults to the value for the current time
   - :consistency : optional consistency-level, defaults to :one"
-  [^Cassandra$AsyncClient client ^ThreadPoolExecutor executor cf row-key
+  [^Client client cf row-key
    & {:keys [column super timestamp consistency type]
       :or {timestamp (utils/ts)}}]
   (if (= :counter type)
@@ -461,15 +464,13 @@ Optional kw args:
      (.remove_counter client
                       (codecs/clojure->byte-buffer row-key)
                       (column-path cf :super super :column column)
-                      (consistency-level consistency))
-     executor)
+                      (consistency-level consistency)))
     (wrap-result-channel
      (.remove client
               (codecs/clojure->byte-buffer row-key)
               (column-path cf :super super :column column)
               timestamp
-              (consistency-level consistency))
-     executor)))
+              (consistency-level consistency)))))
 
 (defn batch-mutate
   "Executes the specified mutations on the keyspace.
@@ -483,7 +484,7 @@ Example:
 
 Optional kw args:
   - :consistency : optional consistency-level, defaults to :one"
-  [^Cassandra$AsyncClient client ^ThreadPoolExecutor executor mutations
+  [^Client client mutations
    & {:keys [consistency]}]
   (wrap-result-channel
    (.batch_mutate client
@@ -491,8 +492,7 @@ Optional kw args:
                                (assoc m (codecs/clojure->byte-buffer k) v))
                              {}
                              mutations)
-                  (consistency-level consistency))
-   executor))
+                  (consistency-level consistency))))
 
 (defn get-range-slice
   "Accepts optional slice-predicate arguments :columns, :start, :finish, :count,
@@ -519,7 +519,7 @@ Optional kw args:
   - :schema : schema used for result decoding
   - :output : output format (if nil it will return casyn types,
               if :as-map it will try to turn collections to maps"
-  [^Cassandra$AsyncClient client ^ThreadPoolExecutor executor cf
+  [^Client client cf
    & {:keys [super consistency schema output]
       :as opts}]
   (wrap-result-channel+schema
@@ -528,7 +528,7 @@ Optional kw args:
                       (slice-predicate opts)
                       (key-range opts)
                       (consistency-level consistency))
-   executor schema output))
+    schema output))
 
 (defn get-indexed-slice
   "Accepts optional slice-predicate arguments :columns, :start, :finish, :count,
@@ -547,7 +547,7 @@ Optional kw args:
   - :schema : schema used for result decoding
   - :output : output format (if nil it will return casyn types,
               if :as-map it will try to turn collections to maps"
-  [^Cassandra$AsyncClient client ^ThreadPoolExecutor executor cf index-clause-args
+  [^Client client cf index-clause-args
    & {:keys [super consistency schema output]
       :as opts}]
   (wrap-result-channel+schema
@@ -556,11 +556,11 @@ Optional kw args:
                         (index-clause index-clause-args)
                         (slice-predicate opts)
                         (consistency-level consistency))
-   executor schema output))
+    schema output))
 
 (defn get-paged-slice
   "DEPRECATED: use get-range-slice instead"
-  [^Cassandra$AsyncClient client ^ThreadPoolExecutor executor cf
+  [^Client client cf
    & {:keys [super consistency schema output]
       :as opts}]
   (wrap-result-channel+schema
@@ -569,32 +569,32 @@ Optional kw args:
                      (key-range opts)
                      (-> opts :start-column codecs/clojure->byte-buffer)
                      (consistency-level consistency))
-   executor schema output))
+    schema output))
 
 (defn truncate
   "Removes all the rows from the given column family."
-  [^Cassandra$AsyncClient client ^ThreadPoolExecutor executor cf]
-  (wrap-result-channel (.truncate client cf) executor))
+  [^Client client cf]
+  (wrap-result-channel (.truncate client cf)))
 
 (defn describe-cluster-name
   "Gets the name of the cluster."
-  [^Cassandra$AsyncClient client ^ThreadPoolExecutor executor]
-  (wrap-result-channel (.describe_cluster_name client) executor))
+  [^Client client]
+  (wrap-result-channel (.describe_cluster_name client)))
 
 (defn describe-keyspace
   "Gets information about the specified keyspace."
-  [^Cassandra$AsyncClient client ^ThreadPoolExecutor executor ks]
-  (wrap-result-channel (.describe_keyspace client ks) executor))
+  [^Client client ks]
+  (wrap-result-channel (.describe_keyspace client ks) ))
 
 (defn describe-keyspaces
   "Gets a list of all the keyspaces configured for the cluster."
-  [^Cassandra$AsyncClient client ^ThreadPoolExecutor executor]
-  (wrap-result-channel (.describe_keyspaces client) executor))
+  [^Client client]
+  (wrap-result-channel (.describe_keyspaces client)))
 
 (defn describe-partitioner
   "Gets the name of the partitioner for the cluster."
-  [^Cassandra$AsyncClient client ^ThreadPoolExecutor executor]
-  (wrap-result-channel (.describe_partitioner client) executor))
+  [^Client client]
+  (wrap-result-channel (.describe_partitioner client)))
 
 (defn describe-ring
   "Gets the token ring; a map of ranges to host addresses. Represented
@@ -603,55 +603,53 @@ Optional kw args:
   https://issues.apache.org/jira/browse/THRIFT-162 for the same
   reason, we can't return a set here, even though order is neither
   important nor predictable."
-  [^Cassandra$AsyncClient client ^ThreadPoolExecutor executor ks]
-  (wrap-result-channel (.describe_ring client ks) executor))
+  [^Client client ks]
+  (wrap-result-channel (.describe_ring client ks)))
 
 (defn describe-schema-versions
   "For each schema version present in the cluster, returns a list of
   nodes at that version. Hosts that do not respond will be under the
   key DatabaseDescriptor.INITIAL_VERSION. The cluster is all on the
   same version if the size of the map is 1"
-  [^Cassandra$AsyncClient client ^ThreadPoolExecutor executor]
-  (wrap-result-channel (.describe_schema_versions client) executor))
+  [^Client client]
+  (wrap-result-channel (.describe_schema_versions client)))
 
 (defn describe-snitch
   "Gets the name of the snitch used for the cluster."
-  [^Cassandra$AsyncClient client ^ThreadPoolExecutor executor]
-  (wrap-result-channel (.describe_snitch client) executor))
+  [^Client client]
+  (wrap-result-channel (.describe_snitch client)))
 
 (defn describe-splits
   ""
-  [^Cassandra$AsyncClient client ^ThreadPoolExecutor executor cf start-token end-token keys-per-split]
+  [^Client client cf start-token end-token keys-per-split]
   (wrap-result-channel (.describe_splits client
                                          cf
                                          start-token end-token
-                                         keys-per-split)
-                       executor))
+                                         keys-per-split)))
 
 (defn describe-token-map
   ""
-  [^Cassandra$AsyncClient client ^ThreadPoolExecutor executor]
-  (wrap-result-channel (.describe_token_map client) executor))
+  [^Client client]
+  (wrap-result-channel (.describe_token_map client)))
 
 (defn describe-version
   "Gets the Thrift API version."
-  [^Cassandra$AsyncClient client ^ThreadPoolExecutor executor]
-  (wrap-result-channel (.describe_version client) executor))
+  [^Client client]
+  (wrap-result-channel (.describe_version client)))
 
 (defn set-cql-version
   ""
-  [^Cassandra$AsyncClient client ^ThreadPoolExecutor executor version]
-  (wrap-result-channel (.set_cql_version client version) executor))
+  [^Client client version]
+  (wrap-result-channel (.set_cql_version client version)))
 
 (defn prepare-cql-query
   "Prepare a CQL (Cassandra Query Language) statement by compiling and returning
 a casyn.types.CqlPreparedResult instance"
-  [^Cassandra$AsyncClient client ^ThreadPoolExecutor executor query]
+  [^Client client query]
   (wrap-result-channel
    (.prepare_cql_query client
                        (codecs/clojure->byte-buffer query)
-                       Compression/NONE)
-   executor))
+                       Compression/NONE)))
 
 (defn execute-cql-query
   "Executes a CQL (Cassandra Query Language) statement.
@@ -659,13 +657,13 @@ Optional kw args:
   - :schema : schema used for result decoding
   - :output : output format (if nil it will return casyn types,
               if :as-map it will try to turn collections to maps"
-  [^Cassandra$AsyncClient client ^ThreadPoolExecutor executor query
+  [^Client client  query
    & {:keys [schema output]}]
   (wrap-result-channel+schema
    (.execute_cql_query client
                        (codecs/clojure->byte-buffer query)
                        Compression/NONE)
-   executor schema output))
+    schema output))
 
 (defn execute-prepared-cql-query
   "Executes a prepared CQL (Cassandra Query Language) statement by
@@ -675,13 +673,13 @@ Optional kw args:
   - :schema : schema used for result decoding
   - :output : output format (if nil it will return casyn types,
               if :as-map it will try to turn collections to maps"
-  [^Cassandra$AsyncClient client ^ThreadPoolExecutor executor item-id values
+  [^Client client item-id values
    & {:keys [schema output]}]
   (wrap-result-channel+schema
    (.execute_prepared_cql_query client
                                 (int item-id)
                                 (map codecs/clojure->byte-buffer values))
-   executor schema output))
+    schema output))
 
 ;; Sugar
 
@@ -696,11 +694,11 @@ Optional kw args for mutations when passed as vectors:
   - :ttl (integer): Allows to specify the Time to live value for the column
   - :timestamp (long): Allows to specify the Timestamp for the column
                        (in nanosecs), defaults to the value for the current time"
-  [^Cassandra$AsyncClient client ^ThreadPoolExecutor executor cf row-key columns
+  [^Client client cf row-key columns
    & {:keys [consistency type]}]
   (batch-mutate
    client
-   executor
+
    {row-key
     {cf (map #(apply mutation %) columns)}}
    :consistency consistency))

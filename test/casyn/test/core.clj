@@ -99,7 +99,7 @@
 
    (try
      (println "trying to drop" ks)
-     @(drop-keyspace (make-client "127.0.0.1" 9160)  ks)
+     @(drop-keyspace (make-client "127.0.0.1" 9160) ks)
      (println "droped" ks)
      (catch Exception e
        (print-line)
@@ -129,6 +129,7 @@
                        (constantly cx)
                        (when (thread-bound? #'c)
                          (set! c cx))))
+     ;; (println "start tests")
      (test-runner)
      (catch Exception e
        (.printStackTrace e))
@@ -147,7 +148,6 @@
   (is (nil? @(c set-keyspace ks))))
 
 (deftest test-insert-and-read
-
   (is (= casyn.types.Column
          @(lc/run-pipeline
            (c insert-column cf "4" "col-name" "col-value")
@@ -261,16 +261,20 @@
                (c get-row cf "mehhhhh" :super "meh" :schema test-schema)
                {:error-handler
                 (fn [e]
+                  (println e)
+
                   (if-not (instance? org.apache.cassandra.thrift.InvalidRequestException e)
                     (throw (Exception. "meh"))
                     (lc/complete nil))
                   )}
               count)))
+
   ;; not found returns nil
   (is (= nil @(lc/run-pipeline
                (c get-column cf "1" "meh")
                :foo
-               :bar))))
+               :bar)))
+    (println :err-handlers3))
 
 (deftest test-cql
   (is @(lc/run-pipeline

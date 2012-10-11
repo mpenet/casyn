@@ -54,7 +54,7 @@
   (reify KeyedPoolableObjectFactory
     (makeObject [this node-host]
       (when-let [client (c/make-client node-host port cf-pool)]
-        @(api/set-keyspace client x/default-executor keyspace)
+        @(api/set-keyspace client keyspace)
         client))
     (destroyObject [this node-host client]
       (c/kill client))

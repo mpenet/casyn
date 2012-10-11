@@ -9,7 +9,6 @@
                  [tron "0.5.3"]
                  [useful "0.8.4"]
                  [commons-pool "1.6"]
-                 [pallet-thread "0.1.0"]
                  [com.taoensso/nippy "0.10.4"]
                  [cc.qbits/tardis "0.1.0"]
                  [clj-time "0.4.4"]]

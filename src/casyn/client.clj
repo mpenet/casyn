@@ -15,7 +15,7 @@
    [org.apache.thrift.transport TNonblockingSocket]
    [org.apache.thrift.protocol TBinaryProtocol$Factory]
    [org.apache.thrift.async TAsyncClient TAsyncClientManager]
-   [java.util.concurrent LinkedBlockingQueue]))
+   [java.util.concurrent LinkedBlockingQueue ExecutorService]))
 
 (defn client-factory []
   (Cassandra$AsyncClient$Factory.
@@ -46,12 +46,46 @@
    :port 9160
    :pool (client-factory-pool 3)})
 
+(defprotocol PClient
+  (set-timeout [client timeout])
+  (has-errors? [client])
+  (kill [client]))
+
+(deftype Client [^TAsyncClient thrift-client
+                 ^ExecutorService executor]
+  PClient
+  (set-timeout [this timeout]
+    (.setTimeout thrift-client timeout)
+    this)
+
+  (has-errors? [this]
+    (try (.hasError thrift-client)
+         (catch IllegalStateException e true)))
+
+  (kill [this])
+
+  p/PPoolableClient
+  (borrowable? [this]
+    "Health check client before borrow"
+    (not (has-errors? this)))
+
+  (returnable? [this]
+    "Health check client before it is returned"
+    (not (has-errors? this))))
+
 (defn make-client
   "Create client with its own socket"
+  ([host port pool timeout executor]
+     (Client. (doto (.getAsyncClient ^Cassandra$AsyncClient$Factory (select pool)
+                                     (TNonblockingSocket. host port))
+                (.setTimeout timeout))
+              executor))
   ([host port pool timeout]
-     (doto (.getAsyncClient ^Cassandra$AsyncClient$Factory (select pool)
-                            (TNonblockingSocket. host port))
-       (.setTimeout timeout)))
+     (make-client host
+                  port
+                  pool
+                  (:timeout defaults)
+                  x/default-executor))
   ([host port pool]
      (make-client host
                   port
@@ -73,32 +107,6 @@
                   (:pool defaults)
                   (:timeout defaults))))
 
-(defprotocol PClient
-  (set-timeout [client timeout])
-  (has-errors? [client])
-  (kill [client]))
-
-(extend-type TAsyncClient
-
-  PClient
-  (set-timeout [client timeout]
-    (.setTimeout client timeout)
-    client)
-
-  (has-errors? [client]
-    (try (.hasError client)
-         (catch IllegalStateException e true)))
-
-  (kill [client])
-
-  p/PPoolableClient
-  (borrowable? [client]
-    "Health check client before borrow"
-    (not (has-errors? client)))
-
-  (returnable? [client]
-    "Health check client before it is returned"
-    (not (has-errors? client))))
 
 (declare select-node-stage)
 
@@ -134,6 +142,8 @@
    nil
    {:error-handler
     (fn [e]
+      (println e)
+
       (dispose-pipeline state)
       (let [etype (type e)]
         (lc/complete
@@ -149,7 +159,7 @@
            [error-stage (assoc state :error e)]))))}
    (fn [_]
      (let [{:keys [f client args]} state]
-       (apply f client x/default-executor args)))
+       (apply f client args)))
    #(do
       (dispose-pipeline state)
       [nil %])))
