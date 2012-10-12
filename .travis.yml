@@ -1,5 +1,7 @@
 language: clojure
 
+lein: lein2
+
 before_install:
   - sudo service cassandra start
   - sleep 3
