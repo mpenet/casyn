@@ -268,8 +268,8 @@ Optional kw args:
 
 (defn set-keyspace
   ""
-  [client ^String ks]
-  (wrap-result-channel (.set_keyspace client ks)))
+  [client ks]
+  (wrap-result-channel (.set_keyspace client ^String ks)))
 
 (defn get-column
   "Returns a single column.
