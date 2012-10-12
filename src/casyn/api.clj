@@ -20,8 +20,7 @@ http://javasourcecode.org/html/open-source/cassandra/cassandra-0.8.1/org/apache/
     SliceRange KeyRange AuthenticationRequest Cassandra$AsyncClient
     IndexClause IndexExpression IndexOperator ConsistencyLevel Compression]
    [org.apache.thrift.async AsyncMethodCallback]
-   [java.nio ByteBuffer]
-   [casyn.client Client]))
+   [java.nio ByteBuffer]))
 
 (def ^:dynamic *consistency-default* :one)
 
@@ -49,6 +48,7 @@ http://javasourcecode.org/html/open-source/cassandra/cassandra-0.8.1/org/apache/
   [form & post-realize-fns]
   (let [thrift-cmd-call (gensym)
         [method client & args] form
+        client (vary-meta client assoc :tag "casyn.client.Client")
         result-hint (format "org.apache.cassandra.thrift.Cassandra$AsyncClient$%s_call"
                             (-> form first str (subs 1)))]
     `(let [result-ch# (lc/result-channel)]
@@ -263,12 +263,12 @@ Optional kw args:
 
 (defn login
   "Expect an AuthenticationRequest instance as argument"
-  [^Client client ^AuthenticationRequest auth-req]
+  [client ^AuthenticationRequest auth-req]
   (wrap-result-channel (.login client auth-req) ))
 
 (defn set-keyspace
   ""
-  [^Client client  ^String ks]
+  [client ^String ks]
   (wrap-result-channel (.set_keyspace client ks)))
 
 (defn get-column
@@ -279,7 +279,7 @@ Optional kw args:
   :schema : schema used for result decoding
   :output : output format (if nil it will return casyn types,
               if :as-map it will try to turn collections to maps"
-  [^Client client cf row-key col
+  [client cf row-key col
    & {:keys [super consistency schema output]}]
   (wrap-result-channel+schema
    (.get client
@@ -303,7 +303,7 @@ Optional kw args:
   :schema : schema used for result decoding
   :output : output format (if nil it will return casyn types,
               if :as-map it will try to turn collections to maps"
-  [^Client client cf row-key
+  [client cf row-key
    & {:keys [super consistency schema output]
       :as opts}]
   (wrap-result-channel+schema
@@ -331,7 +331,7 @@ Optional kw args:
   :schema : schema used for result decoding
   :output : output format (if nil it will return casyn types,
               if :as-map it will try to turn collections to maps"
-  [^Client client cf row-keys
+  [client cf row-keys
    & {:keys [super consistency schema output]
       :as opts}]
   (wrap-result-channel+schema
@@ -358,7 +358,7 @@ Optional kw args:
   :schema : schema used for result decoding
   :output : output format (if nil it will return casyn types,
               if :as-map it will try to turn collections to maps"
-  [^Client client cf row-key
+  [client cf row-key
    & {:keys [super consistency schema output]
       :as opts}]
   (wrap-result-channel+schema
@@ -385,7 +385,7 @@ Optional kw args:
   :schema : schema used for result decoding
   :output : output format (if nil it will return casyn types,
               if :as-map it will try to turn collections to maps"
-  [^Client client cf row-keys
+  [client cf row-keys
    & {:keys [super consistency schema output]
       :as opts}]
   (wrap-result-channel+schema
@@ -406,7 +406,7 @@ Optional kw args:
   :timestamp (long): Allows to specify the Timestamp for the column
                        (in nanosecs), defaults to the value for the current time
   :consistency : optional consistency-level, defaults to :one"
-  [^Client client cf row-key name value
+  [client cf row-key name value
    & {:keys [super type consistency ttl timestamp]
       :or {type :column}}]
   (wrap-result-channel
@@ -426,7 +426,7 @@ Optional kw args:
 Optional kw args:
   :super : this argument will be used as the super column name if specified
   :consistency : optional consistency-level, defaults to :one"
-  [^Client client cf row-key column-name value
+  [client cf row-key column-name value
    & {:keys [super consistency]}]
   (wrap-result-channel
    (.add client
@@ -445,7 +445,7 @@ Optional kw args:
   :timestamp (long): Allows to specify the Timestamp for the column
                        (in nanosecs), defaults to the value for the current time
   :consistency : optional consistency-level, defaults to :one"
-  [^Client client cf row-key
+  [client cf row-key
    & {:keys [column super timestamp consistency type]}]
   (if (= :counter type)
     (wrap-result-channel
@@ -472,7 +472,7 @@ Example:
 
 Optional kw args:
   :consistency : optional consistency-level, defaults to :one"
-  [^Client client mutations
+  [client mutations
    & {:keys [consistency]}]
   (wrap-result-channel
    (.batch_mutate client
@@ -507,7 +507,7 @@ Optional kw args:
   :schema : schema used for result decoding
   :output : output format (if nil it will return casyn types,
               if :as-map it will try to turn collections to maps"
-  [^Client client cf
+  [client cf
    & {:keys [super consistency schema output]
       :as opts}]
   (wrap-result-channel+schema
@@ -535,7 +535,7 @@ Optional kw args:
   :schema : schema used for result decoding
   :output : output format (if nil it will return casyn types,
               if :as-map it will try to turn collections to maps"
-  [^Client client cf index-clause-args
+  [client cf index-clause-args
    & {:keys [super consistency schema output]
       :as opts}]
   (wrap-result-channel+schema
@@ -548,27 +548,27 @@ Optional kw args:
 
 (defn truncate
   "Removes all the rows from the given column family."
-  [^Client client cf]
+  [client cf]
   (wrap-result-channel (.truncate client cf)))
 
 (defn describe-cluster-name
   "Gets the name of the cluster."
-  [^Client client]
+  [client]
   (wrap-result-channel (.describe_cluster_name client)))
 
 (defn describe-keyspace
   "Gets information about the specified keyspace."
-  [^Client client ks]
+  [client ks]
   (wrap-result-channel (.describe_keyspace client ks) ))
 
 (defn describe-keyspaces
   "Gets a list of all the keyspaces configured for the cluster."
-  [^Client client]
+  [client]
   (wrap-result-channel (.describe_keyspaces client)))
 
 (defn describe-partitioner
   "Gets the name of the partitioner for the cluster."
-  [^Client client]
+  [client]
   (wrap-result-channel (.describe_partitioner client)))
 
 (defn describe-ring
@@ -578,7 +578,7 @@ Optional kw args:
   https://issues.apache.org/jira/browse/THRIFT-162 for the same
   reason, we can't return a set here, even though order is neither
   important nor predictable."
-  [^Client client ks]
+  [client ks]
   (wrap-result-channel (.describe_ring client ks)))
 
 (defn describe-schema-versions
@@ -586,17 +586,17 @@ Optional kw args:
   nodes at that version. Hosts that do not respond will be under the
   key DatabaseDescriptor.INITIAL_VERSION. The cluster is all on the
   same version if the size of the map is 1"
-  [^Client client]
+  [client]
   (wrap-result-channel (.describe_schema_versions client)))
 
 (defn describe-snitch
   "Gets the name of the snitch used for the cluster."
-  [^Client client]
+  [client]
   (wrap-result-channel (.describe_snitch client)))
 
 (defn describe-splits
   ""
-  [^Client client cf start-token end-token keys-per-split]
+  [client cf start-token end-token keys-per-split]
   (wrap-result-channel (.describe_splits client
                                          cf
                                          start-token end-token
@@ -604,23 +604,23 @@ Optional kw args:
 
 (defn describe-token-map
   ""
-  [^Client client]
+  [client]
   (wrap-result-channel (.describe_token_map client)))
 
 (defn describe-version
   "Gets the Thrift API version."
-  [^Client client]
+  [client]
   (wrap-result-channel (.describe_version client)))
 
 (defn set-cql-version
   ""
-  [^Client client version]
+  [client version]
   (wrap-result-channel (.set_cql_version client version)))
 
 (defn prepare-cql-query
   "Prepare a CQL (Cassandra Query Language) statement by compiling and returning
 a casyn.types.CqlPreparedResult instance"
-  [^Client client query]
+  [client query]
   (wrap-result-channel
    (.prepare_cql_query client
                        (codecs/clojure->byte-buffer query)
@@ -632,7 +632,7 @@ Optional kw args:
   :schema : schema used for result decoding
   :output : output format (if nil it will return casyn types,
               if :as-map it will try to turn collections to maps"
-  [^Client client  query
+  [client query
    & {:keys [schema output]}]
   (wrap-result-channel+schema
    (.execute_cql_query client
@@ -648,7 +648,7 @@ Optional kw args:
   :schema : schema used for result decoding
   :output : output format (if nil it will return casyn types,
               if :as-map it will try to turn collections to maps"
-  [^Client client item-id values
+  [client item-id values
    & {:keys [schema output]}]
   (wrap-result-channel+schema
    (.execute_prepared_cql_query client
@@ -669,7 +669,7 @@ Optional kw args for mutations when passed as vectors:
   :ttl (integer): Allows to specify the Time to live value for the column
   :timestamp (long): Allows to specify the Timestamp for the column
                        (in nanosecs), defaults to the value for the current time"
-  [^Client client cf row-key columns
+  [client cf row-key columns
    & {:keys [consistency type]}]
   (batch-mutate
    client

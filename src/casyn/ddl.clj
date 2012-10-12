@@ -3,7 +3,6 @@
    [casyn.api :as api]
    [casyn.codecs :as codecs])
   (:import
-   [casyn.client Client]
    [org.apache.cassandra.thrift CfDef KsDef ColumnDef
     Cassandra$AsyncClient IndexType]))
 
@@ -129,7 +128,7 @@
     ksd))
 
 (defn add-keyspace
-  [^Client client ks-name strategy-class column-family-defs & more]
+  [client ks-name strategy-class column-family-defs & more]
   (api/wrap-result-channel
    (.system_add_keyspace
     client
@@ -141,7 +140,7 @@
 
 (defn update-keyspace
   ""
-  [^Client client ks-name strategy-class column-family-defs & more]
+  [client ks-name strategy-class column-family-defs & more]
   (api/wrap-result-channel
    (.system_update_keyspace
     client
@@ -153,13 +152,13 @@
 
 (defn drop-keyspace
   ""
-  [^Client client ks-name]
+  [client ks-name]
   (api/wrap-result-channel
    (.system_drop_keyspace client ks-name)))
 
 (defn add-column-family
   ""
-  [^Client client & cf-args]
+  [client & cf-args]
   (api/wrap-result-channel
    (.system_add_column_family
     client
@@ -167,7 +166,7 @@
 
 (defn update-column-family
   ""
-  [^Client client & cf-args]
+  [client & cf-args]
   (api/wrap-result-channel
    (.system_update_column_family
     client
@@ -175,6 +174,6 @@
 
 (defn drop-column-family
   ""
-  [^Client client cf-name]
+  [client cf-name]
   (api/wrap-result-channel
    (.system_drop_column_family client cf-name)))
