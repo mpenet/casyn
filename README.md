@@ -19,13 +19,13 @@ Casyn uses Leinigen 2, but it is compatible with 1.x
 Add the following dependency on your project.clj:
 
 ```clojure
-[cc.qbits/casyn "0.1.6"]
+[cc.qbits/casyn "0.1.7"]
 ```
 
 or if you want to try the dev version:
 
 ```clojure
-[cc.qbits/casyn "0.1.7-SNAPSHOT"]
+[cc.qbits/casyn "0.9.0-SNAPSHOT"]
 ```
 
 Note: It runs on Clojure 1.4+ and is being tested with Cassandra 1.1.5
