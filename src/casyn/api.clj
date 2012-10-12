@@ -446,8 +446,7 @@ Optional kw args:
                        (in nanosecs), defaults to the value for the current time
   :consistency : optional consistency-level, defaults to :one"
   [^Client client cf row-key
-   & {:keys [column super timestamp consistency type]
-      :or {timestamp (utils/ts)}}]
+   & {:keys [column super timestamp consistency type]}]
   (if (= :counter type)
     (wrap-result-channel
      (.remove_counter client
@@ -458,7 +457,7 @@ Optional kw args:
      (.remove client
               (codecs/clojure->byte-buffer row-key)
               (column-path cf :super super :column column)
-              timestamp
+              (or timestamp (utils/ts))
               (consistency-level consistency)))))
 
 (defn batch-mutate
