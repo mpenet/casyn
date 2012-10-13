@@ -73,39 +73,31 @@
     "Health check client before it is returned"
     (not (has-errors? this))))
 
+(def default-factory-pool (client-factory-pool 3))
+
 (defn make-client
-  "Create client with its own socket"
-  ([host port pool timeout executor]
-     (Client. (doto (.getAsyncClient ^Cassandra$AsyncClient$Factory (select pool)
-                                     (TNonblockingSocket. host port))
-                (.setTimeout timeout))
-              executor))
-  ([host port pool timeout]
-     (make-client host
-                  port
-                  pool
-                  (:timeout defaults)
-                  x/default-executor))
-  ([host port pool]
-     (make-client host
-                  port
-                  pool
-                  (:timeout defaults)))
-  ([host port]
-     (make-client host
-                  port
-                  (:pool defaults)
-                  (:timeout defaults)))
-  ([host]
-     (make-client host
-                  (:port defaults)
-                  (:pool defaults)
-                  (:timeout defaults)))
-  ([]
-     (make-client (:host defaults)
-                  (:port defaults)
-                  (:pool defaults)
-                  (:timeout defaults))))
+  "Returns a casyn Client instance, wrapping a thirft client and an executor
+
+   Optional kw args:
+    :host (default: localhost): Node host
+    :port (default: 9160): Node port
+    :pool (default: default-factory-pool -> pool of size 3
+      Cassandra$AsyncClient$Factory pool to get the client from (1
+      selector thread per factory), you can create yoru own
+      using `(casyn.client/client-factory-pool Nthreads) `
+    :timeout : Thrift client timeout in ms
+    :executor (default: casyn.executor/default-executor): An ExecutorService to
+      be used for callback execution"
+  [& {:keys [host port pool timeout executor]
+      :or {timeout 5000
+           host "127.0.0.1"
+           port 9160
+           pool default-factory-pool
+           executor x/default-executor}}]
+  (Client. (doto (.getAsyncClient ^Cassandra$AsyncClient$Factory (select pool)
+                                  (TNonblockingSocket. host port))
+             (.setTimeout timeout))
+           executor))
 
 
 (declare select-node-stage)
@@ -188,9 +180,11 @@
   "Returns a fn that will execute its first arg against the rest of
    args. handles the client borrow/return/sanity/timeouts checks,
    returns a result-channel.
-   :client-timeout is in ms
-   :failover can be :try-all, or :try-next, disabled by default,
-  inherits cluster settings"
+
+   Optional kw args:
+     :client-timeout is in ms
+     :failover can be :try-all, or :try-next, disabled by default,
+    inherits cluster settings"
   [cluster & {:keys [client-timeout failover]
               :or {client-timeout (:client-timeout (c/get-options cluster))
                    failover (:failover (c/get-options cluster))}}]

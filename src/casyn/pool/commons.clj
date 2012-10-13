@@ -53,7 +53,10 @@
   [port keyspace cf-pool callback-executor]
   (reify KeyedPoolableObjectFactory
     (makeObject [this node-host]
-      (when-let [client (c/make-client node-host port cf-pool callback-executor)]
+      (when-let [client (c/make-client :host node-host
+                                       :port port
+                                       :pool cf-pool
+                                       :executor callback-executor)]
         @(api/set-keyspace client keyspace)
         client))
     (destroyObject [this node-host client]
