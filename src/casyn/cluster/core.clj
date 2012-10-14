@@ -9,7 +9,6 @@
    [casyn.balancer :as b]
    [casyn.pool :as p]
    [casyn.client :as c]
-   [casyn.executor :as x]
    [casyn.balancer.least-loaded :as bll]
    [casyn.balancer.round-robin :as brr]
    [casyn.auto-discovery :as discovery]
@@ -50,7 +49,7 @@
                :load-balancer-strategy :round-robin
                :num-selector-threads 3
                :client-timeout 5000
-               :callback-executor x/default-executor})
+               :callback-executor c/default-executor})
 
 (defn make-cluster
   "Returns a cluster instance, this will be used to spawn client-fns and set

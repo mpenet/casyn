@@ -4,7 +4,7 @@
    [casyn.cluster :as c]
    [casyn.pool :as p]
    [casyn.balancer :as b]
-   [casyn.executor :as x])
+   [knit.core :as knit])
 
   (:import
    [org.apache.cassandra.thrift Cassandra$AsyncClient Cassandra$AsyncClient$Factory
@@ -16,6 +16,9 @@
    [org.apache.thrift.protocol TBinaryProtocol$Factory]
    [org.apache.thrift.async TAsyncClient TAsyncClientManager]
    [java.util.concurrent LinkedBlockingQueue ExecutorService]))
+
+(defonce default-executor (knit/executor :cached
+                                         :thread-factory (knit/thread-factory)))
 
 (defn client-factory []
   (Cassandra$AsyncClient$Factory.
@@ -86,14 +89,14 @@
       selector thread per factory), you can create yoru own
       using `(casyn.client/client-factory-pool Nthreads) `
     :timeout : Thrift client timeout in ms
-    :executor (default: casyn.executor/default-executor): An ExecutorService to
+    :executor (default: casyn.client/default-executor): An ExecutorService to
       be used for callback execution"
   [& {:keys [host port pool timeout executor]
       :or {timeout 5000
            host "127.0.0.1"
            port 9160
            pool default-factory-pool
-           executor x/default-executor}}]
+           executor default-executor}}]
   (Client. (doto (.getAsyncClient ^Cassandra$AsyncClient$Factory (select pool)
                                   (TNonblockingSocket. host port))
              (.setTimeout timeout))

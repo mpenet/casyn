@@ -2,8 +2,7 @@
   (:require
    [casyn.pool :refer [PPool returnable? return invalidate]]
    [casyn.client :as c]
-   [casyn.api :as api]
-   [casyn.executor :as x])
+   [casyn.api :as api])
 
   (:import
    [org.apache.commons.pool KeyedPoolableObjectFactory]

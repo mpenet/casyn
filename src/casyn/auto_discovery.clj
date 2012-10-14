@@ -4,7 +4,7 @@
    [casyn.client :as c]
    [casyn.api :as api]
    [casyn.cluster :as clu]
-   [casyn.executor :as x]
+   [knit.core :as knit]
    [lamina.core :as lc]
    [useful.exception :as uex]
    [clojure.tools.logging :as log])
@@ -36,9 +36,8 @@
 
 (defn start-worker
   ([cluster interval]
-     (x/periodically
+     (knit/schedule :with-fixed-delay interval
       #(when-let [nodes (discover cluster)]
-         (clu/refresh cluster nodes))
-      interval))
+         (clu/refresh cluster nodes))))
   ([cluster]
      (start-worker cluster 100)))

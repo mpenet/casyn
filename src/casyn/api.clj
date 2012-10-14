@@ -7,7 +7,7 @@ http://javasourcecode.org/html/open-source/cassandra/cassandra-0.8.1/org/apache/
    [lamina.core :as lc]
    [casyn.utils :as utils]
    [casyn.client :as c]
-   [casyn.executor :as x]
+   [knit.core :as knit]
    [casyn.codecs :as codecs]
    [casyn.types :as t]
    [casyn.schema :as schema]
@@ -57,12 +57,12 @@ http://javasourcecode.org/html/open-source/cassandra/cassandra-0.8.1/org/apache/
                 (reify AsyncMethodCallback
                   (onComplete [_ ~thrift-cmd-call]
                     (let [result# (.getResult ~(with-meta thrift-cmd-call
-                                                           {:tag result-hint}))]
-                      (x/execute (.executor ~client)
-                                 #(lc/success result-ch# result#))))
+                                                 {:tag result-hint}))]
+                      (knit/execute (.executor ~client)
+                                    #(lc/success result-ch# result#))))
                   (onError [_ error#]
-                    (x/execute (.executor ~client)
-                               #(lc/error result-ch# error#)))))
+                    (knit/execute (.executor ~client)
+                                  #(lc/error result-ch# error#)))))
        (lc/run-pipeline
         result-ch#
         {:error-handler (fn [_#])}

@@ -10,6 +10,7 @@
                  [commons-pool "1.6"]
                  [com.taoensso/nippy "0.10.4"]
                  [cc.qbits/tardis "0.1.0"]
+                 [cc.qbits/knit "0.1.0"]
                  [clj-time "0.4.4"]]
   :profiles {:1.4  {:dependencies [[org.clojure/clojure "1.4.0"]]}
              :1.5  {:dependencies [[org.clojure/clojure "1.5.0-master-SNAPSHOT"]]}
