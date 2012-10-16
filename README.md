@@ -28,7 +28,7 @@ or if you want to try the dev version:
 [cc.qbits/casyn "0.9.0-SNAPSHOT"]
 ```
 
-Note: It runs on Clojure 1.4+ and is being tested with Cassandra 1.1.5
+Note: It runs on Clojure 1.4+ and is being tested with Cassandra 1.1.6
 (it should work fine with 1.x.x versions).
 
 ## Usage

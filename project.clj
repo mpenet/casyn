@@ -5,12 +5,12 @@
             :url "http://www.eclipse.org/legal/epl-v10.html"}
   :dependencies [[org.clojure/clojure "1.4.0"]
                  [lamina "0.5.0-beta6"]
-                 [org.apache.cassandra/cassandra-all "1.1.5"]
+                 [org.apache.cassandra/cassandra-all "1.1.6"]
                  [useful "0.8.4"]
                  [commons-pool "1.6"]
                  [com.taoensso/nippy "0.10.4"]
                  [cc.qbits/tardis "0.1.0"]
-                 [cc.qbits/knit "0.1.0"]
+                 [cc.qbits/knit "0.1.2"]
                  [clj-time "0.4.4"]]
   :profiles {:1.4  {:dependencies [[org.clojure/clojure "1.4.0"]]}
              :1.5  {:dependencies [[org.clojure/clojure "1.5.0-master-SNAPSHOT"]]}
