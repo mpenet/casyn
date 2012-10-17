@@ -226,14 +226,15 @@
 
 (deftest codecs
   (is (= test-coerce-data
-         @(c get-row cf "2" :schema test-codec-schema :output :as-map)))
+         @(c get-row cf "2" :schema test-codec-schema :as :map)))
   (is (= {"n0" "value0" "n00" "value00"}
-         @(c get-row cf "0" :schema test-schema :output :as-map)))
+         @(c get-row cf "0" :schema test-schema :as :map)))
   (is (= {"0" {"n0" "value0", "n00" "value00"}, "1" {"n1" "value1", "n2-nil" nil}}
-         @(c get-rows cf ["0" "1"] :schema test-schema :output :as-map)))
+         @(c get-rows cf ["0" "1"] :schema test-schema :as :map)))
   (let [test-nils (reduce-kv (fn [m k v] (assoc m k nil)) (array-map) test-coerce-data)]
     @(c put cf "66" test-nils)
-    (is (= test-nils @(c get-row cf "66" :schema test-codec-schema :output :as-map)))))
+    (is (= test-nils @(c get-row cf "66" :schema test-codec-schema
+                         :as :map)))))
 
 (deftest test-index
   (is (= '({"1" {"n1" "value1"}})
@@ -241,14 +242,14 @@
             [[:eq? :n1 "value1"]]
             :columns ["n1"]
             :schema test-schema
-            :output :as-map)))
+            :as :map)))
 
   (is (= 1 (count @(c get-indexed-slice
                       cf
                       [[:eq? :n1 "value1"]]
                       :columns ["n1"]
                       :schema test-schema
-                      :output :as-map)))))
+                      :as :map)))))
 
 (deftest error-handlers
   (is (= nil @(lc/run-pipeline
@@ -270,13 +271,13 @@
 (deftest test-cql
   (is @(lc/run-pipeline
         (c execute-cql-query "SELECT * FROM test_cf;"
-           :schema test-codec-schema :output :as-map)
+           :schema test-codec-schema :as :map)
         #(= "value0" (-> % :rows first :n0))))
   (let [prepared-statement @(c prepare-cql-query "SELECT * FROM test_cf WHERE KEY=?;")]
       (is (not-empty prepared-statement))
       (is @(lc/run-pipeline
             (c execute-prepared-cql-query (:item-id prepared-statement) ["0"]
-               :schema test-codec-schema :output :as-map)
+               :schema test-codec-schema :as :map)
             #(= "value0" (-> % :rows first :n0))))))
 
 
@@ -284,12 +285,12 @@
 ;;   (is @(with-client c
 ;;          (lc/run-pipeline
 ;;           (execute-cql-query "SELECT * FROM test_cf;"
-;;                              :schema test-codec-schema :output :as-map)
+;;                              :schema test-codec-schema :as :map)
 ;;           #(= "value0" (-> % :rows first :n0)))))
 ;;     (is @(with-client2 c
 ;;          (lc/run-pipeline
 ;;           (execute-cql-query "SELECT * FROM test_cf;"
-;;                              :schema test-codec-schema :output :as-map)
+;;                              :schema test-codec-schema :as :map)
 ;;           #(= "value0" (-> % :rows first :n0))))))
 
 
@@ -298,7 +299,7 @@
           @(c get-slice cocf 0
               :start (composite-expression [:eq? 2] [:gt? 6])
               :finish (composite-expression [:lt? 4])
-              :schema composite-cf-schema :output :as-map))))
+              :schema composite-cf-schema :as :map))))
 
 (deftest type-converter
   (is (= "UTF8Type" (clj->cassandra-type :utf-8)))

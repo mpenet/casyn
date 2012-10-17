@@ -69,11 +69,11 @@ http://javasourcecode.org/html/open-source/cassandra/cassandra-0.8.1/org/apache/
         t/thrift->casyn
         ~@(filter identity post-realize-fns)))))
 
-(defmacro wrap-result-channel+schema [form schema output]
+(defmacro wrap-result-channel+schema [form schema as]
   `(wrap-result-channel
     ~form
     #(if ~schema
-       (casyn.schema/decode-result % ~schema ~output)
+       (casyn.schema/decode-result % ~schema ~as)
        %)))
 
 ;; Objects
@@ -277,16 +277,16 @@ Optional kw args:
   :consistency : optional consistency-level, defaults to :one
   :super : optional super column name
   :schema : schema used for result decoding
-  :output : output format (if nil it will return casyn types,
-              if :as-map it will try to turn collections to maps"
+  :as : ouput format (if nil it will return casyn types,
+              if :map it will try to turn collections to maps"
   [client cf row-key col
-   & {:keys [super consistency schema output]}]
+   & {:keys [super consistency schema as]}]
   (wrap-result-channel+schema
    (.get client
          ^ByteBuffer (codecs/clojure->byte-buffer row-key)
          (column-path cf :super super :column col)
          (consistency-level consistency))
-   schema output))
+   schema as))
 
 (defn get-slice
   "Returns a slice of columns. Accepts optional slice-predicate arguments :columns, :start, :finish, :count,
@@ -301,10 +301,10 @@ Optional kw args:
   :columns: A list of column names to retrieve
   :consistency : optional consistency-level, defaults to :one
   :schema : schema used for result decoding
-  :output : output format (if nil it will return casyn types,
+  :as : as format (if nil it will return casyn types,
               if :as-map it will try to turn collections to maps"
   [client cf row-key
-   & {:keys [super consistency schema output]
+   & {:keys [super consistency schema as]
       :as opts}]
   (wrap-result-channel+schema
    (.get_slice client
@@ -312,7 +312,7 @@ Optional kw args:
                (column-parent cf super)
                (slice-predicate opts)
                (consistency-level consistency))
-    schema output))
+    schema as))
 
 (defn mget-slice
   "Returns a collection of slices of columns.
@@ -329,10 +329,10 @@ Optional kw args:
   :columns: A list of column names to retrieve
   :consistency : optional consistency-level, defaults to :one
   :schema : schema used for result decoding
-  :output : output format (if nil it will return casyn types,
-              if :as-map it will try to turn collections to maps"
+  :as : as format (if nil it will return casyn types,
+              if :map it will try to turn collections to maps"
   [client cf row-keys
-   & {:keys [super consistency schema output]
+   & {:keys [super consistency schema as]
       :as opts}]
   (wrap-result-channel+schema
    (.multiget_slice client
@@ -340,7 +340,7 @@ Optional kw args:
                     (column-parent cf super)
                     (slice-predicate opts)
                     (consistency-level consistency))
-    schema output))
+    schema as))
 
 (defn get-count
   "Accepts optional slice-predicate arguments :columns, :start, :finish, :count,
@@ -356,10 +356,10 @@ Optional kw args:
   :columns: A list of column names to retrieve
   :consistency : optional consistency-level, defaults to :one
   :schema : schema used for result decoding
-  :output : output format (if nil it will return casyn types,
-              if :as-map it will try to turn collections to maps"
+  :as : as format (if nil it will return casyn types,
+              if :map it will try to turn collections to maps"
   [client cf row-key
-   & {:keys [super consistency schema output]
+   & {:keys [super consistency schema as]
       :as opts}]
   (wrap-result-channel+schema
    (.get_count client
@@ -367,7 +367,7 @@ Optional kw args:
                (column-parent cf super)
                (slice-predicate opts)
                (consistency-level consistency))
-    schema output))
+    schema as))
 
 (defn mget-count
   "Accepts optional slice-predicate arguments :columns, :start, :finish, :count,
@@ -383,10 +383,10 @@ Optional kw args:
   :columns: A list of column names to retrieve
   :consistency : optional consistency-level, defaults to :one
   :schema : schema used for result decoding
-  :output : output format (if nil it will return casyn types,
-              if :as-map it will try to turn collections to maps"
+  :as : as format (if nil it will return casyn types,
+              if :map it will try to turn collections to maps"
   [client cf row-keys
-   & {:keys [super consistency schema output]
+   & {:keys [super consistency schema as]
       :as opts}]
   (wrap-result-channel+schema
    (.multiget_count client
@@ -394,7 +394,7 @@ Optional kw args:
                     (column-parent cf super)
                     (slice-predicate opts)
                     (consistency-level consistency))
-    schema output))
+    schema as))
 
 (defn insert-column
   "Inserts a single column.
@@ -505,10 +505,10 @@ Optional kw args:
 
   :consistency : optional consistency-level, defaults to :one
   :schema : schema used for result decoding
-  :output : output format (if nil it will return casyn types,
-              if :as-map it will try to turn collections to maps"
+  :as : as format (if nil it will return casyn types,
+              if :map it will try to turn collections to maps"
   [client cf
-   & {:keys [super consistency schema output]
+   & {:keys [super consistency schema as]
       :as opts}]
   (wrap-result-channel+schema
    (.get_range_slices client
@@ -516,7 +516,7 @@ Optional kw args:
                       (slice-predicate opts)
                       (key-range opts)
                       (consistency-level consistency))
-    schema output))
+    schema as))
 
 (defn get-indexed-slice
   "Accepts optional slice-predicate arguments :columns, :start, :finish, :count,
@@ -533,10 +533,10 @@ Optional kw args:
 
   :consistency : optional consistency-level, defaults to :one
   :schema : schema used for result decoding
-  :output : output format (if nil it will return casyn types,
-              if :as-map it will try to turn collections to maps"
+  :as : as format (if nil it will return casyn types,
+              if :map it will try to turn collections to maps"
   [client cf index-clause-args
-   & {:keys [super consistency schema output]
+   & {:keys [super consistency schema as]
       :as opts}]
   (wrap-result-channel+schema
    (.get_indexed_slices client
@@ -544,7 +544,7 @@ Optional kw args:
                         (index-clause index-clause-args)
                         (slice-predicate opts)
                         (consistency-level consistency))
-    schema output))
+    schema as))
 
 (defn truncate
   "Removes all the rows from the given column family."
@@ -630,15 +630,15 @@ a casyn.types.CqlPreparedResult instance"
   "Executes a CQL (Cassandra Query Language) statement.
 Optional kw args:
   :schema : schema used for result decoding
-  :output : output format (if nil it will return casyn types,
-              if :as-map it will try to turn collections to maps"
+  :as : as format (if nil it will return casyn types,
+              if :map it will try to turn collections to maps"
   [client query
-   & {:keys [schema output]}]
+   & {:keys [schema as]}]
   (wrap-result-channel+schema
    (.execute_cql_query client
                        (codecs/clojure->byte-buffer query)
                        Compression/NONE)
-    schema output))
+    schema as))
 
 (defn execute-prepared-cql-query
   "Executes a prepared CQL (Cassandra Query Language) statement by
@@ -646,15 +646,15 @@ Optional kw args:
 
 Optional kw args:
   :schema : schema used for result decoding
-  :output : output format (if nil it will return casyn types,
-              if :as-map it will try to turn collections to maps"
+  :as : as format (if nil it will return casyn types,
+              if :map it will try to turn collections to maps"
   [client item-id values
-   & {:keys [schema output]}]
+   & {:keys [schema as]}]
   (wrap-result-channel+schema
    (.execute_prepared_cql_query client
                                 (int item-id)
                                 (map codecs/clojure->byte-buffer values))
-    schema output))
+    schema as))
 
 ;; Sugar
 

@@ -19,7 +19,7 @@
   `(def ~name (Schema. ~(keyword name) ~row ~super ~columns)))
 
 (defprotocol SchemaDecodable
-  (decode-result [result schema] [result schema output] ;; we only have one possible output value for now
+  (decode-result [result schema] [result schema as] ;; we only have one possible output value for now
     "Decodes a result according to supplied schema"))
 
 (extend-type (Class/forName "[Lcasyn.types.KeySlice;")
