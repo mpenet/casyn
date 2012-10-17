@@ -124,11 +124,11 @@ user> (#casyn.types.Column{:name :age, :value 35, :ttl 0, :timestamp 13325365039
        #casyn.types.Column{:name :created, :value #inst "2012-08-22T22:34:41.079-00:00", :ttl 0, :timestamp 1332536503948651}
 ```
 
-A collection of columns can be turned into a regular map just pass `:output :as-map`.
+A collection of columns can be turned into a regular map just pass `:as :map`.
 
 
 ```clojure
-@(c get-row "colFamily1" "7" :schema test-schema :output :as-map)
+@(c get-row "colFamily1" "7" :schema test-schema :as :map)
 
 user> {:age 35
        :name "Max"
