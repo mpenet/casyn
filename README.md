@@ -150,9 +150,9 @@ Composite types are also supported and use the same type definitions
   :columns {:default [[:string :long :double] :string]}})
 ```
 
-To create composite values just use the `composite` function or reader literal, it will
-mark the collection as composite and encode it accordingly when you execute the
-query.
+To create composite values just use the `composite` function or
+`#casyn/composite` reader literal, it will mark the collection as
+composite and encode it accordingly when you execute the query.
 
 ```clojure
 (c insert-column "colFamily1" "1"  (composite ["meh" 1001  3.14]) "value0")

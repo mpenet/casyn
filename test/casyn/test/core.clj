@@ -63,14 +63,13 @@
    :clj2 #clj[1 2 3]
    :clj3 #{:a :b {:c {:d "e"}}} ;; #clj implicit
    :nil-value nil
-   :comp #composite["dwa" (long 216) (double 3.14)]
+   :comp #casyn/composite["dwa" (long 216) (double 3.14)]
    :uuid (java.util.UUID/randomUUID)
    :tuuid (uuid/unique-time-uuid)})
 
 (defschema composite-cf-schema
   :row :long
   :columns {:default [[:long :long :long] :string]})
-
 
 (defn setup-test []
   @(c insert-column cf "0" "n0" "value0")
@@ -81,14 +80,14 @@
   @(c increment ccf "5" "c0" 2)
 
   @(c put cocf 0
-      {#composite[2 3 4] "0"
-       #composite[2 6 7] "1"
-       #composite[2 9 10] "2"
-       #composite[3 11 10] "3"
-       #composite[3 12 10] "4"
-       #composite[3 13 10] "5"
-       #composite[4 12 10] "6"
-       #composite[4 13 10] "7"}))
+      {(composite [2 3 4]) "0"
+       (composite [2 6 7]) "1"
+       (composite [2 9 10]) "2"
+       (composite [3 11 10]) "3"
+       (composite [3 12 10]) "4"
+       (composite [3 13 10]) "5"
+       (composite [4 12 10]) "6"
+       #casyn/composite[4 13 10] "7"}))
 
 (defn teardown-test []
   @(c truncate cf))
