@@ -141,7 +141,7 @@ TimeUUIDs are supported from [tardis](https://github.com/mpenet/tardis), you wil
 
 Joda time support is available, you need to require/use `casyn.codecs.joda-time`, and use `:date-time` in your schemas.
 
-Clojure Strings are by default utf-8, ASCII strings must be passed as
+Clojure Strings are by default encoded as utf-8, ASCII strings must be passed as
 Bytes ex: `(.getBytes "meh" "US-ASCII")`, specifying `:ascii` on the
 schema allow their automatic decoding though. If you want the
 read/write behavior to be symetrical just use `:bytes` as schema type
