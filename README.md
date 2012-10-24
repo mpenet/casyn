@@ -135,7 +135,7 @@ user> {:age 35
        :created #inst "2012-08-22T22:34:41.079-00:00"}
 ```
 
-Supported types are `:utf-8` `ascii` `:long`  `:float`  `:double` `:int` `:boolean` `:keyword` `:bytes` `:date` `:uuid` `:time-uuid` `:composite` `:clj`
+Supported types are `:utf-8` `:ascii` `:long`  `:float`  `:double` `:int` `:boolean` `:keyword` `:bytes` `:date` `:uuid` `:time-uuid` `:composite` `:clj`
 
 TimeUUIDs are supported from [tardis](https://github.com/mpenet/tardis), you will need to use its API to create Type 1 UUIDs, from there encoding/decoding is automatic.
 
