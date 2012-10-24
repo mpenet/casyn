@@ -20,24 +20,25 @@
   (print "\n--------------------------------------------------------------------------------\n"))
 
 (defschema test-schema
-  :row :string
-  :super :string
+  :row :utf-8
+  :super :utf-8
   :columns
-  {:default [:string :string]
+  {:default [:utf-8 :utf-8]
    :exceptions {"age" :long
                 "c0" :long
                 "n2-nil" :long}})
 
 (defschema test-codec-schema
-  :row :string
-  :super :string
+  :row :utf-8
+  :super :utf-8
   :columns
-  {:default [:keyword :string]
+  {:default [:keyword :utf-8]
    :exceptions {:long :long
                 :int :int
                 :double :double
                 :float :float
-                :str :string
+                :str :utf-8
+                :str2 :ascii
                 :date :date
                 :dt :date-time
                 :kw :keyword
@@ -47,7 +48,7 @@
                 :clj3 :clj
                 :uuid :uuid
                 :tuuid :time-uuid
-                :comp [:string :long :double]}})
+                :comp [:utf-8 :long :double]}})
 
 (def test-coerce-data
   {:long 1
@@ -57,6 +58,7 @@
    :date (java.util.Date.)
    :dt (ctc/now)
    :str "meh"
+   ;; :str2 (.getBytes "meh" "US-ASCII")
    :kw :keyword
    :boo true
    :clj #casyn/clj{:foo "bar"}
@@ -69,7 +71,7 @@
 
 (defschema composite-cf-schema
   :row :long
-  :columns {:default [[:long :long :long] :string]})
+  :columns {:default [[:long :long :long] :utf-8]})
 
 (defn setup-test []
   @(c insert-column cf "0" "n0" "value0")

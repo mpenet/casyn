@@ -5,7 +5,8 @@
    [tardis.core :as uuid])
   (:import
    [org.apache.cassandra.utils ByteBufferUtil]
-   [java.nio ByteBuffer]))
+   [java.nio ByteBuffer]
+   [java.nio.charset Charset]))
 
 (declare meta-encodable)
 
@@ -79,11 +80,16 @@
       val-type
       :composite)))
 
-(defmethod bytes->clojure :string [_  b]
+(defmethod bytes->clojure :utf-8 [_  b]
   (ByteBufferUtil/string (ByteBuffer/wrap b)))
 
+(def ascii-charset (Charset/forName "US-ASCII"))
+(defmethod bytes->clojure :ascii [_  b]
+  (ByteBufferUtil/string (ByteBuffer/wrap b)
+                         ascii-charset))
+
 (defmethod bytes->clojure :keyword [_  b]
-  (keyword (bytes->clojure :string b)))
+  (keyword (bytes->clojure :utf-8 b)))
 
 (defmethod bytes->clojure :long [_  b]
   (ByteBufferUtil/toLong (ByteBuffer/wrap b)))
@@ -104,10 +110,10 @@
   (java.util.Date. ^long (bytes->clojure :long b)))
 
 (defmethod bytes->clojure :uuid [_ b]
-  (java.util.UUID/fromString (bytes->clojure :string b)))
+  (java.util.UUID/fromString (bytes->clojure :utf-8 b)))
 
 (defmethod bytes->clojure :time-uuid [_ b]
-  (uuid/to-uuid (bytes->clojure :string b)))
+  (uuid/to-uuid (bytes->clojure :utf-8 b)))
 
 (defmethod bytes->clojure :clj [_ b]
   (nippy/thaw-from-bytes b))

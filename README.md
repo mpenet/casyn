@@ -109,8 +109,8 @@ A simple example with a schema:
 
 ```clojure
 (defschema test-schema
-  :row :string
-  :columns {:default [:keyword :string]
+  :row :utf-8
+  :columns {:default [:keyword :utf-8]
             ;; when a column with the age name is encountered it will
             ;; overwride the defaults for decoding
             :exceptions {:age :long
@@ -135,7 +135,7 @@ user> {:age 35
        :created #inst "2012-08-22T22:34:41.079-00:00"}
 ```
 
-Supported types are `:string` `:long`  `:float`  `:double` `:int` `:boolean` `:keyword` `:bytes` `:date` `:uuid` `:time-uuid` `:composite` `:clj`
+Supported types are `:utf-8` `ascii` `:long`  `:float`  `:double` `:int` `:boolean` `:keyword` `:bytes` `:date` `:uuid` `:time-uuid` `:composite` `:clj`
 
 TimeUUIDs are supported from [tardis](https://github.com/mpenet/tardis), you will need to use its API to create Type 1 UUIDs, from there encoding/decoding is automatic.
 
@@ -146,8 +146,8 @@ Composite types are also supported and use the same type definitions
 
 ```clojure
 (defschema test-schema
-  :row :string
-  :columns {:default [[:string :long :double] :string]}})
+  :row :utf-8
+  :columns {:default [[:utf-8 :long :double] :utf-8]}})
 ```
 
 To create composite values just use the `composite` function or
