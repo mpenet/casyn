@@ -5,8 +5,7 @@
    [tardis.core :as uuid])
   (:import
    [org.apache.cassandra.utils ByteBufferUtil]
-   [java.nio ByteBuffer]
-   [java.nio.charset Charset]))
+   [java.nio ByteBuffer]))
 
 (declare meta-encodable)
 
