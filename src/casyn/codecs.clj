@@ -83,10 +83,9 @@
 (defmethod bytes->clojure :utf-8 [_  b]
   (ByteBufferUtil/string (ByteBuffer/wrap b)))
 
-(def ascii-charset (Charset/forName "US-ASCII"))
 (defmethod bytes->clojure :ascii [_  b]
   (ByteBufferUtil/string (ByteBuffer/wrap b)
-                         ascii-charset))
+                         sun.nio.cs.US_ASCII))
 
 (defmethod bytes->clojure :keyword [_  b]
   (keyword (bytes->clojure :utf-8 b)))
