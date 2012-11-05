@@ -43,12 +43,6 @@
     (.put pool cf)
     cf))
 
-(def defaults
-  {:timeout 5000
-   :host "127.0.0.1"
-   :port 9160
-   :pool (client-factory-pool 3)})
-
 (defprotocol PClient
   (set-timeout [client timeout])
   (has-errors? [client])
@@ -92,10 +86,10 @@
     :executor (default: casyn.client/default-executor): An ExecutorService to
       be used for callback execution"
   [& {:keys [host port pool timeout executor]
-      :or {timeout 5000
-           host "127.0.0.1"
+      :or {host "127.0.0.1"
            port 9160
            pool default-factory-pool
+           timeout 0
            executor default-executor}}]
   (Client. (doto (.getAsyncClient ^Cassandra$AsyncClient$Factory (select pool)
                                   (TNonblockingSocket. host port))

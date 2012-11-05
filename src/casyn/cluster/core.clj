@@ -48,7 +48,7 @@
 (def defaults {:auto-discovery true
                :load-balancer-strategy :round-robin
                :num-selector-threads 3
-               :client-timeout 5000
+               :client-timeout 0
                :callback-executor c/default-executor})
 
 (defn make-cluster
@@ -69,6 +69,8 @@ ips by turning auto-discovery off.
    :num-selector-threads -> 3 (numer of Selector Threads to be used by clients)
 
    :callback-executor -> Task Executor on which the callbacks will run, defaults to a newCachedThreadPool
+
+   :client-timeout -> Timeout on thrift clients
 
    :pool -> see casyn.pool.commons/make-pool options"
   [hosts port keyspace & options]
