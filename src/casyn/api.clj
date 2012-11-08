@@ -189,15 +189,15 @@ Optional kw args:
   :end-token : The last token in the exclusive KeyRange.
   :start-key: The first key in the inclusive KeyRange.
   :end-key : The last key in the inclusive KeyRange.
-  :count : The total number of keys to permit in the KeyRange.
+  :row-count : The total number of keys to permit in the KeyRange.
   :row-filter: The list of index expressions vectors"
-  [{:keys [start-token start-key end-token end-key count row-filter]}]
+  [{:keys [start-token start-key end-token end-key row-count row-filter]}]
   (let [kr (KeyRange.)]
     (when start-token (.setStart_token kr ^String start-token))
     (when end-token (.setEnd_token kr ^String end-token))
     (when start-key (.setStart_key kr ^ByteBuffer (codecs/clojure->byte-buffer start-key)))
     (when end-key (.setEnd_key kr ^ByteBuffer (codecs/clojure->byte-buffer end-key)))
-    (when count (.setCount kr (int count)))
+    (when row-count (.setCount kr (int row-count)))
     (when row-filter (.setRow_filter kr (index-expressions row-filter)))
     kr))
 
@@ -500,7 +500,7 @@ Optional kw args:
   :end-token : The last token in the exclusive KeyRange.
   :start-key: The first key in the inclusive KeyRange.
   :end-key : The last key in the inclusive KeyRange.
-  :count : The total number of keys to permit in the KeyRange.
+  :row-count : The total number of keys to permit in the KeyRange.
   :row-filter: The list of index expressions vectors
 
   :consistency : optional consistency-level, defaults to :one
