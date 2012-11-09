@@ -161,23 +161,23 @@ Optional kw args:
 
 (defn slice-predicate
   "Returns a SlicePredicate instance, takes a map, it can be either for named keys
-using the :columns key, or a range defined from :start :finish :reversed :count
+using the :columns key, or a range defined from :start :finish :reversed? :count
 Ex: (slice-predicate {:columns [\"foo\" \"bar\"]})
-    (slice-predicate :start 100 :finish 200 :reversed true :count 10)
+    (slice-predicate :start 100 :finish 200 :reversed? true :count 10)
 
 Optional kw args:
   :start : The column name to start the slice with.
   :finish : The column name to stop the slice at
-  :reversed (bool): Whether the results should be ordered in reversed order.
+  :reversed? (bool): Whether the results should be ordered in reversed order.
   :count : How many columns to return, defaults to 100
   :columns: A list of column names to retrieve"
-  [{:keys [columns start finish reversed count]}]
+  [{:keys [columns start finish reversed? count]}]
   (let [sp (SlicePredicate.)]
     (if columns
       (.setColumn_names sp (map codecs/clojure->byte-buffer columns))
       (.setSlice_range sp (SliceRange. (codecs/clojure->byte-buffer start)
                                        (codecs/clojure->byte-buffer finish)
-                                       (boolean reversed)
+                                       (boolean reversed?)
                                        (int (or count 100)))))))
 
 (defn key-range
@@ -238,14 +238,14 @@ Optional kw args:
 
 (defn delete-mutation
   "Accepts optional slice-predicate arguments :columns, :start, :finish, :count,
-:reversed, if you specify :columns the other slice args will be ignored (as
+:reversed?, if you specify :columns the other slice args will be ignored (as
 defined by thrift)
 
 Optional kw args:
   :super : optional super column name
   :start : The column name to start the slice with.
   :finish : The column name to stop the slice at
-  :reversed (bool): Whether the results should be ordered in reversed order.
+  :reversed? (bool): Whether the results should be ordered in reversed order.
   :count : How many columns to return, defaults to 100
   :columns: A list of column names to retrieve"
   [& {:keys [super]
@@ -290,13 +290,13 @@ Optional kw args:
 
 (defn get-slice
   "Returns a slice of columns. Accepts optional slice-predicate arguments :columns, :start, :finish, :count,
-:reversed, if you specify :columns the other slice args will be ignored (as defined by the cassandra api).
+:reversed?, if you specify :columns the other slice args will be ignored (as defined by the cassandra api).
 
 Optional kw args:
   :super : optional super column name
   :start : The column name to start the slice with.
   :finish : The column name to stop the slice at
-  :reversed (bool): Whether the results should be ordered in reversed order.
+  :reversed? (bool): Whether the results should be ordered in reversed order.
   :count : How many columns to return, defaults to 100
   :columns: A list of column names to retrieve
   :consistency : optional consistency-level, defaults to :one
@@ -317,14 +317,14 @@ Optional kw args:
 (defn mget-slice
   "Returns a collection of slices of columns.
    Accepts optional slice-predicate
-   arguments :columns, :start, :finish, :count, :reversed, if you
+   arguments :columns, :start, :finish, :count, :reversed?, if you
    specify :columns the other slice args will be ignored (as defined by the cassandra api)
 
 Optional kw args:
   :super : optional super column name
   :start : The column name to start the slice with.
   :finish : The column name to stop the slice at
-  :reversed (bool): Whether the results should be ordered in reversed order.
+  :reversed? (bool): Whether the results should be ordered in reversed order.
   :count : How many columns to return, defaults to 100
   :columns: A list of column names to retrieve
   :consistency : optional consistency-level, defaults to :one
@@ -344,14 +344,14 @@ Optional kw args:
 
 (defn get-count
   "Accepts optional slice-predicate arguments :columns, :start, :finish, :count,
-:reversed, if you specify :columns the other slice args will be ignored (as
+:reversed?, if you specify :columns the other slice args will be ignored (as
 defined by the cassandra api).
 
 Optional kw args:
   :super : optional super column name
   :start : The column name to start the slice with.
   :finish : The column name to stop the slice at
-  :reversed (bool): Whether the results should be ordered in reversed order.
+  :reversed? (bool): Whether the results should be ordered in reversed order.
   :count : How many columns to return, defaults to 100
   :columns: A list of column names to retrieve
   :consistency : optional consistency-level, defaults to :one
@@ -371,14 +371,14 @@ Optional kw args:
 
 (defn mget-count
   "Accepts optional slice-predicate arguments :columns, :start, :finish, :count,
-:reversed, if you specify :columns the other slice args will be ignored (as
+:reversed?, if you specify :columns the other slice args will be ignored (as
 defined by the cassandra api).
 
 Optional kw args:
   :super : optional super column name
   :start : The column name to start the slice with.
   :finish : The column name to stop the slice at
-  :reversed (bool): Whether the results should be ordered in reversed order.
+  :reversed? (bool): Whether the results should be ordered in reversed order.
   :count : How many columns to return, defaults to 100
   :columns: A list of column names to retrieve
   :consistency : optional consistency-level, defaults to :one
@@ -484,7 +484,7 @@ Optional kw args:
 
 (defn get-range-slice
   "Accepts optional slice-predicate arguments :columns, :start, :finish, :count,
-:reversed, if you specify :columns the other slice args will be ignored (as
+:reversed?, if you specify :columns the other slice args will be ignored (as
 defined by the cassandra api). Accepts optional key-range arguments :start-token
 :start-key :end-token :end-key :count-key :row-filter (vector of index-expressions).
 
@@ -492,7 +492,7 @@ Optional kw args:
   :super :  used as the super column name if specified
   :start : The column name to start the slice with.
   :finish : The column name to stop the slice at
-  :reversed (bool): Whether the results should be ordered in reversed order.
+  :reversed? (bool): Whether the results should be ordered in reversed order.
   :count : How many columns to return, defaults to 100
   :columns: A list of column names to retrieve
 
@@ -520,14 +520,14 @@ Optional kw args:
 
 (defn get-indexed-slice
   "Accepts optional slice-predicate arguments :columns, :start, :finish, :count,
-:reversed, if you specify :columns the other slice args will be ignored (as
+:reversed?, if you specify :columns the other slice args will be ignored (as
 defined by the cassandra api).
 
 Optional kw args:
   :super :  used as the super column name if specified
   :start : The column name to start the slice with.
   :finish : The column name to stop the slice at
-  :reversed (bool): Whether the results should be ordered in reversed order.
+  :reversed? (bool): Whether the results should be ordered in reversed order.
   :count : How many columns to return, defaults to 100
   :columns: A list of column names to retrieve
 

@@ -45,7 +45,7 @@
       (doseq [node-host (difference current-nodes-hosts active-nodes)]
         (remove-node cluster node-host)))))
 
-(def defaults {:auto-discovery true
+(def defaults {:auto-discovery? true
                :load-balancer-strategy :round-robin
                :num-selector-threads 3
                :client-timeout 0
@@ -62,7 +62,7 @@ ips by turning auto-discovery off.
 
   options are:
 
-   :auto-discovery -> true (updates balancer with new/lost nodes)
+   :auto-discovery? -> true (updates balancer with new/lost nodes)
 
    :load-balancer-strategy -> :round-robin or :least-loaded (sets balancer strategy)
 
@@ -88,7 +88,7 @@ ips by turning auto-discovery off.
         (add-node cluster (u/host->ip host)))
       (add-node cluster (u/host->ip hosts)))
 
-    (when auto-discovery
+    (when auto-discovery?
       (discovery/start-worker cluster 2000))
 
     cluster))

@@ -73,10 +73,10 @@
     :min-idle                      (.setMinIdle pool v)
     :max-idle                      (.setMaxIdle pool v)
     :max-wait                      (.setMaxWait pool v)
-    :lifo                          (.setLifo pool v)
-    :test-on-borrow                (.setTestOnBorrow pool v)
-    :test-on-return                (.setTestOnReturn pool v)
-    :test-while-idle               (.setTestWhileIdle pool v)
+    :lifo?                         (.setLifo pool v)
+    :test-on-borrow?               (.setTestOnBorrow pool v)
+    :test-on-return?               (.setTestOnReturn pool v)
+    :test-while-idle?              (.setTestWhileIdle pool v)
     :when-exhausted-action         (.setWhenExhaustedAction pool v)
     :num-tests-per-eviction-run    (.setNumTestsPerEvictionRun pool v)
     :time-between-eviction-runs-ms (.setTimeBetweenEvictionRunsMillis pool v)
@@ -96,10 +96,10 @@ List of supported options are:
 :min-idle
 :max-idle
 :max-wait
-:lifo
-:test-on-borrow
-:test-on-return
-:test-while-idle
+:lifo?
+:test-on-borrow?
+:test-on-return?
+:test-while-idle?
 :when-exhausted-action
 :num-tests-per-eviction-run
 :time-between-eviction-runs-ms
