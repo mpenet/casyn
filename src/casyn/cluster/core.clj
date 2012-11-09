@@ -75,7 +75,7 @@ ips by turning auto-discovery off.
    :pool -> see casyn.pool.commons/make-pool options"
   [hosts port keyspace & options]
   (let [opts (merge defaults (apply array-map options))
-        {:keys [auto-discovery load-balancer-strategy
+        {:keys [auto-discovery? load-balancer-strategy
                 num-selector-threads pool callback-executor failover]} opts
         cf-pool (c/client-factory-pool num-selector-threads)
         cluster (Cluster. (b/balancer load-balancer-strategy)
