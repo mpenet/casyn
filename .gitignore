@@ -2,7 +2,7 @@
 *jar
 /classes
 /native
-/.lein-failures
+/.lein*
 /checkouts
 /.lein-deps-sum
 /doc
