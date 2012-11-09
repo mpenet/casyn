@@ -80,7 +80,7 @@ ips by turning auto-discovery off.
         cf-pool (c/client-factory-pool num-selector-threads)
         cluster (Cluster. (b/balancer load-balancer-strategy)
                           (apply commons-pool/make-pool port keyspace cf-pool callback-executor
-                                 (mapcat (juxt key val) pool))
+                                 (mapcat identity pool))
                           cf-pool
                           opts)]
     (if (sequential? hosts)
