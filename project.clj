@@ -1,4 +1,4 @@
-(defproject cc.qbits/casyn "0.9.4-SNAPSHOT"
+(defproject cc.qbits/casyn "0.9.4"
   :description "Cassandra client with support for asynchronous operations"
   :url "https://github.com/mpenet/casyn"
   :license {:name "Eclipse Public License"
@@ -9,8 +9,8 @@
                  [useful "0.8.6"]
                  [commons-pool "1.6"]
                  [com.taoensso/nippy "1.0.0"]
-                 [cc.qbits/tardis "0.2.0"]
-                 [cc.qbits/knit "0.1.2"]
+                 [cc.qbits/tardis "0.3.0"]
+                 [cc.qbits/knit "0.2.0"]
                  [clj-time "0.4.4"]]
   :profiles {:1.4  {:dependencies [[org.clojure/clojure "1.4.0"]]}
              :1.5  {:dependencies [[org.clojure/clojure "1.5.0-master-SNAPSHOT"]]}

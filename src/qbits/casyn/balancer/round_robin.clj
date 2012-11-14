@@ -1,6 +1,6 @@
-(ns casyn.balancer.round-robin
+(ns qbits.casyn.balancer.round-robin
   (:require
-   [casyn.balancer :refer [PBalancer balancer]])
+   [qbits.casyn.balancer :refer [PBalancer balancer]])
   (:import
    [java.util.concurrent LinkedBlockingQueue]
    [java.util Collection]))

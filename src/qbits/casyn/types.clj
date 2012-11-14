@@ -1,4 +1,4 @@
-(ns casyn.types
+(ns qbits.casyn.types
   "Internal data types for cassandra results"
   (:import
    [org.apache.cassandra.utils ByteBufferUtil]

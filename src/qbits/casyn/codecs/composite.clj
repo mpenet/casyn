@@ -1,6 +1,6 @@
-(ns casyn.codecs.composite
+(ns qbits.casyn.codecs.composite
   (:require
-   [casyn.codecs :as codecs])
+   [qbits.casyn.codecs :as codecs])
   (:import
    [java.nio ByteBuffer]))
 

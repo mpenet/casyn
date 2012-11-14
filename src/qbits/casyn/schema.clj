@@ -1,8 +1,8 @@
-(ns casyn.schema
+(ns qbits.casyn.schema
   (:require
-   [casyn.codecs :as codecs])
+   [qbits.casyn.codecs :as codecs])
   (:import
-   [casyn.types Column CounterColumn SuperColumn CounterSuperColumn
+   [qbits.casyn.types Column CounterColumn SuperColumn CounterSuperColumn
             KeySlice CqlResult CqlRow]))
 
 (defn cols->map
@@ -22,7 +22,7 @@
   (decode-result [result schema] [result schema as] ;; we only have one possible output value for now
     "Decodes a result according to supplied schema"))
 
-(extend-type (Class/forName "[Lcasyn.types.KeySlice;")
+(extend-type (Class/forName "[Lqbits.casyn.types.KeySlice;")
   SchemaDecodable
   (decode-result
     ([r s m]

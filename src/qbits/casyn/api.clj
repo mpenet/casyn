@@ -1,16 +1,16 @@
-(ns casyn.api
+(ns qbits.casyn.api
   "Thrift API and related utils. Most of the fns here translate almost directly
 to their thrift counterpart and most of the time return Thrift instances.
 See: http://wiki.apache.org/cassandra/API \nand
 http://javasourcecode.org/html/open-source/cassandra/cassandra-0.8.1/org/apache/cassandra/thrift/Cassandra.AsyncClient.html"
   (:require
    [lamina.core :as lc]
-   [casyn.utils :as utils]
-   [casyn.client :as c]
-   [knit.core :as knit]
-   [casyn.codecs :as codecs]
-   [casyn.types :as t]
-   [casyn.schema :as schema]
+   [qbits.casyn.utils :as utils]
+   [qbits.casyn.client :as c]
+   [qbits.knit.core :as knit]
+   [qbits.casyn.codecs :as codecs]
+   [qbits.casyn.types :as t]
+   [qbits.casyn.schema :as schema]
    [clojure.walk :as w])
 
   (:import
@@ -38,7 +38,7 @@ http://javasourcecode.org/html/open-source/cassandra/cassandra-0.8.1/org/apache/
 (defmacro with-consistency
   "Binds consistency level for the enclosed body"
   [consistency & body]
-  `(binding [casyn.api/*consistency-default* ~consistency]
+  `(binding [qbits.casyn.api/*consistency-default* ~consistency]
      ~@body))
 
 ;; Async helper
@@ -48,7 +48,7 @@ http://javasourcecode.org/html/open-source/cassandra/cassandra-0.8.1/org/apache/
   [form & post-realize-fns]
   (let [thrift-cmd-call (gensym)
         [method client & args] form
-        client (vary-meta client assoc :tag "casyn.client.Client")
+        client (vary-meta client assoc :tag "qbits.casyn.client.Client")
         result-hint (format "org.apache.cassandra.thrift.Cassandra$AsyncClient$%s_call"
                             (-> form first str (subs 1)))]
     `(let [result-ch# (lc/result-channel)]
@@ -73,7 +73,7 @@ http://javasourcecode.org/html/open-source/cassandra/cassandra-0.8.1/org/apache/
   `(wrap-result-channel
     ~form
     #(if ~schema
-       (casyn.schema/decode-result % ~schema ~as)
+       (qbits.casyn.schema/decode-result % ~schema ~as)
        %)))
 
 ;; Objects
@@ -619,7 +619,7 @@ Optional kw args:
 
 (defn prepare-cql-query
   "Prepare a CQL (Cassandra Query Language) statement by compiling and returning
-a casyn.types.CqlPreparedResult instance"
+a qbits.casyn.types.CqlPreparedResult instance"
   [client query]
   (wrap-result-channel
    (.prepare_cql_query client

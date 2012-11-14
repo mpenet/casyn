@@ -1,4 +1,4 @@
-(ns casyn.utils)
+(ns qbits.casyn.utils)
 
 (defn ts
   "Simple/naive microsec clock"

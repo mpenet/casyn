@@ -1,4 +1,4 @@
-(ns casyn.balancer)
+(ns qbits.casyn.balancer)
 
 (defprotocol PBalancer
   (get-nodes [b] "Retuns a collection of the current nodes registered")

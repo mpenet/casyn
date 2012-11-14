@@ -1,4 +1,4 @@
-(ns casyn.cluster
+(ns qbits.casyn.cluster
   "Different cluster implementation can provide different
    node pools selection policies and different client selection also")
 

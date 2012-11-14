@@ -1,12 +1,12 @@
-(ns casyn.test.core
+(ns qbits.casyn.test.core
   (:use
-   casyn.core
+   qbits.casyn
    clojure.test)
   (:require
-   [casyn.utils :as utils]
-   [casyn.codecs.joda-time]
+   [qbits.casyn.utils :as utils]
+   [qbits.casyn.codecs.joda-time]
    [lamina.core :as lc]
-   [tardis.core :as uuid]
+   [qbits.tardis.uuid :as uuid]
    [clj-time.core :as ctc]))
 
 
@@ -149,7 +149,7 @@
   (is (nil? @(c set-keyspace ks))))
 
 (deftest test-insert-and-read
-  (is (= casyn.types.Column
+  (is (= qbits.casyn.types.Column
          @(lc/run-pipeline
            (c insert-column cf "4" "col-name" "col-value")
            (fn [_] (c get-column cf "4" "col-name"))

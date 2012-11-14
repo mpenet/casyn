@@ -19,13 +19,13 @@ Casyn uses Leinigen 2, but it is compatible with 1.x
 Add the following dependency on your project.clj:
 
 ```clojure
-[cc.qbits/casyn "0.9.3"]
+[cc.qbits/casyn "0.9.4"]
 ```
 
 or if you want to try the dev version:
 
 ```clojure
-[cc.qbits/casyn "0.9.4-SNAPSHOT"]
+[cc.qbits/casyn "0.9.5-SNAPSHOT"]
 ```
 
 Note: It runs on Clojure 1.4+ and is being tested with Cassandra 1.1.6
@@ -36,7 +36,7 @@ Note: It runs on Clojure 1.4+ and is being tested with Cassandra 1.1.6
 Start by creating a playground:
 
 ```clojure
-(use 'casyn.core)
+(use 'qbits.casyn)
 
 (add-keyspace (make-client)
                "Keyspace1"
@@ -93,7 +93,7 @@ pipelines, making async workflow and error handling easier to deal with.
   (fn [_] (c get-row "colFamily1" "1")))
 
 
-user> (#casyn.types.Column{:name #<byte[] [B@7cc09980>, :value #<byte[] [B@489de27c>, :ttl 0, :timestamp 1332535710069564})
+user> (#qbits.casyn.types.Column{:name #<byte[] [B@7cc09980>, :value #<byte[] [B@489de27c>, :ttl 0, :timestamp 1332535710069564})
   ```
 
 [Lamina](https://github.com/ztellman/lamina) offers a lot of possibilities.
@@ -119,9 +119,9 @@ A simple example with a schema:
 @(c put "colFamily1" "7" {:age 35 :name "Max" :created (java.util.Date.)})
 @(c get-row "colFamily1" "7" :schema test-schema)
 
-user> (#casyn.types.Column{:name :age, :value 35, :ttl 0, :timestamp 1332536503948650}
-       #casyn.types.Column{:name :name, :value "Max", :ttl 0, :timestamp 1332536503948652})
-       #casyn.types.Column{:name :created, :value #inst "2012-08-22T22:34:41.079-00:00", :ttl 0, :timestamp 1332536503948651}
+user> (#qbits.casyn.types.Column{:name :age, :value 35, :ttl 0, :timestamp 1332536503948650}
+       #qbits.casyn.types.Column{:name :name, :value "Max", :ttl 0, :timestamp 1332536503948652})
+       #qbits.casyn.types.Column{:name :created, :value #inst "2012-08-22T22:34:41.079-00:00", :ttl 0, :timestamp 1332536503948651}
 ```
 
 A collection of columns can be turned into a regular map just pass `:as :map`.
@@ -139,7 +139,7 @@ Supported types are `:utf-8` `:ascii` `:long`  `:float`  `:double` `:int` `:bool
 
 TimeUUIDs are supported from [tardis](https://github.com/mpenet/tardis), you will need to use its API to create Type 1 UUIDs, from there encoding/decoding is automatic.
 
-Joda time support is available, you need to require/use `casyn.codecs.joda-time`, and use `:date-time` in your schemas.
+Joda time support is available, you need to require/use `qbits.casyn.codecs.joda-time`, and use `:date-time` in your schemas.
 
 Clojure Strings are by default encoded as utf-8, ASCII strings must be passed as
 Bytes ex: `(.getBytes "meh" "US-ASCII")`, specifying `:ascii` on the
@@ -183,19 +183,19 @@ need to indicate :clj as decoding type in the schema.
 
 ## Documentation
 
-See the [API documentation](http://mpenet.github.com/casyn/) or [tests](https://github.com/mpenet/casyn/blob/master/test/casyn/test/core.clj) for more details.
+See the [API documentation](http://mpenet.github.com/casyn/) or [tests](https://github.com/mpenet/casyn/blob/master/test/qbits/casyn/test/core.clj) for more details.
 
 Some useful pages:
 
-* [commands API](http://mpenet.github.com/casyn/casyn.api.html)
+* [commands API](http://mpenet.github.com/casyn/qbits.casyn.api.html)
 
-* [ddl API](http://mpenet.github.com/casyn/casyn.ddl.html)
+* [ddl API](http://mpenet.github.com/casyn/qbits.casyn.ddl.html)
 
-* [cluster](http://mpenet.github.com/casyn/casyn.cluster.core.html)
+* [cluster](http://mpenet.github.com/casyn/qbits.casyn.cluster.core.html)
 
 * [Mailing list](https://groups.google.com/forum/#!forum/casyn)
 
-Note: (almost) the entire lib is aliased from `casyn.core` so that you
+Note: (almost) the entire lib is aliased from `qbits.casyn` so that you
 can have everything you need with a single `require`, as seen on the examples.
 
 ## YourKit

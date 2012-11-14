@@ -1,7 +1,7 @@
-(ns casyn.ddl
+(ns qbits.casyn.ddl
   (:require
-   [casyn.api :as api]
-   [casyn.codecs :as codecs])
+   [qbits.casyn.api :as api]
+   [qbits.casyn.codecs :as codecs])
   (:import
    [org.apache.cassandra.thrift CfDef KsDef ColumnDef
     Cassandra$AsyncClient IndexType]))

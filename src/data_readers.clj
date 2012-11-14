@@ -1,5 +1,5 @@
-{casyn/composite casyn.codecs.composite/composite
- casyn/clj       casyn.codecs/clj
- casyn/list      casyn.codecs/clist
- casyn/set       casyn.codecs/cset
- casyn/map       casyn.codecs/cmap}
+{casyn/composite qbits.casyn.codecs.composite/composite
+ casyn/clj       qbits.casyn.codecs/clj
+ casyn/list      qbits.casyn.codecs/clist
+ casyn/set       qbits.casyn.codecs/cset
+ casyn/map       qbits.casyn.codecs/cmap}

@@ -1,10 +1,10 @@
-(ns casyn.client
+(ns qbits.casyn.client
   (:require
    [lamina.core :as lc]
-   [casyn.cluster :as c]
-   [casyn.pool :as p]
-   [casyn.balancer :as b]
-   [knit.core :as knit])
+   [qbits.casyn.cluster :as c]
+   [qbits.casyn.pool :as p]
+   [qbits.casyn.balancer :as b]
+   [qbits.knit.core :as knit])
 
   (:import
    [org.apache.cassandra.thrift Cassandra$AsyncClient Cassandra$AsyncClient$Factory
@@ -81,9 +81,9 @@
     :pool (default: default-factory-pool -> pool of size 3
       Cassandra$AsyncClient$Factory pool to get the client from (1
       selector thread per factory), you can create yoru own
-      using `(casyn.client/client-factory-pool Nthreads) `
+      using `(qbits.casyn.client/client-factory-pool Nthreads) `
     :timeout : Thrift client timeout in ms
-    :executor (default: casyn.client/default-executor): An ExecutorService to
+    :executor (default: qbits.casyn.client/default-executor): An ExecutorService to
       be used for callback execution"
   [& {:keys [host port pool timeout executor]
       :or {host "127.0.0.1"

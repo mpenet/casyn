@@ -1,18 +1,18 @@
-(ns casyn.cluster.core
+(ns qbits.casyn.cluster.core
   (:require
-   [casyn.cluster :refer [add-node remove-node select-node
+   [qbits.casyn.cluster :refer [add-node remove-node select-node
                           get-balancer get-pool refresh
                           PCluster PDiscoverable]]
    [clojure.set :refer [difference]]
    [clojure.tools.logging :as log]
-   [casyn.utils :as u]
-   [casyn.balancer :as b]
-   [casyn.pool :as p]
-   [casyn.client :as c]
-   [casyn.balancer.least-loaded :as bll]
-   [casyn.balancer.round-robin :as brr]
-   [casyn.auto-discovery :as discovery]
-   [casyn.pool.commons :as commons-pool])
+   [qbits.casyn.utils :as u]
+   [qbits.casyn.balancer :as b]
+   [qbits.casyn.pool :as p]
+   [qbits.casyn.client :as c]
+   [qbits.casyn.balancer.least-loaded :as bll]
+   [qbits.casyn.balancer.round-robin :as brr]
+   [qbits.casyn.auto-discovery :as discovery]
+   [qbits.casyn.pool.commons :as commons-pool])
 
   (:import
    [org.apache.commons.pool.impl GenericKeyedObjectPool]))
@@ -72,7 +72,7 @@ ips by turning auto-discovery off.
 
    :client-timeout -> Timeout on thrift clients
 
-   :pool -> see casyn.pool.commons/make-pool options"
+   :pool -> see qbits.casyn.pool.commons/make-pool options"
   [hosts port keyspace & options]
   (let [opts (merge defaults (apply array-map options))
         {:keys [auto-discovery? load-balancer-strategy

@@ -1,8 +1,8 @@
-(ns casyn.codecs
+(ns qbits.casyn.codecs
   (:require
-   casyn.types
+   qbits.casyn.types
    [taoensso.nippy :as nippy]
-   [tardis.core :as uuid])
+   [qbits.tardis.uuid :as uuid])
   (:import
    [org.apache.cassandra.utils ByteBufferUtil]
    [java.nio ByteBuffer]))

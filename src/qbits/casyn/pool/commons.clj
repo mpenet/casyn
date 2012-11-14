@@ -1,8 +1,8 @@
-(ns casyn.pool.commons
+(ns qbits.casyn.pool.commons
   (:require
-   [casyn.pool :refer [PPool returnable? return invalidate]]
-   [casyn.client :as c]
-   [casyn.api :as api])
+   [qbits.casyn.pool :refer [PPool returnable? return invalidate]]
+   [qbits.casyn.client :as c]
+   [qbits.casyn.api :as api])
 
   (:import
    [org.apache.commons.pool KeyedPoolableObjectFactory]

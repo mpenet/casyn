@@ -1,4 +1,4 @@
-(ns casyn.pool
+(ns qbits.casyn.pool
   "Protocols defining what is expected from different pool/client
    implementations")
 

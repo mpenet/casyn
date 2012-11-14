@@ -1,10 +1,10 @@
-(ns casyn.auto-discovery
+(ns qbits.casyn.auto-discovery
   ""
   (:require
-   [casyn.client :as c]
-   [casyn.api :as api]
-   [casyn.cluster :as clu]
-   [knit.core :as knit]
+   [qbits.casyn.client :as c]
+   [qbits.casyn.api :as api]
+   [qbits.casyn.cluster :as clu]
+   [qbits.knit.core :as knit]
    [lamina.core :as lc]
    [useful.exception :as uex]
    [clojure.tools.logging :as log])

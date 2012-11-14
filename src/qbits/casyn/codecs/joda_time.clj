@@ -1,6 +1,6 @@
-(ns casyn.codecs.joda-time
+(ns qbits.casyn.codecs.joda-time
   (:require
-   [casyn.codecs :refer [ByteBufferEncodable
+   [qbits.casyn.codecs :refer [ByteBufferEncodable
                          bytes->clojure
                          clojure->byte-buffer]]
    [clj-time.coerce :as ct-c]))
