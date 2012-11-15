@@ -61,11 +61,11 @@
    ;; :str2 (.getBytes "meh" "US-ASCII")
    :kw :keyword
    :boo true
-   :clj #casyn/clj{:foo "bar"}
-   :clj2 #casyn/clj[1 2 3]
+   :clj #qbits.casyn/clj{:foo "bar"}
+   :clj2 #qbits.casyn/clj[1 2 3]
    :clj3 #{:a :b {:c {:d "e"}}} ;; #clj implicit
    :nil-value nil
-   :comp #casyn/composite["dwa" (long 216) (double 3.14)]
+   :comp #qbits.casyn/composite["dwa" (long 216) (double 3.14)]
    :uuid (java.util.UUID/randomUUID)
    :tuuid (uuid/unique-time-uuid)})
 
@@ -89,7 +89,7 @@
        (composite [3 12 10]) "4"
        (composite [3 13 10]) "5"
        (composite [4 12 10]) "6"
-       #casyn/composite[4 13 10] "7"}))
+       #qbits.casyn/composite[4 13 10] "7"}))
 
 (defn teardown-test []
   @(c truncate cf))
