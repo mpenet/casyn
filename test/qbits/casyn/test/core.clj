@@ -6,7 +6,7 @@
    [qbits.casyn.utils :as utils]
    [qbits.casyn.codecs.joda-time]
    [lamina.core :as lc]
-   [qbits.tardis.uuid :as uuid]
+   [qbits.tardis :as uuid]
    [clj-time.core :as ctc]))
 
 

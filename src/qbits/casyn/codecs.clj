@@ -2,7 +2,7 @@
   (:require
    qbits.casyn.types
    [taoensso.nippy :as nippy]
-   [qbits.tardis.uuid :as uuid])
+   [qbits.tardis :as uuid])
   (:import
    [org.apache.cassandra.utils ByteBufferUtil]
    [java.nio ByteBuffer]))

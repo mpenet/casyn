@@ -7,7 +7,7 @@ http://javasourcecode.org/html/open-source/cassandra/cassandra-0.8.1/org/apache/
    [lamina.core :as lc]
    [qbits.casyn.utils :as utils]
    [qbits.casyn.client :as c]
-   [qbits.knit.core :as knit]
+   [qbits.knit :as knit]
    [qbits.casyn.codecs :as codecs]
    [qbits.casyn.types :as t]
    [qbits.casyn.schema :as schema]

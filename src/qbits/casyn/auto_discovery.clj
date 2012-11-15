@@ -4,7 +4,7 @@
    [qbits.casyn.client :as c]
    [qbits.casyn.api :as api]
    [qbits.casyn.cluster :as clu]
-   [qbits.knit.core :as knit]
+   [qbits.knit :as knit]
    [lamina.core :as lc]
    [useful.exception :as uex]
    [clojure.tools.logging :as log])

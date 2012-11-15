@@ -4,7 +4,7 @@
    [qbits.casyn.cluster :as c]
    [qbits.casyn.pool :as p]
    [qbits.casyn.balancer :as b]
-   [qbits.knit.core :as knit])
+   [qbits.knit :as knit])
 
   (:import
    [org.apache.cassandra.thrift Cassandra$AsyncClient Cassandra$AsyncClient$Factory
