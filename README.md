@@ -2,7 +2,7 @@
 
 Clojure client for Cassandra using Thrift AsyncClient.
 
-The entire [Cassandra Thrift Api (1.1.5)](http://wiki.apache.org/cassandra/API) is
+The entire [Cassandra Thrift Api (1.1.6)](http://wiki.apache.org/cassandra/API) is
 supported, this includes CQL support.
 
 Pooling is using Apache commons pools, but it is open to other
