@@ -194,6 +194,8 @@ can have everything you need with a single `require`, as seen on the examples.
 
 ## Changelog
 
+See [CHANGELOG.md](https://github.com/mpenet/casyn/blob/master/CHANGELOG.md)
+
 ### 0.9.7
 
 * Fix issue where mutation on the same row, from differents spec
