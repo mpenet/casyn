@@ -4,6 +4,7 @@ Clojure client for Cassandra using Thrift AsyncClient.
 
 The entire [Cassandra Thrift Api (1.1.6)](http://wiki.apache.org/cassandra/API) is
 supported, this includes CQL support.
+See [commands API](http://mpenet.github.com/casyn/qbits.casyn.api.html) for details.
 
 Pooling is using Apache commons pools, but it is open to other
 implementations from clojure Protocols/multimethods, the same is true for almost
@@ -27,21 +28,6 @@ Note: It runs on Clojure 1.4+ and is being tested with Cassandra 1.1.6
 
 ## Usage
 
-Start by creating a playground:
-
-```clojure
-(use 'qbits.casyn)
-
-(add-keyspace (make-client)
-               "Keyspace1"
-               "SimpleStrategy"
-               [["colFamily1"]
-               ["colFamily2"
-                :default-validation-class :counter
-                :replicate-on-write true]]
-               :strategy-options {"replication_factor" "1"})
-user> < ... >
-```
 
 ```clojure
 (require '[lamina.core :as l])
