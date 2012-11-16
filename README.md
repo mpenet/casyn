@@ -196,30 +196,6 @@ can have everything you need with a single `require`, as seen on the examples.
 
 See [CHANGELOG.md](https://github.com/mpenet/casyn/blob/master/CHANGELOG.md)
 
-### 0.9.7
-
-* Fix issue where mutation on the same row, from differents spec
-  would be ignored.
-
-### 0.9.6
-
-*  casyn.api/batch-mutate signature updated to take a vector of
-   mutations specs instead of the inverted nested map from the Thrift API.
-
-   It used to be:
-   ```clojure
-   {"somekey" {"col-family" [mutations...]}
-    "somekey" {"col-family" [mutations...]}
-    "somekey" {"col-family" [mutations...]}}
-   ```
-
-   Now:
-   ```clojure
-   [["col-family" "somekey" [mutations...]
-    ["col-family" "somekey" [mutations...]
-    ["col-family" "somekey" [mutations...]]
-   ```
-
 ## YourKit
 
 Casyn is being developed with the help of YourKit profiler.
