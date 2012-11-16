@@ -1,8 +1,14 @@
 (ns qbits.casyn.api
-  "Thrift API and related utils. Most of the fns here translate almost directly
-to their thrift counterpart and most of the time return Thrift instances.
-See: http://wiki.apache.org/cassandra/API \nand
-http://javasourcecode.org/html/open-source/cassandra/cassandra-0.8.1/org/apache/cassandra/thrift/Cassandra.AsyncClient.html"
+  "Commands implementations (with the exceptions of DDLs). They
+shouldn't be used directly but be passed as argument to a
+qbits.casyn.client/casyn-fn generated function, making the `client`
+argument useless when in use (the generated function will choose a
+valid cilent from the cluster for you, from a pool, on the selected node (by
+a balancer instance).
+There are a few exceptions but these are documented (such as
+mutation, delete-mutation, with-*).
+
+A low level overview of what these commands do, and what their parameters translate to in the C* context is available here: http://wiki.apache.org/cassandra/API"
   (:require
    [lamina.core :as lc]
    [qbits.casyn.utils :as utils]
@@ -10,8 +16,7 @@ http://javasourcecode.org/html/open-source/cassandra/cassandra-0.8.1/org/apache/
    [qbits.knit :as knit]
    [qbits.casyn.codecs :as codecs]
    [qbits.casyn.types :as t]
-   [qbits.casyn.schema :as schema]
-   [clojure.walk :as w])
+   [qbits.casyn.schema :as schema])
 
   (:import
    [org.apache.cassandra.thrift

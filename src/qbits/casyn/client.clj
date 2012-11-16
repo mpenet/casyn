@@ -1,4 +1,5 @@
 (ns qbits.casyn.client
+  "Client utilities and client handler generator"
   (:require
    [lamina.core :as lc]
    [qbits.casyn.cluster :as c]

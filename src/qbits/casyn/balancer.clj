@@ -1,4 +1,6 @@
-(ns qbits.casyn.balancer)
+(ns qbits.casyn.balancer
+  "Protocol defining what a Balancer should support in order to be
+  compatible with cluster instances.")
 
 (defprotocol PBalancer
   (get-nodes [b] "Retuns a collection of the current nodes registered")

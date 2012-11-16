@@ -1,4 +1,5 @@
 (ns qbits.casyn.codecs.composite
+  "Encoding/decoding of Composite values"
   (:require
    [qbits.casyn.codecs :as codecs])
   (:import

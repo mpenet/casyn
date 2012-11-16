@@ -1,4 +1,5 @@
 (ns qbits.casyn.schema
+  "Schema creation and decoding/transformations"
   (:require
    [qbits.casyn.codecs :as codecs])
   (:import

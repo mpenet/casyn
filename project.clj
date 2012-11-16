@@ -14,8 +14,10 @@
                  [clj-time "0.4.4"]]
   :profiles {:1.4  {:dependencies [[org.clojure/clojure "1.4.0"]]}
              :1.5  {:dependencies [[org.clojure/clojure "1.5.0-master-SNAPSHOT"]]}
-             :dev  {:dependencies [[codox "0.6.1"]]}
              :test {:dependencies []}}
+
+  :codox {:src-dir-uri "https://github.com/mpenet/casyn/blob/master"
+          :src-linenum-anchor-prefix "L"}
 
   :min-lein-version "2.0.0"
   :warn-on-reflection true)

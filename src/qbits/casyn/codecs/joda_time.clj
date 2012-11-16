@@ -1,4 +1,5 @@
 (ns qbits.casyn.codecs.joda-time
+  "Encoding/decoding of org.joda.time.DateTime instances"
   (:require
    [qbits.casyn.codecs :refer [ByteBufferEncodable
                          bytes->clojure
