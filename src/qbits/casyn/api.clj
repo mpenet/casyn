@@ -462,24 +462,23 @@ Optional kw args:
 
 (defn batch-mutate
   "Executes the specified mutations on the keyspace.
-Expects a map of maps
-The outer map key is a row key, the inner map key is the column family name, its values are the mutations instances (see mutation & delete-mutation fns):
+Expects a collection of mutation specs, every mutation is a vector of
+[column-family, row-id, mutation instance]:
 
 Example:
- {\"row-0\" {\"cf\" [(mutation \"n0\" \"un0\")
-                     (mutation \"n00\" \"un00\")]}
-  \"row-1\" {cf [(mutation \"n1\" \"n10\")]}}
+[[\"cf\" \"row-2\" (mutation \"col-name\" \"col-value\")]
+ [\"cf\" \"row-1\" (mutation \"col-name\" \"col-value\")]]
 
 Optional kw args:
-  :consistency : optional consistency-level, defaults to :one"
+:consistency : optional consistency-level, defaults to :one"
   [client mutations
    & {:keys [consistency]}]
   (wrap-result-channel
    (.batch_mutate client
-                  (reduce-kv (fn [m k v]
-                               (assoc m (codecs/clojure->byte-buffer k) v))
-                             {}
-                             mutations)
+                  (reduce (fn [m [cf rk mut]]
+                            (assoc-in m [(codecs/clojure->byte-buffer rk) cf] mut))
+                          {}
+                          mutations)
                   (consistency-level consistency))))
 
 (defn get-range-slice
@@ -671,12 +670,11 @@ Optional kw args for mutations when passed as vectors:
                        (in nanosecs), defaults to the value for the current time"
   [client cf row-key columns
    & {:keys [consistency type]}]
-  (batch-mutate
-   client
-
-   {row-key
-    {cf (map #(apply mutation %) columns)}}
-   :consistency consistency))
+  (wrap-result-channel
+   (.batch_mutate client
+                  {(codecs/clojure->byte-buffer row-key)
+                   {cf (map #(apply mutation %) columns)}}
+                  (consistency-level consistency))))
 
 ;; aliases
 (def ^{:doc "Alias to mget-slice"} get-rows mget-slice)

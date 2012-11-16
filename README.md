@@ -19,13 +19,13 @@ Casyn uses Leinigen 2, but it is compatible with 1.x
 Add the following dependency on your project.clj:
 
 ```clojure
-[cc.qbits/casyn "0.9.5"]
+[cc.qbits/casyn "0.9.6"]
 ```
 
 or if you want to try the dev version:
 
 ```clojure
-[cc.qbits/casyn "0.9.6-SNAPSHOT"]
+[cc.qbits/casyn "0.9.7-SNAPSHOT"]
 ```
 
 Note: It runs on Clojure 1.4+ and is being tested with Cassandra 1.1.6
@@ -197,6 +197,27 @@ Some useful pages:
 
 Note: (almost) the entire lib is aliased from `qbits.casyn` so that you
 can have everything you need with a single `require`, as seen on the examples.
+
+## Changelog
+
+### 0.9.6
+
+*  casyn.api/batch-mutate signature updated to take a vector of
+   mutations specs instead of the inverted nested map from the Thrift API.
+
+   It used to be:
+   ```clojure
+   {"somekey" {"col-family" [mutations...]}
+    "somekey" {"col-family" [mutations...]}
+    "somekey" {"col-family" [mutations...]}}
+   ```
+
+   Now:
+   ```clojure
+   [["col-family" "somekey" [mutations...]
+    ["col-family" "somekey" [mutations...]
+    ["col-family" "somekey" [mutations...]]
+   ```
 
 ## YourKit
 

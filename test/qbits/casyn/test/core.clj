@@ -187,19 +187,15 @@
 (deftest test-mutation
   (is (nil?
        @(c batch-mutate
-         {"0" {cf
-               [(mutation "n0" "un0")
-                (mutation "n00" "un00")]}
-          "1" {cf
-               [(mutation "n1" "n10")]}})))
+           [[cf "0" [(mutation "n0" "un0")
+                     (mutation "n00" "un00")]]
+            [cf "1" [(mutation "n1" "n10")]]])))
 
   (is (nil?
        @(c batch-mutate
-         {"0" {cf
-               [(delete-mutation :columns ["n0"] )
-                (delete-mutation :columns ["n00"])]}
-          "1" {cf
-               [(delete-mutation :columns ["n1"])]}})))
+           [[cf "0" [(delete-mutation :columns ["n0"] )
+                     (delete-mutation :columns ["n00"])]]
+            [cf "1" [(delete-mutation :columns ["n1"])]]])))
 
   (is (nil?
        @(c put cf "11"
