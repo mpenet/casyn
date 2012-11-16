@@ -1,5 +1,5 @@
 (ns qbits.casyn.auto-discovery
-  "Handlers the discovery of server nodes as they are added/removed"
+  "Discovery of server nodes as they are added/removed"
   (:require
    [qbits.casyn.client :as c]
    [qbits.casyn.api :as api]
