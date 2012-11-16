@@ -476,7 +476,9 @@ Optional kw args:
   (wrap-result-channel
    (.batch_mutate client
                   (reduce (fn [m [cf rk mut]]
-                            (assoc-in m [(codecs/clojure->byte-buffer rk) cf] mut))
+                            (update-in m
+                                       [(codecs/clojure->byte-buffer rk) cf]
+                                       concat mut))
                           {}
                           mutations)
                   (consistency-level consistency))))
