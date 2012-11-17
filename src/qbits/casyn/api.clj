@@ -218,10 +218,11 @@ Optional kw args:
     kr))
 
 (defn mutation
-  "Takes column name, and value + optional :type that can have the
-  following  values :column (default) :super :counter :counter-super. :ttl
-  and :timestamp options are also available when dealing with super or
-  regular columns, otherwise ignored.
+  "To be used with qbits.casyn.api/batch-mutate.
+Takes column name, and value + optional :type that can have the
+following  values :column (default) :super :counter :counter-super. :ttl
+and :timestamp options are also available when dealing with super or
+regular columns, otherwise ignored.
 
 Optional kw args:
   :type (keyword): Represents the column type
@@ -253,7 +254,8 @@ Optional kw args:
        c))))
 
 (defn delete-mutation
-  "Accepts optional slice-predicate arguments :columns, :start, :finish, :count,
+  "To be used with qbits.casyn.api/batch-mutate.
+Accepts optional slice-predicate arguments :columns, :start, :finish, :count,
 :reversed?, if you specify :columns the other slice args will be ignored (as
 defined by thrift)
 
