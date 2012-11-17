@@ -50,6 +50,7 @@ http://wiki.apache.org/cassandra/API"
 (defmacro wrap-result-channel
   "Wraps a form in a Lamina result-channel, and make the last arg of the form an
    AsyncMethodCallback with error/complete callback bound to a result-channel"
+  {:no-doc true}
   [form & post-realize-fns]
   (let [thrift-cmd-call (gensym)
         [method client & args] form
@@ -74,7 +75,10 @@ http://wiki.apache.org/cassandra/API"
         t/thrift->casyn
         ~@(filter identity post-realize-fns)))))
 
-(defmacro wrap-result-channel+schema [form schema as]
+(defmacro wrap-result-channel+schema
+  ""
+  {:no-doc true}
+  [form schema as]
   `(wrap-result-channel
     ~form
     #(if ~schema
@@ -90,6 +94,7 @@ Optional kw args:
   :ttl (integer): Allows to specify the Time to live value for the column
   :timestamp (long): Allows to specify the Timestamp for the column
                        (in nanosecs), defaults to the value for the current time"
+  {:no-doc true}
   [name value & {:keys [type ttl timestamp]
                  :or {type :column}}]
   (case type
@@ -109,6 +114,7 @@ Optional kw args:
   "Returns a Thrift ColumnParent instance, works for common columns or
   super columns depending on arity used. The \"super\" argument will be
   used as super column name (can be of any supported type)"
+  {:no-doc true}
   ^ColumnParent [^String cf & [super]]
   (let [cp (ColumnParent. cf)]
     (when super
@@ -122,6 +128,7 @@ Optional kw args:
   :type (keyword): Represents the column type, defaults :column can also be :counter
   :super : super column name (can be of any supported type), must be present
              if type is :super"
+  {:no-doc true}
   ([^String cf & {:keys [super column]}]
      (let [cp ^ColumnPath (column-path cf)]
        (when super
@@ -145,6 +152,7 @@ The first value in the expression vectors must be a valid index-operator: :eq?, 
 
 Example: [[:eq? :foo \"bar\"]
           [:gt? \"baz\" 1]]"
+  {:no-doc true}
   [expressions]
   (map (fn [[op k v]]
          (IndexExpression. (codecs/clojure->byte-buffer k)
@@ -158,6 +166,7 @@ IndexExpression containing an EQ IndexOperator must be present.
 Optional kw args:
   :start-key : The first key in the inclusive KeyRange
   :count (long): The total number of keys to permit in the KeyRange. defaults to 100"
+  {:no-doc true}
   [expressions & {:keys [start-key count]
                   :or {count 100}}]
   (IndexClause. (index-expressions expressions)
@@ -176,6 +185,7 @@ Optional kw args:
   :reversed? (bool): Whether the results should be ordered in reversed order.
   :count : How many columns to return, defaults to 100
   :columns: A list of column names to retrieve"
+  {:no-doc true}
   [{:keys [columns start finish reversed? count]}]
   (let [sp (SlicePredicate.)]
     (if columns
@@ -196,6 +206,7 @@ Optional kw args:
   :end-key : The last key in the inclusive KeyRange.
   :row-count : The total number of keys to permit in the KeyRange.
   :row-filter: The list of index expressions vectors"
+  {:no-doc true}
   [{:keys [start-token start-key end-token end-key row-count row-filter]}]
   (let [kr (KeyRange.)]
     (when start-token (.setStart_token kr ^String start-token))
