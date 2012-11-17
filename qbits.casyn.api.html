@@ -18,7 +18,7 @@ Example:
  [&quot;cf&quot; &quot;row-1&quot; (delete-mutation :columns [&quot;col-name&quot;])]]
 
 Optional kw args:
-:consistency : optional consistency-level, defaults to :one</pre><div class="src-link"><a href="https://github.com/mpenet/casyn/blob/master/src/qbits/casyn/api.clj#L479">Source</a></div></div><div class="public" id="var-delete"><h3>delete</h3><div class="usage"><code>(delete client cf row-key &amp; {:keys [column super timestamp consistency type]})</code></div><pre class="doc">Delete column(s), works on regular columns or counters.
+:consistency : optional consistency-level, defaults to :one</pre><div class="src-link"><a href="https://github.com/mpenet/casyn/blob/master/src/qbits/casyn/api.clj#L481">Source</a></div></div><div class="public" id="var-delete"><h3>delete</h3><div class="usage"><code>(delete client cf row-key &amp; {:keys [column super timestamp consistency type]})</code></div><pre class="doc">Delete column(s), works on regular columns or counters.
 
 Optional kw args:
   :type (keyword): Represents the column type, defaults :column can also be :counter, :super
@@ -26,7 +26,8 @@ Optional kw args:
   :ttl (integer): Allows to specify the Time to live value for the column
   :timestamp (long): Allows to specify the Timestamp for the column
                        (in nanosecs), defaults to the value for the current time
-  :consistency : optional consistency-level, defaults to :one</pre><div class="src-link"><a href="https://github.com/mpenet/casyn/blob/master/src/qbits/casyn/api.clj#L454">Source</a></div></div><div class="public" id="var-delete-mutation"><h3>delete-mutation</h3><div class="usage"><code>(delete-mutation &amp; {:keys [super], :as opts})</code></div><pre class="doc">Accepts optional slice-predicate arguments :columns, :start, :finish, :count,
+  :consistency : optional consistency-level, defaults to :one</pre><div class="src-link"><a href="https://github.com/mpenet/casyn/blob/master/src/qbits/casyn/api.clj#L456">Source</a></div></div><div class="public" id="var-delete-mutation"><h3>delete-mutation</h3><div class="usage"><code>(delete-mutation &amp; {:keys [super], :as opts})</code></div><pre class="doc">To be used with qbits.casyn.api/batch-mutate.
+Accepts optional slice-predicate arguments :columns, :start, :finish, :count,
 :reversed?, if you specify :columns the other slice args will be ignored (as
 defined by thrift)
 
@@ -36,39 +37,39 @@ Optional kw args:
   :finish : The column name to stop the slice at
   :reversed? (bool): Whether the results should be ordered in reversed order.
   :count : How many columns to return, defaults to 100
-  :columns: A list of column names to retrieve</pre><div class="src-link"><a href="https://github.com/mpenet/casyn/blob/master/src/qbits/casyn/api.clj#L255">Source</a></div></div><div class="public" id="var-describe-cluster-name"><h3>describe-cluster-name</h3><div class="usage"><code>(describe-cluster-name client)</code></div><pre class="doc">Gets the name of the cluster.
-</pre><div class="src-link"><a href="https://github.com/mpenet/casyn/blob/master/src/qbits/casyn/api.clj#L571">Source</a></div></div><div class="public" id="var-describe-keyspace"><h3>describe-keyspace</h3><div class="usage"><code>(describe-keyspace client ks)</code></div><pre class="doc">Gets information about the specified keyspace.
-</pre><div class="src-link"><a href="https://github.com/mpenet/casyn/blob/master/src/qbits/casyn/api.clj#L576">Source</a></div></div><div class="public" id="var-describe-keyspaces"><h3>describe-keyspaces</h3><div class="usage"><code>(describe-keyspaces client)</code></div><pre class="doc">Gets a list of all the keyspaces configured for the cluster.
-</pre><div class="src-link"><a href="https://github.com/mpenet/casyn/blob/master/src/qbits/casyn/api.clj#L581">Source</a></div></div><div class="public" id="var-describe-partitioner"><h3>describe-partitioner</h3><div class="usage"><code>(describe-partitioner client)</code></div><pre class="doc">Gets the name of the partitioner for the cluster.
-</pre><div class="src-link"><a href="https://github.com/mpenet/casyn/blob/master/src/qbits/casyn/api.clj#L586">Source</a></div></div><div class="public" id="var-describe-ring"><h3>describe-ring</h3><div class="usage"><code>(describe-ring client ks)</code></div><pre class="doc">Gets the token ring; a map of ranges to host addresses. Represented
+  :columns: A list of column names to retrieve</pre><div class="src-link"><a href="https://github.com/mpenet/casyn/blob/master/src/qbits/casyn/api.clj#L256">Source</a></div></div><div class="public" id="var-describe-cluster-name"><h3>describe-cluster-name</h3><div class="usage"><code>(describe-cluster-name client)</code></div><pre class="doc">Gets the name of the cluster.
+</pre><div class="src-link"><a href="https://github.com/mpenet/casyn/blob/master/src/qbits/casyn/api.clj#L573">Source</a></div></div><div class="public" id="var-describe-keyspace"><h3>describe-keyspace</h3><div class="usage"><code>(describe-keyspace client ks)</code></div><pre class="doc">Gets information about the specified keyspace.
+</pre><div class="src-link"><a href="https://github.com/mpenet/casyn/blob/master/src/qbits/casyn/api.clj#L578">Source</a></div></div><div class="public" id="var-describe-keyspaces"><h3>describe-keyspaces</h3><div class="usage"><code>(describe-keyspaces client)</code></div><pre class="doc">Gets a list of all the keyspaces configured for the cluster.
+</pre><div class="src-link"><a href="https://github.com/mpenet/casyn/blob/master/src/qbits/casyn/api.clj#L583">Source</a></div></div><div class="public" id="var-describe-partitioner"><h3>describe-partitioner</h3><div class="usage"><code>(describe-partitioner client)</code></div><pre class="doc">Gets the name of the partitioner for the cluster.
+</pre><div class="src-link"><a href="https://github.com/mpenet/casyn/blob/master/src/qbits/casyn/api.clj#L588">Source</a></div></div><div class="public" id="var-describe-ring"><h3>describe-ring</h3><div class="usage"><code>(describe-ring client ks)</code></div><pre class="doc">Gets the token ring; a map of ranges to host addresses. Represented
 as a set of TokenRange instead of a map from range to list of
 endpoints, because you can't use Thrift structs as map keys:
 https://issues.apache.org/jira/browse/THRIFT-162 for the same
 reason, we can't return a set here, even though order is neither
-important nor predictable.</pre><div class="src-link"><a href="https://github.com/mpenet/casyn/blob/master/src/qbits/casyn/api.clj#L591">Source</a></div></div><div class="public" id="var-describe-schema-versions"><h3>describe-schema-versions</h3><div class="usage"><code>(describe-schema-versions client)</code></div><pre class="doc">For each schema version present in the cluster, returns a list of
+important nor predictable.</pre><div class="src-link"><a href="https://github.com/mpenet/casyn/blob/master/src/qbits/casyn/api.clj#L593">Source</a></div></div><div class="public" id="var-describe-schema-versions"><h3>describe-schema-versions</h3><div class="usage"><code>(describe-schema-versions client)</code></div><pre class="doc">For each schema version present in the cluster, returns a list of
 nodes at that version. Hosts that do not respond will be under the
 key DatabaseDescriptor.INITIAL_VERSION. The cluster is all on the
-same version if the size of the map is 1</pre><div class="src-link"><a href="https://github.com/mpenet/casyn/blob/master/src/qbits/casyn/api.clj#L601">Source</a></div></div><div class="public" id="var-describe-snitch"><h3>describe-snitch</h3><div class="usage"><code>(describe-snitch client)</code></div><pre class="doc">Gets the name of the snitch used for the cluster.
-</pre><div class="src-link"><a href="https://github.com/mpenet/casyn/blob/master/src/qbits/casyn/api.clj#L609">Source</a></div></div><div class="public" id="var-describe-splits"><h3>describe-splits</h3><div class="usage"><code>(describe-splits client cf start-token end-token keys-per-split)</code></div><pre class="doc">
-</pre><div class="src-link"><a href="https://github.com/mpenet/casyn/blob/master/src/qbits/casyn/api.clj#L614">Source</a></div></div><div class="public" id="var-describe-token-map"><h3>describe-token-map</h3><div class="usage"><code>(describe-token-map client)</code></div><pre class="doc">
-</pre><div class="src-link"><a href="https://github.com/mpenet/casyn/blob/master/src/qbits/casyn/api.clj#L622">Source</a></div></div><div class="public" id="var-describe-version"><h3>describe-version</h3><div class="usage"><code>(describe-version client)</code></div><pre class="doc">Gets the Thrift API version.
-</pre><div class="src-link"><a href="https://github.com/mpenet/casyn/blob/master/src/qbits/casyn/api.clj#L627">Source</a></div></div><div class="public" id="var-execute-cql-query"><h3>execute-cql-query</h3><div class="usage"><code>(execute-cql-query client query &amp; {:keys [schema as]})</code></div><pre class="doc">Executes a CQL (Cassandra Query Language) statement.
+same version if the size of the map is 1</pre><div class="src-link"><a href="https://github.com/mpenet/casyn/blob/master/src/qbits/casyn/api.clj#L603">Source</a></div></div><div class="public" id="var-describe-snitch"><h3>describe-snitch</h3><div class="usage"><code>(describe-snitch client)</code></div><pre class="doc">Gets the name of the snitch used for the cluster.
+</pre><div class="src-link"><a href="https://github.com/mpenet/casyn/blob/master/src/qbits/casyn/api.clj#L611">Source</a></div></div><div class="public" id="var-describe-splits"><h3>describe-splits</h3><div class="usage"><code>(describe-splits client cf start-token end-token keys-per-split)</code></div><pre class="doc">
+</pre><div class="src-link"><a href="https://github.com/mpenet/casyn/blob/master/src/qbits/casyn/api.clj#L616">Source</a></div></div><div class="public" id="var-describe-token-map"><h3>describe-token-map</h3><div class="usage"><code>(describe-token-map client)</code></div><pre class="doc">
+</pre><div class="src-link"><a href="https://github.com/mpenet/casyn/blob/master/src/qbits/casyn/api.clj#L624">Source</a></div></div><div class="public" id="var-describe-version"><h3>describe-version</h3><div class="usage"><code>(describe-version client)</code></div><pre class="doc">Gets the Thrift API version.
+</pre><div class="src-link"><a href="https://github.com/mpenet/casyn/blob/master/src/qbits/casyn/api.clj#L629">Source</a></div></div><div class="public" id="var-execute-cql-query"><h3>execute-cql-query</h3><div class="usage"><code>(execute-cql-query client query &amp; {:keys [schema as]})</code></div><pre class="doc">Executes a CQL (Cassandra Query Language) statement.
 Optional kw args:
   :schema : schema used for result decoding
   :as : as format (if nil it will return casyn types,
-              if :map it will try to turn collections to maps</pre><div class="src-link"><a href="https://github.com/mpenet/casyn/blob/master/src/qbits/casyn/api.clj#L646">Source</a></div></div><div class="public" id="var-execute-prepared-cql-query"><h3>execute-prepared-cql-query</h3><div class="usage"><code>(execute-prepared-cql-query client item-id values &amp; {:keys [schema as]})</code></div><pre class="doc">Executes a prepared CQL (Cassandra Query Language) statement by
+              if :map it will try to turn collections to maps</pre><div class="src-link"><a href="https://github.com/mpenet/casyn/blob/master/src/qbits/casyn/api.clj#L648">Source</a></div></div><div class="public" id="var-execute-prepared-cql-query"><h3>execute-prepared-cql-query</h3><div class="usage"><code>(execute-prepared-cql-query client item-id values &amp; {:keys [schema as]})</code></div><pre class="doc">Executes a prepared CQL (Cassandra Query Language) statement by
   passing an id token and a list of variables to bind.
 
 Optional kw args:
   :schema : schema used for result decoding
   :as : as format (if nil it will return casyn types,
-              if :map it will try to turn collections to maps</pre><div class="src-link"><a href="https://github.com/mpenet/casyn/blob/master/src/qbits/casyn/api.clj#L660">Source</a></div></div><div class="public" id="var-get-column"><h3>get-column</h3><div class="usage"><code>(get-column client cf row-key col &amp; {:keys [super consistency schema as]})</code></div><pre class="doc">Returns a single column.
+              if :map it will try to turn collections to maps</pre><div class="src-link"><a href="https://github.com/mpenet/casyn/blob/master/src/qbits/casyn/api.clj#L662">Source</a></div></div><div class="public" id="var-get-column"><h3>get-column</h3><div class="usage"><code>(get-column client cf row-key col &amp; {:keys [super consistency schema as]})</code></div><pre class="doc">Returns a single column.
 Optional kw args:
   :consistency : optional consistency-level, defaults to :one
   :super : optional super column name
   :schema : schema used for result decoding
   :as : ouput format (if nil it will return casyn types,
-              if :map it will try to turn collections to maps</pre><div class="src-link"><a href="https://github.com/mpenet/casyn/blob/master/src/qbits/casyn/api.clj#L290">Source</a></div></div><div class="public" id="var-get-count"><h3>get-count</h3><div class="usage"><code>(get-count client cf row-key &amp; {:keys [super consistency schema as], :as opts})</code></div><pre class="doc">Accepts optional slice-predicate arguments :columns, :start, :finish, :count,
+              if :map it will try to turn collections to maps</pre><div class="src-link"><a href="https://github.com/mpenet/casyn/blob/master/src/qbits/casyn/api.clj#L292">Source</a></div></div><div class="public" id="var-get-count"><h3>get-count</h3><div class="usage"><code>(get-count client cf row-key &amp; {:keys [super consistency schema as], :as opts})</code></div><pre class="doc">Accepts optional slice-predicate arguments :columns, :start, :finish, :count,
 :reversed?, if you specify :columns the other slice args will be ignored (as
 defined by the cassandra api).
 
@@ -82,7 +83,7 @@ Optional kw args:
   :consistency : optional consistency-level, defaults to :one
   :schema : schema used for result decoding
   :as : as format (if nil it will return casyn types,
-              if :map it will try to turn collections to maps</pre><div class="src-link"><a href="https://github.com/mpenet/casyn/blob/master/src/qbits/casyn/api.clj#L361">Source</a></div></div><div class="public" id="var-get-indexed-slice"><h3>get-indexed-slice</h3><div class="usage"><code>(get-indexed-slice client cf index-clause-args &amp; {:keys [super consistency schema as], :as opts})</code></div><pre class="doc">Accepts optional slice-predicate arguments :columns, :start, :finish, :count,
+              if :map it will try to turn collections to maps</pre><div class="src-link"><a href="https://github.com/mpenet/casyn/blob/master/src/qbits/casyn/api.clj#L363">Source</a></div></div><div class="public" id="var-get-indexed-slice"><h3>get-indexed-slice</h3><div class="usage"><code>(get-indexed-slice client cf index-clause-args &amp; {:keys [super consistency schema as], :as opts})</code></div><pre class="doc">Accepts optional slice-predicate arguments :columns, :start, :finish, :count,
 :reversed?, if you specify :columns the other slice args will be ignored (as
 defined by the cassandra api).
 
@@ -97,7 +98,7 @@ Optional kw args:
   :consistency : optional consistency-level, defaults to :one
   :schema : schema used for result decoding
   :as : as format (if nil it will return casyn types,
-              if :map it will try to turn collections to maps</pre><div class="src-link"><a href="https://github.com/mpenet/casyn/blob/master/src/qbits/casyn/api.clj#L538">Source</a></div></div><div class="public" id="var-get-range-slice"><h3>get-range-slice</h3><div class="usage"><code>(get-range-slice client cf &amp; {:keys [super consistency schema as], :as opts})</code></div><pre class="doc">Accepts optional slice-predicate arguments :columns, :start, :finish, :count,
+              if :map it will try to turn collections to maps</pre><div class="src-link"><a href="https://github.com/mpenet/casyn/blob/master/src/qbits/casyn/api.clj#L540">Source</a></div></div><div class="public" id="var-get-range-slice"><h3>get-range-slice</h3><div class="usage"><code>(get-range-slice client cf &amp; {:keys [super consistency schema as], :as opts})</code></div><pre class="doc">Accepts optional slice-predicate arguments :columns, :start, :finish, :count,
 :reversed?, if you specify :columns the other slice args will be ignored (as
 defined by the cassandra api). Accepts optional key-range arguments :start-token
 :start-key :end-token :end-key :count-key :row-filter (vector of index-expressions).
@@ -120,9 +121,9 @@ Optional kw args:
   :consistency : optional consistency-level, defaults to :one
   :schema : schema used for result decoding
   :as : as format (if nil it will return casyn types,
-              if :map it will try to turn collections to maps</pre><div class="src-link"><a href="https://github.com/mpenet/casyn/blob/master/src/qbits/casyn/api.clj#L502">Source</a></div></div><div class="public" id="var-get-row"><h3>get-row</h3><div class="usage"></div><pre class="doc">Alias to get-slice
-</pre><div class="src-link"><a href="https://github.com/mpenet/casyn/blob/master/src/qbits/casyn/api.clj#L699">Source</a></div></div><div class="public" id="var-get-rows"><h3>get-rows</h3><div class="usage"></div><pre class="doc">Alias to mget-slice
-</pre><div class="src-link"><a href="https://github.com/mpenet/casyn/blob/master/src/qbits/casyn/api.clj#L698">Source</a></div></div><div class="public" id="var-get-slice"><h3>get-slice</h3><div class="usage"><code>(get-slice client cf row-key &amp; {:keys [super consistency schema as], :as opts})</code></div><pre class="doc">Returns a slice of columns. Accepts optional slice-predicate arguments :columns, :start, :finish, :count,
+              if :map it will try to turn collections to maps</pre><div class="src-link"><a href="https://github.com/mpenet/casyn/blob/master/src/qbits/casyn/api.clj#L504">Source</a></div></div><div class="public" id="var-get-row"><h3>get-row</h3><div class="usage"></div><pre class="doc">Alias to get-slice
+</pre><div class="src-link"><a href="https://github.com/mpenet/casyn/blob/master/src/qbits/casyn/api.clj#L701">Source</a></div></div><div class="public" id="var-get-rows"><h3>get-rows</h3><div class="usage"></div><pre class="doc">Alias to mget-slice
+</pre><div class="src-link"><a href="https://github.com/mpenet/casyn/blob/master/src/qbits/casyn/api.clj#L700">Source</a></div></div><div class="public" id="var-get-slice"><h3>get-slice</h3><div class="usage"><code>(get-slice client cf row-key &amp; {:keys [super consistency schema as], :as opts})</code></div><pre class="doc">Returns a slice of columns. Accepts optional slice-predicate arguments :columns, :start, :finish, :count,
 :reversed?, if you specify :columns the other slice args will be ignored (as defined by the cassandra api).
 
 Optional kw args:
@@ -135,11 +136,11 @@ Optional kw args:
   :consistency : optional consistency-level, defaults to :one
   :schema : schema used for result decoding
   :as : as format (if nil it will return casyn types,
-              if :as-map it will try to turn collections to maps</pre><div class="src-link"><a href="https://github.com/mpenet/casyn/blob/master/src/qbits/casyn/api.clj#L307">Source</a></div></div><div class="public" id="var-increment"><h3>increment</h3><div class="usage"><code>(increment client cf row-key column-name value &amp; {:keys [super consistency]})</code></div><pre class="doc">Increment the specified counter column value.
+              if :as-map it will try to turn collections to maps</pre><div class="src-link"><a href="https://github.com/mpenet/casyn/blob/master/src/qbits/casyn/api.clj#L309">Source</a></div></div><div class="public" id="var-increment"><h3>increment</h3><div class="usage"><code>(increment client cf row-key column-name value &amp; {:keys [super consistency]})</code></div><pre class="doc">Increment the specified counter column value.
 
 Optional kw args:
   :super : this argument will be used as the super column name if specified
-  :consistency : optional consistency-level, defaults to :one</pre><div class="src-link"><a href="https://github.com/mpenet/casyn/blob/master/src/qbits/casyn/api.clj#L439">Source</a></div></div><div class="public" id="var-insert-column"><h3>insert-column</h3><div class="usage"><code>(insert-column client cf row-key name value &amp; {:keys [super type consistency ttl timestamp], :or {type :column}})</code></div><pre class="doc">Inserts a single column.
+  :consistency : optional consistency-level, defaults to :one</pre><div class="src-link"><a href="https://github.com/mpenet/casyn/blob/master/src/qbits/casyn/api.clj#L441">Source</a></div></div><div class="public" id="var-insert-column"><h3>insert-column</h3><div class="usage"><code>(insert-column client cf row-key name value &amp; {:keys [super type consistency ttl timestamp], :or {type :column}})</code></div><pre class="doc">Inserts a single column.
 
 Optional kw args:
   :type (keyword): Represents the column type, defaults :column can also be :counter, :super
@@ -147,8 +148,8 @@ Optional kw args:
   :ttl (integer): Allows to specify the Time to live value for the column
   :timestamp (long): Allows to specify the Timestamp for the column
                        (in nanosecs), defaults to the value for the current time
-  :consistency : optional consistency-level, defaults to :one</pre><div class="src-link"><a href="https://github.com/mpenet/casyn/blob/master/src/qbits/casyn/api.clj#L415">Source</a></div></div><div class="public" id="var-login"><h3>login</h3><div class="usage"><code>(login client auth-req)</code></div><pre class="doc">Expect an AuthenticationRequest instance as argument
-</pre><div class="src-link"><a href="https://github.com/mpenet/casyn/blob/master/src/qbits/casyn/api.clj#L280">Source</a></div></div><div class="public" id="var-mget-count"><h3>mget-count</h3><div class="usage"><code>(mget-count client cf row-keys &amp; {:keys [super consistency schema as], :as opts})</code></div><pre class="doc">Accepts optional slice-predicate arguments :columns, :start, :finish, :count,
+  :consistency : optional consistency-level, defaults to :one</pre><div class="src-link"><a href="https://github.com/mpenet/casyn/blob/master/src/qbits/casyn/api.clj#L417">Source</a></div></div><div class="public" id="var-login"><h3>login</h3><div class="usage"><code>(login client auth-req)</code></div><pre class="doc">Expect an AuthenticationRequest instance as argument
+</pre><div class="src-link"><a href="https://github.com/mpenet/casyn/blob/master/src/qbits/casyn/api.clj#L282">Source</a></div></div><div class="public" id="var-mget-count"><h3>mget-count</h3><div class="usage"><code>(mget-count client cf row-keys &amp; {:keys [super consistency schema as], :as opts})</code></div><pre class="doc">Accepts optional slice-predicate arguments :columns, :start, :finish, :count,
 :reversed?, if you specify :columns the other slice args will be ignored (as
 defined by the cassandra api).
 
@@ -162,7 +163,7 @@ Optional kw args:
   :consistency : optional consistency-level, defaults to :one
   :schema : schema used for result decoding
   :as : as format (if nil it will return casyn types,
-              if :map it will try to turn collections to maps</pre><div class="src-link"><a href="https://github.com/mpenet/casyn/blob/master/src/qbits/casyn/api.clj#L388">Source</a></div></div><div class="public" id="var-mget-slice"><h3>mget-slice</h3><div class="usage"><code>(mget-slice client cf row-keys &amp; {:keys [super consistency schema as], :as opts})</code></div><pre class="doc">Returns a collection of slices of columns.
+              if :map it will try to turn collections to maps</pre><div class="src-link"><a href="https://github.com/mpenet/casyn/blob/master/src/qbits/casyn/api.clj#L390">Source</a></div></div><div class="public" id="var-mget-slice"><h3>mget-slice</h3><div class="usage"><code>(mget-slice client cf row-keys &amp; {:keys [super consistency schema as], :as opts})</code></div><pre class="doc">Returns a collection of slices of columns.
    Accepts optional slice-predicate
    arguments :columns, :start, :finish, :count, :reversed?, if you
    specify :columns the other slice args will be ignored (as defined by the cassandra api)
@@ -177,10 +178,11 @@ Optional kw args:
   :consistency : optional consistency-level, defaults to :one
   :schema : schema used for result decoding
   :as : as format (if nil it will return casyn types,
-              if :map it will try to turn collections to maps</pre><div class="src-link"><a href="https://github.com/mpenet/casyn/blob/master/src/qbits/casyn/api.clj#L333">Source</a></div></div><div class="public" id="var-mutation"><h3>mutation</h3><div class="usage"><code>(mutation name value &amp; {:keys [type ttl timestamp]})</code></div><pre class="doc">Takes column name, and value + optional :type that can have the
-  following  values :column (default) :super :counter :counter-super. :ttl
-  and :timestamp options are also available when dealing with super or
-  regular columns, otherwise ignored.
+              if :map it will try to turn collections to maps</pre><div class="src-link"><a href="https://github.com/mpenet/casyn/blob/master/src/qbits/casyn/api.clj#L335">Source</a></div></div><div class="public" id="var-mutation"><h3>mutation</h3><div class="usage"><code>(mutation name value &amp; {:keys [type ttl timestamp]})</code></div><pre class="doc">To be used with qbits.casyn.api/batch-mutate.
+Takes column name, and value + optional :type that can have the
+following  values :column (default) :super :counter :counter-super. :ttl
+and :timestamp options are also available when dealing with super or
+regular columns, otherwise ignored.
 
 Optional kw args:
   :type (keyword): Represents the column type
@@ -188,7 +190,7 @@ Optional kw args:
   :ttl (integer): Allows to specify the Time to live value for the column
   :timestamp (long): Allows to specify the Timestamp for the column
                        (in nanosecs), defaults to the value for the current time</pre><div class="src-link"><a href="https://github.com/mpenet/casyn/blob/master/src/qbits/casyn/api.clj#L220">Source</a></div></div><div class="public" id="var-prepare-cql-query"><h3>prepare-cql-query</h3><div class="usage"><code>(prepare-cql-query client query)</code></div><pre class="doc">Prepare a CQL (Cassandra Query Language) statement by compiling and returning
-a qbits.casyn.types.CqlPreparedResult instance</pre><div class="src-link"><a href="https://github.com/mpenet/casyn/blob/master/src/qbits/casyn/api.clj#L637">Source</a></div></div><div class="public" id="var-put"><h3>put</h3><div class="usage"><code>(put client cf row-key columns &amp; {:keys [consistency type]})</code></div><pre class="doc">Accepts cols as vectors or maps to be applied to cols
+a qbits.casyn.types.CqlPreparedResult instance</pre><div class="src-link"><a href="https://github.com/mpenet/casyn/blob/master/src/qbits/casyn/api.clj#L639">Source</a></div></div><div class="public" id="var-put"><h3>put</h3><div class="usage"><code>(put client cf row-key columns &amp; {:keys [consistency type]})</code></div><pre class="doc">Accepts cols as vectors or maps to be applied to cols
   constructors (use maps for simple key vals, use vectors if you need
   to set mutations options:
 
@@ -197,8 +199,8 @@ Optional kw args for mutations when passed as vectors:
                      defaults :column can also be :counter :super :counter-super
   :ttl (integer): Allows to specify the Time to live value for the column
   :timestamp (long): Allows to specify the Timestamp for the column
-                       (in nanosecs), defaults to the value for the current time</pre><div class="src-link"><a href="https://github.com/mpenet/casyn/blob/master/src/qbits/casyn/api.clj#L678">Source</a></div></div><div class="public" id="var-set-cql-version"><h3>set-cql-version</h3><div class="usage"><code>(set-cql-version client version)</code></div><pre class="doc">
-</pre><div class="src-link"><a href="https://github.com/mpenet/casyn/blob/master/src/qbits/casyn/api.clj#L632">Source</a></div></div><div class="public" id="var-set-keyspace"><h3>set-keyspace</h3><div class="usage"><code>(set-keyspace client ks)</code></div><pre class="doc">
-</pre><div class="src-link"><a href="https://github.com/mpenet/casyn/blob/master/src/qbits/casyn/api.clj#L285">Source</a></div></div><div class="public" id="var-truncate"><h3>truncate</h3><div class="usage"><code>(truncate client cf)</code></div><pre class="doc">Removes all the rows from the given column family.
-</pre><div class="src-link"><a href="https://github.com/mpenet/casyn/blob/master/src/qbits/casyn/api.clj#L566">Source</a></div></div><div class="public" id="var-with-consistency"><h3>with-consistency</h3><h4 class="macro">macro</h4><div class="usage"><code>(with-consistency consistency &amp; body)</code></div><pre class="doc">Binds consistency level for the enclosed body
+                       (in nanosecs), defaults to the value for the current time</pre><div class="src-link"><a href="https://github.com/mpenet/casyn/blob/master/src/qbits/casyn/api.clj#L680">Source</a></div></div><div class="public" id="var-set-cql-version"><h3>set-cql-version</h3><div class="usage"><code>(set-cql-version client version)</code></div><pre class="doc">
+</pre><div class="src-link"><a href="https://github.com/mpenet/casyn/blob/master/src/qbits/casyn/api.clj#L634">Source</a></div></div><div class="public" id="var-set-keyspace"><h3>set-keyspace</h3><div class="usage"><code>(set-keyspace client ks)</code></div><pre class="doc">
+</pre><div class="src-link"><a href="https://github.com/mpenet/casyn/blob/master/src/qbits/casyn/api.clj#L287">Source</a></div></div><div class="public" id="var-truncate"><h3>truncate</h3><div class="usage"><code>(truncate client cf)</code></div><pre class="doc">Removes all the rows from the given column family.
+</pre><div class="src-link"><a href="https://github.com/mpenet/casyn/blob/master/src/qbits/casyn/api.clj#L568">Source</a></div></div><div class="public" id="var-with-consistency"><h3>with-consistency</h3><h4 class="macro">macro</h4><div class="usage"><code>(with-consistency consistency &amp; body)</code></div><pre class="doc">Binds consistency level for the enclosed body
 </pre><div class="src-link"><a href="https://github.com/mpenet/casyn/blob/master/src/qbits/casyn/api.clj#L43">Source</a></div></div></div></body></html>
