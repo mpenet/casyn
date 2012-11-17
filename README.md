@@ -96,7 +96,7 @@ A simple example with a schema:
 
 ```clojure
 (defschema test-schema
-  :row :utf-8
+  :row :utf-8 ;; the row key will be decoded as utf-8
   :columns {:default [:keyword :utf-8]
             ;; :keyword type will be the default decoder for the column name
             ;; and :utf-8 will be the decoder type of the column value
