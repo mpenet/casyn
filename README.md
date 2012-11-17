@@ -157,10 +157,6 @@ Here the column name will be a composite or 3 different types.
 To create composite values just use the `composite` function or
 `#casyn/composite` reader literal, it will mark the collection as
 composite and encode it accordingly when you execute the query.
-When using the `composite` function, the values you passed in to it
-will be returned with some meta data indicating the cassandra type,
-the same is true when its a composite value read from a result, this
-means it would be reusable transparently for other requests/clj code.
 
 ```clojure
 (c insert-column "colFamily1" "1"  (composite ["meh" 1001  3.14]) "value0")
