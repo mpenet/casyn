@@ -76,10 +76,10 @@ pipelines, making async workflow and error handling easier to deal with.
   (some-other-async-operation)
   (fn [result] (c get-row "colFamily1" (:id result))))
 
-user> (#qbits.casyn.types.Column{:name #<byte[] [B@7cc09980>
-                                 :value #<byte[] [B@489de27c>
-                                 :ttl 0
-                                 :timestamp 1332535710069564})
+user> ({:name #<byte[] [B@7cc09980>
+        :value #<byte[] [B@489de27c>
+        :ttl 0
+        :timestamp 1332535710069564})
 ```
 
 [Lamina](https://github.com/ztellman/lamina) offers a lot of possibilities.
@@ -118,10 +118,10 @@ A simple example with a schema:
 
 @(c get-row "colFamily1" "7" :schema test-schema)
 
-user> (#qbits.casyn.types.Column{:name :age, :value 35, :ttl 0, :timestamp 1332536503948650}
-       #qbits.casyn.types.Column{:name :name, :value "Max", :ttl 0, :timestamp 1332536503948652})
-       #qbits.casyn.types.Column{:name :created, :value #inst "2012-08-22T22:34:41.079-00:00", :ttl 0, :timestamp 1332536503948651
-       #qbits.casyn.types.Column{:name :code, :value {:foo [{:bar "baz"}]}, :ttl 0, :timestamp 1332536503948652}}
+user> ({:name :age, :value 35, :ttl 0, :timestamp 1332536503948650}
+       {:name :name, :value "Max", :ttl 0, :timestamp 1332536503948652})
+       {:name :created, :value #inst "2012-08-22T22:34:41.079-00:00", :ttl 0, :timestamp 1332536503948651
+       {:name :code, :value {:foo [{:bar "baz"}]}, :ttl 0, :timestamp 1332536503948652}}
 ```
 
 A collection of columns can be turned into a regular map just pass `:as :map`.
