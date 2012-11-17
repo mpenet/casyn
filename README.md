@@ -30,7 +30,7 @@ Note: It runs on Clojure 1.4+ and is being tested with Cassandra 1.1.6
 
 
 ```clojure
-(require '[lamina.core :as l])
+(use 'qbits.casyn)
 
 (def cl (make-cluster "localhost" 9160 "Keyspace1"))
 
@@ -55,6 +55,8 @@ you can just have the call block and wait for a result/error by dereferencing it
 or since we want to play asynchronously register a callback
 
 ```clojure
+(require '[lamina.core :as l])
+
 (l/on-realized (c get-row "colFamily1" "1")
            #(println "It worked, row:" %)
            #(println "It failed, error:" %))
@@ -73,7 +75,10 @@ pipelines, making async workflow and error handling easier to deal with.
   (fn [_] (c get-row "colFamily1" "1")))
 
 
-user> (#qbits.casyn.types.Column{:name #<byte[] [B@7cc09980>, :value #<byte[] [B@489de27c>, :ttl 0, :timestamp 1332535710069564})
+user> (#qbits.casyn.types.Column{:name #<byte[] [B@7cc09980>
+                                 :value #<byte[] [B@489de27c>
+                                 :ttl 0
+                                 :timestamp 1332535710069564})
   ```
 
 [Lamina](https://github.com/ztellman/lamina) offers a lot of possibilities.
@@ -92,16 +97,26 @@ A simple example with a schema:
   :row :utf-8
   :columns {:default [:keyword :utf-8]
             ;; when a column with the age name is encountered it will
-            ;; overwride the defaults for decoding
+            ;; overwride the defaults for decoding, the name the column is the
+            ;; key and the value its type. In this example the key is a keyword,
+            ;; but this depends on the column :default you set
+            ;; earlier, it could be of any type
             :exceptions {:age :long
-                         :created :date}})
+                         :created :date
+                         :code :clj}})
 
-@(c put "colFamily1" "7" {:age 35 :name "Max" :created (java.util.Date.)})
+@(c put "colFamily1" "7"
+    {:age 35
+    :name "Max"
+    :created (java.util.Date.)
+    :code {:foo [{:bar "baz"}]}})
+
 @(c get-row "colFamily1" "7" :schema test-schema)
 
 user> (#qbits.casyn.types.Column{:name :age, :value 35, :ttl 0, :timestamp 1332536503948650}
        #qbits.casyn.types.Column{:name :name, :value "Max", :ttl 0, :timestamp 1332536503948652})
-       #qbits.casyn.types.Column{:name :created, :value #inst "2012-08-22T22:34:41.079-00:00", :ttl 0, :timestamp 1332536503948651}
+       #qbits.casyn.types.Column{:name :created, :value #inst "2012-08-22T22:34:41.079-00:00", :ttl 0, :timestamp 1332536503948651
+       #qbits.casyn.types.Column{:name :code, :value {:foo [{:bar "baz"}]}, :ttl 0, :timestamp 1332536503948652}}
 ```
 
 A collection of columns can be turned into a regular map just pass `:as :map`.
