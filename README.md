@@ -176,10 +176,14 @@ To create composite values just use the `composite` function or
 composite and encode it accordingly when you execute the query.
 
 ```clojure
-(c insert-column "colFamily1" "1"  (composite ["meh" 1001  3.14]) "value0")
-  ;; consistency is tunable per query
-  :consistency :all)
+(c insert-column "colFamily1" "1"  (composite ["meh" 1001  3.14]) "value0"))
 ```
+
+Querying using composite values is also supported, for a brief
+overview see
+[tests.clj](https://github.com/mpenet/casyn/blob/master/test/qbits/casyn/test/core.clj#L294)
+or the
+[documentation](http://mpenet.github.com/casyn/qbits.casyn.codecs.composite.html).
 
 #### Clojure serialization
 
@@ -230,7 +234,16 @@ schemas.
 <!-- [composite.clj](https://github.com/mpenet/casyn/blob/master/src/qbits/casyn/codecs/composite.clj) -->
 <!-- for details. -->
 
-### Convenience macros
+
+### Consistency
+
+Consistency is done per query, and is supported on all commands.
+
+```clojure
+(c insert-column "cf" "1" "foo" "bar" :consistency :all)
+```
+
+Or using the following macros:
 
 `with-consistency` can be used if you prefer that to explicit arguments.
 
@@ -239,6 +252,13 @@ schemas.
   @(c get-row "colFamily1" "1")
   @(c get-row "colFamily1" "2"))
  ```
+
+The possible values are: `:all` `:any` `:each-quorum` `:local-quorum`
+`:one` `:quorum` `:three` `:two`
+
+Refer to
+[Cassandra API doc](http://wiki.apache.org/cassandra/API#write) for
+details.
 
 ## Documentation
 
