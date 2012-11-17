@@ -72,7 +72,7 @@ pipelines, making async workflow and error handling easier to deal with.
 @(l/run-pipeline
   (c insert-column "colFamily1" "1" "n0" "value0")
   {:error-handler (fn [_] (println "snap, something went wrong"))}
-  (some-other-asyn-operation)
+  (some-other-async-operation)
   (fn [result] (c get-row "colFamily1" (:id result))))
 
 user> (#qbits.casyn.types.Column{:name #<byte[] [B@7cc09980>
