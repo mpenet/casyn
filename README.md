@@ -43,6 +43,7 @@ Note: It runs on Clojure 1.4+ and is being tested with Cassandra 1.1.6
 ```
 
 [More details about cluster configuration](http://mpenet.github.com/casyn/casyn.cluster.core.html)
+and [client-fn](http://mpenet.github.com/casyn/casyn.client.html)
 
 API calls return [Lamina](https://github.com/ztellman/lamina) result-channels.
 This is an example of this. From there you have multiple choices
@@ -62,24 +63,23 @@ or since we want to play asynchronously register a callback
            #(println "It failed, error:" %))
 ```
 
-but it is advised to  use a pipeline to compose async/sync operations.
+but it is often better to  use a pipeline to compose async/sync operations.
 Here a write then reading the entire row.
 A pipeline also returns a result-channel and can be nested with other
 pipelines, making async workflow and error handling easier to deal with.
 
 ```clojure
-
 @(l/run-pipeline
   (c insert-column "colFamily1" "1" "n0" "value0")
   {:error-handler (fn [_] (println "snap, something went wrong"))}
-  (fn [_] (c get-row "colFamily1" "1")))
-
+  (some-other-asyn-operation)
+  (fn [result] (c get-row "colFamily1" (:id result))))
 
 user> (#qbits.casyn.types.Column{:name #<byte[] [B@7cc09980>
                                  :value #<byte[] [B@489de27c>
                                  :ttl 0
                                  :timestamp 1332535710069564})
-  ```
+```
 
 [Lamina](https://github.com/ztellman/lamina) offers a lot of possibilities.
 
@@ -88,7 +88,7 @@ Cassandra/Thrift column name/values are returned as bytes, but you can
 supply a schema for decoding.
 Encoding of clojure data is automatic.
 Encoding/decoding is open and extendable, see codecs.clj.
-This also works with CQL queries.
+This also works with CQL query results.
 
 A simple example with a schema:
 
@@ -107,9 +107,9 @@ A simple example with a schema:
 
 @(c put "colFamily1" "7"
     {:age 35
-    :name "Max"
-    :created (java.util.Date.)
-    :code {:foo [{:bar "baz"}]}})
+     :name "Max"
+     :created (java.util.Date.)
+     :code {:foo [{:bar "baz"}]}})
 
 @(c get-row "colFamily1" "7" :schema test-schema)
 
@@ -143,7 +143,9 @@ read/write behavior to be symetrical just use `:bytes` as schema type
 and handle this on your side.
 
 Composite types are also supported and use the same type definitions
-(they can be used as keys, names, values):
+(they can be used as keys, names, values), instead of incating a
+single type value in the schema just use a vector or types:
+Here the column name will be a composite or 3 different types.
 
 ```clojure
 (defschema test-schema
@@ -154,6 +156,10 @@ Composite types are also supported and use the same type definitions
 To create composite values just use the `composite` function or
 `#casyn/composite` reader literal, it will mark the collection as
 composite and encode it accordingly when you execute the query.
+When using the `composite` function, the values you passed in to it
+will be returned with some meta data indicating the cassandra type,
+the same is true when its a composite value read from a result, this
+means it would be reusable transparently for other requests/clj code.
 
 ```clojure
 (c insert-column "colFamily1" "1"  (composite ["meh" 1001  3.14]) "value0")
