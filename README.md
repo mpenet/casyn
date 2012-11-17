@@ -28,6 +28,7 @@ Note: It runs on Clojure 1.4+ and is being tested with Cassandra 1.1.6
 
 ## Usage
 
+### Basics
 
 ```clojure
 (use 'qbits.casyn)
@@ -83,6 +84,7 @@ user> (#qbits.casyn.types.Column{:name #<byte[] [B@7cc09980>
 
 [Lamina](https://github.com/ztellman/lamina) offers a lot of possibilities.
 
+### Encoding/decoding - Schemas
 
 Cassandra/Thrift column name/values are returned as bytes, but you can
 supply a schema for decoding.
@@ -96,11 +98,14 @@ A simple example with a schema:
 (defschema test-schema
   :row :utf-8
   :columns {:default [:keyword :utf-8]
-            ;; when a column with the age name is encountered it will
+            ;; :keyword type will be the default decoder for the column name
+            ;; and :utf-8 will be the decoder type of the column value
+
+            ;; When a column with the age name is encountered it will
             ;; overwride the defaults for decoding, the name the column is the
             ;; key and the value its type. In this example the key is a keyword,
             ;; but this depends on the column :default you set
-            ;; earlier, it could be of any type
+            ;; earlier, it could be of any type.
             :exceptions {:age :long
                          :created :date
                          :code :clj}})
@@ -131,20 +136,32 @@ user> {:age 35
        :code {:foo [{:bar "baz"}]}}
 ```
 
-Supported types are `:utf-8` `:ascii` `:long`  `:float`  `:double` `:int` `:boolean` `:keyword` `:bytes` `:date` `:uuid` `:time-uuid` `:composite` `:clj`
+#### Supported types
+`:utf-8` `:ascii` `:long` `:float` `:double` `:int` `:boolean`
+`:keyword` `:bytes` `:date` `:uuid` `:time-uuid` `:composite` `:clj`
 
-TimeUUIDs are supported from [tardis](https://github.com/mpenet/tardis), you will need to use its API to create Type 1 UUIDs, from there encoding/decoding is automatic.
-
-Joda time support is available, you need to require/use `qbits.casyn.codecs.joda-time`, and use `:date-time` in your schemas.
-
+Note about ASCII:
 Clojure Strings are by default encoded as utf-8, ASCII strings must be passed as
 Bytes ex: `(.getBytes "meh" "US-ASCII")`, specifying `:ascii` on the
 schema allow their automatic decoding though. If you want the
 read/write behavior to be symetrical just use `:bytes` as schema type
 and handle this on your side.
 
+#### TimeUUIDs
+
+TimeUUIDs are supported from
+[tardis](https://github.com/mpenet/tardis), you will need to use its
+API to create Type 1 UUIDs, from there encoding/decoding is automatic.
+
+#### Joda Time
+
+Joda time support is available, you need to require/use
+`qbits.casyn.codecs.joda-time`, and use `:date-time` in your schemas.
+
+#### Composite types
+
 Composite types are also supported and use the same type definitions
-(they can be used as keys, names, values), instead of incating a
+(they can be used as keys, names, values), instead of specifying a
 single type value in the schema just use a vector or types:
 Here the column name will be a composite or 3 different types.
 
@@ -164,10 +181,54 @@ composite and encode it accordingly when you execute the query.
   :consistency :all)
 ```
 
+#### Clojure serialization
+
 As shown in the previous example you can also store clojure data
 direclty (it is the fallback of the encoding protocol), this will be
 done via [Nippy](https://github.com/ptaoussanis/nippy), you will just
 need to indicate :clj as decoding type in the schema.
+
+
+#### Extending type support
+
+The Joda time support is a [good example](https://github.com/mpenet/casyn/blob/master/src/qbits/casyn/codecs/joda_time.clj)
+of how it is achieved.
+
+You need to do two things, extend the encoding protocol, and add a
+`defmethod` definition for decoding with the keyword you will use in your
+schemas.
+
+```clojure
+(ns qbits.casyn.codecs.joda-time
+  "Encoding/decoding of org.joda.time.DateTime instances"
+  (:require
+   [qbits.casyn.codecs :refer [ByteBufferEncodable
+                         bytes->clojure
+                         clojure->byte-buffer]]
+   [clj-time.coerce :as ct-c]))
+
+(extend-protocol ByteBufferEncodable
+  org.joda.time.DateTime
+  (clojure->byte-buffer [dt]
+    (clojure->byte-buffer (ct-c/to-long dt))))
+
+(defmethod bytes->clojure :date-time [_ b]
+  (ct-c/from-long (bytes->clojure :long b)))
+
+```
+
+<!-- ##### Advanced -->
+
+<!-- The default Object extension of the ByteBufferEncodable protocol -->
+<!-- allows you to go further: you can use metadata on the values to -->
+<!-- use another encoder. This is what is used for composite types, and -->
+<!-- what will be used to handle cassandra 1.2 collection types. -->
+<!-- It will dispatch on the qbits.casyn.codecs/meta-encodable multimethod -->
+<!-- with `(-> value meta :casyn :type)` of your value. -->
+
+<!-- See -->
+<!-- [composite.clj](https://github.com/mpenet/casyn/blob/master/src/qbits/casyn/codecs/composite.clj) -->
+<!-- for details. -->
 
 ### Convenience macros
 
