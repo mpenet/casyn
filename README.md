@@ -127,7 +127,8 @@ A collection of columns can be turned into a regular map just pass `:as :map`.
 
 user> {:age 35
        :name "Max"
-       :created #inst "2012-08-22T22:34:41.079-00:00"}
+       :created #inst "2012-08-22T22:34:41.079-00:00"
+       :code {:foo [{:bar "baz"}]}}
 ```
 
 Supported types are `:utf-8` `:ascii` `:long`  `:float`  `:double` `:int` `:boolean` `:keyword` `:bytes` `:date` `:uuid` `:time-uuid` `:composite` `:clj`
