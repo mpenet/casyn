@@ -13,7 +13,6 @@ http://wiki.apache.org/cassandra/API"
   (:require
    [lamina.core :as lc]
    [qbits.casyn.utils :as utils]
-   [qbits.casyn.client :as c]
    [qbits.knit :as knit]
    [qbits.casyn.codecs :as codecs]
    [qbits.casyn.types :as t]
