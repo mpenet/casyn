@@ -257,7 +257,7 @@ The possible values are: `:all` `:any` `:each-quorum` `:local-quorum`
 `:one` `:quorum` `:three` `:two`
 
 Refer to
-[Cassandra API doc](http://wiki.apache.org/cassandra/API#write) for
+[Cassandra API doc](http://wiki.apache.org/cassandra/API#Write) for
 details.
 
 ## Documentation
