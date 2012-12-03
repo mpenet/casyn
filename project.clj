@@ -1,11 +1,11 @@
-(defproject cc.qbits/casyn "0.9.8-SNAPSHOT"
+(defproject cc.qbits/casyn "1.0.0-rc1"
   :description "Cassandra client with support for asynchronous operations"
   :url "https://github.com/mpenet/casyn"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
   :dependencies [[org.clojure/clojure "1.4.0"]
                  [lamina "0.5.0-beta8"]
-                 [org.apache.cassandra/cassandra-all "1.1.6"]
+                 [org.apache.cassandra/cassandra-all "1.1.7"]
                  [useful "0.8.6"]
                  [commons-pool "1.6"]
                  [com.taoensso/nippy "1.0.0"]
