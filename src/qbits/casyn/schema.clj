@@ -9,7 +9,7 @@
 (defn cols->map
   "Turns a collection of columns into an array-map with column name mapped to key"
   [cols]
-  (apply array-map (mapcat (juxt :name :value) cols)))
+  (into {} (map (juxt :name :value) cols)))
 
 ;; probably overkill, but we could imagine having different schema later
 (defrecord Schema [name row super columns])
