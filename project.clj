@@ -8,7 +8,7 @@
                  [org.apache.cassandra/cassandra-all "1.1.7"]
                  [useful "0.8.6"]
                  [commons-pool "1.6"]
-                 [com.taoensso/nippy "1.0.0"]
+                 [com.taoensso/nippy "1.0.1"]
                  [cc.qbits/tardis "0.3.1"]
                  [cc.qbits/knit "0.2.1"]
                  [clj-time "0.4.4"]]
