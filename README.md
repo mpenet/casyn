@@ -1,8 +1,9 @@
-# casyn [![Build Status](https://secure.travis-ci.org/mpenet/casyn.png?branch=master)](http://travis-ci.org/mpenet/casyn)
+# casyn [![Build
+Status](https://secure.travis-ci.org/mpenet/casyn.png?branch=master)](http://travis-ci.org/mpenet/casyn)
 
 Clojure client for Cassandra using Thrift AsyncClient.
 
-The entire [Cassandra Thrift Api (1.1.7)](http://wiki.apache.org/cassandra/API) is
+The entire [Cassandra Thrift Api (1.1.9)](http://wiki.apache.org/cassandra/API) is
 supported, this includes CQL support.
 See [commands API](http://mpenet.github.com/casyn/qbits.casyn.api.html) for details.
 
@@ -23,7 +24,7 @@ Add the following dependency on your project.clj:
 [cc.qbits/casyn "1.0.0-rc2"]
 ```
 
-Note: It runs on Clojure 1.4+ and is being tested with Cassandra 1.1.7
+Note: It runs on Clojure 1.4+ and is being tested with Cassandra 1.1.9
 (it should work fine with 1.x.x versions).
 
 ## Usage
