@@ -41,7 +41,7 @@
 
   (shutdown [cluster]
     (discovery/shutdown auto-discovery-worker)
-    (.shutdown (:callback-executor options))
+    (.shutdown ^java.util.concurrent.ExecutorService (:callback-executor options))
     (p/close pool))
 
   PDiscoverable
