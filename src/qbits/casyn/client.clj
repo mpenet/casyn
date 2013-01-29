@@ -13,7 +13,7 @@
     AuthorizationException SchemaDisagreementException
     TimedOutException UnavailableException ]
    [org.apache.thrift TApplicationException]
-   [org.apache.thrift.transport TNonblockingSocket]
+   [org.apache.thrift.transport TNonblockingSocket TNonblockingTransport]
    [org.apache.thrift.protocol TBinaryProtocol$Factory]
    [org.apache.thrift.async TAsyncClient TAsyncClientManager]
    [java.util.concurrent LinkedBlockingQueue ExecutorService]))
@@ -50,6 +50,7 @@
   (kill [client]))
 
 (deftype Client [^TAsyncClient thrift-client
+                 ^TNonblockingTransport transport
                  ^ExecutorService executor]
   PClient
   (set-timeout [this timeout]
@@ -60,7 +61,8 @@
     (try (.hasError thrift-client)
          (catch IllegalStateException e true)))
 
-  (kill [this])
+  (kill [this]
+    (-> this .-transport .close))
 
   p/PPoolableClient
   (borrowable? [this]
@@ -92,11 +94,12 @@
            pool default-factory-pool
            timeout 0
            executor default-executor}}]
-  (Client. (doto (.getAsyncClient ^Cassandra$AsyncClient$Factory (select pool)
-                                  (TNonblockingSocket. host port))
-             (.setTimeout timeout))
-           executor))
-
+  (let [transport (TNonblockingSocket. host port)]
+    (Client. (doto (.getAsyncClient ^Cassandra$AsyncClient$Factory (select pool)
+                                    transport)
+               (.setTimeout timeout))
+             transport
+             executor)))
 
 (declare select-node-stage)
 
