@@ -1,10 +1,12 @@
 (ns qbits.casyn.cluster.core
   (:require
    [qbits.casyn.cluster :refer [add-node remove-node select-node
-                          get-balancer get-pool refresh
-                          PCluster PDiscoverable]]
+                                get-balancer get-pool get-options refresh
+                                shutdown
+                                PCluster PDiscoverable]]
    [clojure.set :refer [difference]]
    [clojure.tools.logging :as log]
+   [qbits.knit :as knit]
    [qbits.casyn.utils :as u]
    [qbits.casyn.balancer :as b]
    [qbits.casyn.pool :as p]
@@ -17,7 +19,7 @@
   (:import
    [org.apache.commons.pool.impl GenericKeyedObjectPool]))
 
-(deftype Cluster [balancer pool cf-pool options]
+(deftype Cluster [balancer pool cf-pool auto-discovery-worker options]
   PCluster
 
   (get-pool [cluster] pool)
@@ -37,6 +39,11 @@
     (p/drain pool node-host)
     (b/unregister-node balancer node-host))
 
+  (shutdown [cluster]
+    (discovery/shutdown auto-discovery-worker)
+    (.shutdown (:callback-executor options))
+    (p/close pool))
+
   PDiscoverable
   (refresh [cluster active-nodes]
     (let [current-nodes-hosts (into #{} (b/get-nodes balancer))]
@@ -45,11 +52,13 @@
       (doseq [node-host (difference current-nodes-hosts active-nodes)]
         (remove-node cluster node-host)))))
 
-(def defaults {:auto-discovery? true
-               :load-balancer-strategy :round-robin
-               :num-selector-threads 3
-               :client-timeout 0
-               :callback-executor c/default-executor})
+(defn defaults []
+  {:auto-discovery? true
+   :load-balancer-strategy :round-robin
+   :num-selector-threads 3
+   :client-timeout 0
+   :callback-executor (knit/executor :cached
+                                     :thread-factory (knit/thread-factory))})
 
 (defn make-cluster
   "Returns a cluster instance, this will be used to spawn client-fns and set
@@ -74,14 +83,18 @@ ips by turning auto-discovery off.
 
    :pool -> see qbits.casyn.pool.commons/make-pool options"
   [hosts port keyspace & options]
-  (let [opts (merge defaults (apply array-map options))
+  (let [opts (merge (defaults) (apply array-map options))
         {:keys [auto-discovery? load-balancer-strategy
                 num-selector-threads pool callback-executor failover]} opts
         cf-pool (c/client-factory-pool num-selector-threads)
+        auto-discovery-worker (when auto-discovery? (discovery/make-worker))
         cluster (Cluster. (b/balancer load-balancer-strategy)
-                          (apply commons-pool/make-pool port keyspace cf-pool callback-executor
+                          (apply commons-pool/make-pool port keyspace
+                                 cf-pool
+                                 callback-executor
                                  (mapcat identity pool))
                           cf-pool
+                          auto-discovery-worker
                           opts)]
     (if (sequential? hosts)
       (doseq [host hosts]
@@ -89,6 +102,6 @@ ips by turning auto-discovery off.
       (add-node cluster (u/host->ip hosts)))
 
     (when auto-discovery?
-      (discovery/start-worker cluster 2000))
+      (discovery/start auto-discovery-worker cluster 2000))
 
     cluster))

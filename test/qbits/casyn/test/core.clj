@@ -304,3 +304,7 @@
   (is (= "UTF8Type,LongType" (clj->cassandra-type [:utf-8 :long])))
   (is (= "CompositeType(UTF8Type,LongType)"
          (clj->cassandra-type {:composite [:utf-8 :long]}))))
+
+(deftest test-shutdown
+  (let [cl (make-cluster "127.0.0.1" 9160 ks) ]
+    (is (= nil (shutdown cl)))))

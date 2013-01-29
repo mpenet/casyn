@@ -11,36 +11,44 @@
   (:import
    [org.apache.cassandra.thrift KsDef TokenRange EndpointDetails]))
 
-(defn discover
-  "Tries to obtain a list of current valid/active nodes in the cluster"
-  [cluster]
-  (try
-    (let [cx (c/client-fn cluster :failover :try-all)
-          keyspaces @(cx api/describe-keyspaces)]
-      (reduce
-       (fn [nodes ^KsDef ks]
-         (let [ks-name (.getName ks)]
-           (if (= ks-name  "system")
-             nodes ;; exclude system keyspace
-             @(lc/run-pipeline
-               (cx api/describe-ring ks-name)
-               {:error-handler (fn [_] (lc/complete nodes))} ;; next ks
-               (fn [token-ranges]
-                 (apply conj nodes
-                        (for [^TokenRange range token-ranges
-                              ^EndpointDetails endpoint (.getEndpoint_details range)]
-                          (.getHost endpoint))))))))
-       #{}
-       keyspaces))
-    (catch Exception e
-      (log/error (uex/exception-map e)))))
+(defprotocol PAutodiscovery
+  (start [worker cluster interval])
+  (discover [worker cluster]  "Tries to obtain a list of current valid/active nodes in the cluster")
+  (shutdown [worker]))
 
-(defn start-worker
+(defn make-worker
   "Scheduled worker launched from a qbits.casyn.PCluster instance to trigger
 discovery continuously"
-  ([cluster interval]
-     (knit/schedule :with-fixed-delay interval
-      #(when-let [nodes (discover cluster)]
-         (clu/refresh cluster nodes))))
-  ([cluster]
-     (start-worker cluster 100)))
+  []
+  (let [executor (knit/executor :scheduled)]
+    (reify
+      PAutodiscovery
+      (discover [worker cluster]
+        (try
+          (let [cx (c/client-fn cluster :failover :try-all)
+                keyspaces @(cx api/describe-keyspaces)]
+            (reduce
+             (fn [nodes ^KsDef ks]
+               (let [ks-name (.getName ks)]
+                 (if (= ks-name  "system")
+                   nodes ;; exclude system keyspace
+                   @(lc/run-pipeline
+                     (cx api/describe-ring ks-name)
+                     {:error-handler (fn [_] (lc/complete nodes))} ;; next ks
+                     (fn [token-ranges]
+                       (apply conj nodes
+                              (for [^TokenRange range token-ranges
+                                    ^EndpointDetails endpoint (.getEndpoint_details range)]
+                                (.getHost endpoint))))))))
+             #{}
+             keyspaces))
+          (catch Exception e
+            (log/error (uex/exception-map e)))))
+
+      (start [worker cluster interval]
+        (knit/schedule :with-fixed-delay interval :executor executor
+                       #(when-let [nodes (discover worker cluster)]
+                          (clu/refresh cluster nodes))))
+      (shutdown [worker]
+        (log/info "Shuting down discovery worker")
+        (.shutdown ^java.util.concurrent.ExecutorService executor)))))
