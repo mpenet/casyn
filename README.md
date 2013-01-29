@@ -1,5 +1,5 @@
 # casyn
-<!-- [![Build Status](https://secure.travis-ci.org/mpenet/casyn.png?branch=master)](http://travis-ci.org/mpenet/casyn) -->
+[![Build Status](https://secure.travis-ci.org/mpenet/casyn.png?branch=master)](http://travis-ci.org/mpenet/casyn)
 
 Clojure client for Cassandra using Thrift AsyncClient.
 
