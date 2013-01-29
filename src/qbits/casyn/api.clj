@@ -481,6 +481,7 @@ Optional kw args:
 (defn batch-mutate
   "Executes the specified mutations on the keyspace.
 Expects a collection of mutation specs, every mutation is a vector of
+
 [column-family, row-id, mutation instance]:
 
 Example:
@@ -488,18 +489,22 @@ Example:
  [\"cf\" \"row-1\" (delete-mutation :columns [\"col-name\"])]]
 
 Optional kw args:
-:consistency : optional consistency-level, defaults to :one"
+:consistency : optional consistency-level, defaults to :one
+:atomic? write to the batchlog before attempting distribution to the batch rows
+replicas for details see: https://issues.apache.org/jira/browse/CASSANDRA-4542"
   [client mutations
-   & {:keys [consistency]}]
-  (wrap-result-channel
-   (.batch_mutate client
-                  (reduce (fn [m [cf rk mut]]
+   & {:keys [consistency atomic?]}]
+  (let [mutations (reduce (fn [m [cf rk mut]]
                             (update-in m
                                        [(codecs/clojure->byte-buffer rk) cf]
                                        concat mut))
                           {}
-                          mutations)
-                  (consistency-level consistency))))
+                          mutations)]
+    (if atomic?
+      (wrap-result-channel
+       (.atomic_batch_mutate client mutations (consistency-level consistency)))
+      (wrap-result-channel
+       (.batch_mutate client mutations (consistency-level consistency))))))
 
 (defn get-range-slice
   "Accepts optional slice-predicate arguments :columns, :start, :finish, :count,
@@ -674,6 +679,10 @@ Optional kw args:
                                 (int item-id)
                                 (map codecs/clojure->byte-buffer values))
     schema as))
+
+(defn trace-next-query
+  [client]
+  (wrap-result-channel (.trace_next_query client)))
 
 ;; Sugar
 

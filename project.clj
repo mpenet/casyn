@@ -5,7 +5,7 @@
             :url "http://www.eclipse.org/legal/epl-v10.html"}
   :dependencies [[org.clojure/clojure "1.4.0"]
                  [lamina "0.5.0-beta10"]
-                 [org.apache.cassandra/cassandra-all "1.1.9"]
+                 [org.apache.cassandra/cassandra-all "1.2.0"]
                  [useful "0.8.6"]
                  [commons-pool "1.6"]
                  [com.taoensso/nippy "1.0.1"]
