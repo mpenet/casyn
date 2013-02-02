@@ -5,6 +5,10 @@
    [qbits.tardis :as uuid])
   (:import
    [org.apache.cassandra.utils ByteBufferUtil]
+   [org.apache.cassandra.db.marshal
+    UTF8Type Int32Type IntegerType AsciiType
+    BytesType DoubleType LongType FloatType UUIDType LexicalUUIDType DateType
+    BooleanType CompositeType ListType MapType SetType EmptyType]
    [java.nio ByteBuffer]))
 
 (declare meta-encodable)
@@ -16,51 +20,57 @@
 
   (Class/forName "[B")
   (clojure->byte-buffer [b]
-    (ByteBuffer/wrap b))
+    (.decompose BytesType/instance b))
 
   ByteBuffer
   (clojure->byte-buffer [b] b)
 
   String
-  (clojure->byte-buffer [s]
-    (ByteBuffer/wrap (.getBytes s "utf-8")))
-
-  clojure.lang.Keyword
-  (clojure->byte-buffer [k]
-    (clojure->byte-buffer (name k)))
+  (clojure->byte-buffer [s] (.decompose UTF8Type/instance s))
 
   Boolean
   (clojure->byte-buffer [b]
-    (ByteBufferUtil/bytes
-     (int (if b 1 0))))
+    (.decompose BooleanType/instance b))
 
   Long
   (clojure->byte-buffer [l]
-    (ByteBufferUtil/bytes ^long l))
+    (.decompose LongType/instance l))
 
   Integer
   (clojure->byte-buffer [i]
-    (ByteBufferUtil/bytes ^int i))
+    (.decompose Int32Type/instance i))
+
+  BigInteger
+  (clojure->byte-buffer [i]
+    (.decompose IntegerType/instance i))
 
   Double
   (clojure->byte-buffer [d]
-    (ByteBufferUtil/bytes ^double d))
+    (.decompose DoubleType/instance d))
 
   Float
   (clojure->byte-buffer [f]
-    (ByteBufferUtil/bytes ^float f))
+    (.decompose FloatType/instance f))
 
   java.util.Date
   (clojure->byte-buffer [d]
-    (clojure->byte-buffer (.getTime d)))
+    (.decompose DateType/instance d))
 
   java.util.UUID
   (clojure->byte-buffer [u]
-    (clojure->byte-buffer (.toString u)))
+    (.decompose UUIDType/instance u))
+
+  org.apache.cassandra.cql.jdbc.JdbcLexicalUUID
+  (clojure->byte-buffer [u]
+    (.decompose LexicalUUIDType/instance u))
 
   com.eaio.uuid.UUID
   (clojure->byte-buffer [u]
     (clojure->byte-buffer (str u)))
+
+  clojure.lang.Keyword
+  (clojure->byte-buffer [k]
+    (clojure->byte-buffer (name k)))
 
   Object
   (clojure->byte-buffer [o]
@@ -69,7 +79,7 @@
 
   nil
   (clojure->byte-buffer [b]
-    (java.nio.ByteBuffer/allocate 0)))
+    (.decompose EmptyType/instance b)))
 
 
 (defmulti bytes->clojure
@@ -80,17 +90,16 @@
       :composite)))
 
 (defmethod bytes->clojure :utf-8 [_  b]
-  (ByteBufferUtil/string (ByteBuffer/wrap b)))
+  (.compose UTF8Type/instance (ByteBuffer/wrap b)))
 
 (defmethod bytes->clojure :ascii [_  b]
-  (ByteBufferUtil/string (ByteBuffer/wrap b)
-                         sun.nio.cs.US_ASCII))
+  (.compose AsciiType/instance (ByteBuffer/wrap b)))
 
 (defmethod bytes->clojure :keyword [_  b]
   (keyword (bytes->clojure :utf-8 b)))
 
 (defmethod bytes->clojure :long [_  b]
-  (ByteBufferUtil/toLong (ByteBuffer/wrap b)))
+  (.compose LongType/instance (ByteBuffer/wrap b)))
 
 (defmethod bytes->clojure :float  [_ b]
   (ByteBufferUtil/toFloat (ByteBuffer/wrap b)))
@@ -99,16 +108,19 @@
   (ByteBufferUtil/toDouble (ByteBuffer/wrap b)))
 
 (defmethod bytes->clojure :int [_ b]
-  (ByteBufferUtil/toInt (ByteBuffer/wrap b)))
+  (.compose Int32Type/instance (ByteBuffer/wrap b)))
 
 (defmethod bytes->clojure :boolean [_ b]
-  (= 1 (bytes->clojure :int b)))
+  (.compose BooleanType/instance (ByteBuffer/wrap b)))
 
 (defmethod bytes->clojure :date [_ b]
-  (java.util.Date. ^long (bytes->clojure :long b)))
+  (.compose DateType/instance (ByteBuffer/wrap b)))
+
+(defmethod bytes->clojure :lexical-uuid [_ b]
+  (.compose LexicalUUIDType/instance (ByteBuffer/wrap b)))
 
 (defmethod bytes->clojure :uuid [_ b]
-  (java.util.UUID/fromString (bytes->clojure :utf-8 b)))
+  (.compose UUIDType/instance (ByteBuffer/wrap b)))
 
 (defmethod bytes->clojure :time-uuid [_ b]
   (uuid/to-uuid (bytes->clojure :utf-8 b)))
@@ -117,6 +129,7 @@
   (nippy/thaw-from-bytes b))
 
 (defmethod bytes->clojure :default [_ b] b)
+
 
 
 ;; encoder for types with meta+:casyn info
