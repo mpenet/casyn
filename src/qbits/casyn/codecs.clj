@@ -110,6 +110,9 @@
 (defmethod bytes->clojure :int [_ b]
   (.compose Int32Type/instance (ByteBuffer/wrap b)))
 
+(defmethod bytes->clojure :big-int [_ b]
+  (.compose IntegerType/instance (ByteBuffer/wrap b)))
+
 (defmethod bytes->clojure :boolean [_ b]
   (.compose BooleanType/instance (ByteBuffer/wrap b)))
 

@@ -35,6 +35,7 @@
   {:default [:keyword :utf-8]
    :exceptions {:long :long
                 :int :int
+                :big-int :big-int
                 :double :double
                 :float :float
                 :str :utf-8
@@ -53,6 +54,7 @@
 (def test-coerce-data
   {:long 1
    :int (int 1)
+   :big-int (BigInteger. "1")
    :float (float 0.2)
    :double 0.3
    :date (java.util.Date.)
