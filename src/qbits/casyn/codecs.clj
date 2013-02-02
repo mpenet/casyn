@@ -4,7 +4,6 @@
    [taoensso.nippy :as nippy]
    [qbits.tardis :as uuid])
   (:import
-   [org.apache.cassandra.utils ByteBufferUtil]
    [org.apache.cassandra.db.marshal
     UTF8Type Int32Type IntegerType AsciiType
     BytesType DoubleType LongType FloatType UUIDType LexicalUUIDType DateType
@@ -102,10 +101,10 @@
   (.compose LongType/instance (ByteBuffer/wrap b)))
 
 (defmethod bytes->clojure :float  [_ b]
-  (ByteBufferUtil/toFloat (ByteBuffer/wrap b)))
+  (.compose FloatType/instance (ByteBuffer/wrap b)))
 
 (defmethod bytes->clojure :double [_ b]
-  (ByteBufferUtil/toDouble (ByteBuffer/wrap b)))
+  (.compose DoubleType/instance (ByteBuffer/wrap b)))
 
 (defmethod bytes->clojure :int [_ b]
   (.compose Int32Type/instance (ByteBuffer/wrap b)))
@@ -124,6 +123,9 @@
 
 (defmethod bytes->clojure :uuid [_ b]
   (.compose UUIDType/instance (ByteBuffer/wrap b)))
+
+(defmethod bytes->clojure :lexical-uuid [_ b]
+  (.compose LexicalUUIDType/instance (ByteBuffer/wrap b)))
 
 (defmethod bytes->clojure :time-uuid [_ b]
   (uuid/to-uuid (bytes->clojure :utf-8 b)))
