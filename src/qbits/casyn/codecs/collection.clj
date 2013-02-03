@@ -10,14 +10,17 @@ more, and I need to throw in some tests, deved this blindfolded for now"
 ;; Encoding markers
 
 (defn c*list
+  "Marks a clojure value as cassandra native List for encoding"
   [x]
   (codecs/mark-as x ::list))
 
 (defn c*set
+  "Marks a clojure value as cassandra native Set for encoding"
   [x]
   (codecs/mark-as x ::set))
 
 (defn c*map
+  "Marks a clojure value as cassandra native Map for encoding"
   [x]
   (codecs/mark-as x ::map))
 
