@@ -76,10 +76,10 @@ ex: (composite-expression [:eq? 12] [:gt? \"meh\"] [:lt? 12])"
       (.put bb ^ByteBuffer v))
     (.rewind bb)))
 
-(defn composite
+(defn c*composite
   "Mark a column value|name|key value as composite"
   [x]
-  (codecs/mark-as x :composite))
+  (codecs/mark-as x ::composite))
 
 (defmethod codecs/bytes->clojure :composite [c b]
   (->> (map #(codecs/bytes->clojure %1 %2)
@@ -87,7 +87,7 @@ ex: (composite-expression [:eq? 12] [:gt? \"meh\"] [:lt? 12])"
             (composite->bytes-values b))
        ;; mark as composite again: consistent read/modify behavior, it
        ;; stays a composite
-       composite))
+       c*composite))
 
-(defmethod codecs/meta-encodable :composite [x]
+(defmethod codecs/meta-encode ::composite [x]
   (apply composite-expression (map #(vector :eq? %) x)))

@@ -11,5 +11,6 @@
   (:require
    [useful.ns :refer [alias-ns]]))
 
-(doseq [module '(client api schema ddl codecs codecs.composite cluster cluster.core)]
+(doseq [module '(client api schema ddl codecs codecs.composite codecs.collection
+                        cluster cluster.core)]
   (alias-ns (symbol (str "qbits.casyn." module))))

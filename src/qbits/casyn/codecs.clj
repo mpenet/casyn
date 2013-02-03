@@ -10,7 +10,7 @@
     BooleanType CompositeType ListType MapType SetType EmptyType]
    [java.nio ByteBuffer]))
 
-(declare meta-encodable)
+(declare meta-encode)
 
 (defprotocol ByteBufferEncodable
   (clojure->byte-buffer [v] "Converts from clojure types to byte-buffers"))
@@ -75,7 +75,7 @@
   Object
   (clojure->byte-buffer [o]
     ;; try to find out if it a custom type else just serialize as :clj
-    (meta-encodable o))
+    (meta-encode o))
 
   nil
   (clojure->byte-buffer [b]
@@ -111,35 +111,14 @@
 (defmethod bytes->clojure :default [_ b] b)
 
 ;; encoder for types with meta+:casyn info
-(defmulti meta-encodable (fn [x] (-> x meta :casyn :type)))
+(defmulti meta-encode (fn [x] (-> x meta :casyn :type)))
 
-(defmethod meta-encodable :default [x] ;; will work for clj too
+(defmethod meta-encode :default [x] ;; will work for clj too
   (-> x nippy/freeze-to-bytes ByteBuffer/wrap))
 
-;; special data types markers
+;; Special data types markers
 
 (defn mark-as
   ""
   [x type-key]
   (vary-meta x assoc-in [:casyn :type] type-key))
-
-;; 1.1 types
-
-(defn clj
-  "Mark a column value|name|key value as serializable"
-  [x]
-  (mark-as x :clj))
-
-;; Prepare for cassandra 1.2 new collections types
-
-(defn clist
-  [x]
-  (mark-as x :list))
-
-(defn cset
-  [x]
-  (mark-as x :set))
-
-(defn cset
-  [x]
-  (mark-as x :map))
