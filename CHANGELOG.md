@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.0.0
+
+* Add `shutdown` function to stop the cluster and clean its ressources
+  (pools, connections, etc)
+
+* Update dependencies to cassandra 1.2.1
+
+* Add support for `atomic_batch_mutate` and `trace_next_query`
+
+* Add 1.2 collection types support.
+
 ## 0.9.7
 
 * Fix issue where mutation on the same row, from differents spec
