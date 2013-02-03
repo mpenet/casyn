@@ -152,7 +152,8 @@ and handle this on your side.
 
 Composite types are also supported and use the same type definitions
 (they can be used as keys, names, values), instead of specifying a
-single type value in the schema just use a vector or types:
+single type value in the schema use a map with `:composite` as key and a
+vector of types for the actual values.
 Here the column name will be a composite or 3 different types.
 
 ```clojure
@@ -161,7 +162,7 @@ Here the column name will be a composite or 3 different types.
   :columns {:default [{:composite [:utf-8 :long :double]} :utf-8]}})
 ```
 
-To create composite values just use the `composite` function or
+To create composite values just use the `c*composite` function or
 `#casyn/c*composite` reader literal, it will mark the collection as
 composite and encode it accordingly when you execute the query.
 
