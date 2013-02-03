@@ -139,7 +139,7 @@ user> {:age 35
 
 #### Supported types
 `:utf-8` `:ascii` `:long` `:float` `:double` `:int` `:boolean`
-`:keyword` `:bytes` `:date` `:uuid` `:time-uuid` `:composite` `:clj`
+`:keyword` `:bytes` `:date` `:uuid` `:time-uuid` `:clj`
 
 Note about ASCII:
 Clojure Strings are by default encoded as utf-8, ASCII strings must be passed as
@@ -147,17 +147,6 @@ Bytes ex: `(.getBytes "meh" "US-ASCII")`, specifying `:ascii` on the
 schema allow their automatic decoding though. If you want the
 read/write behavior to be symetrical just use `:bytes` as schema type
 and handle this on your side.
-
-#### TimeUUIDs
-
-TimeUUIDs are supported from
-[tardis](https://github.com/mpenet/tardis), you will need to use its
-API to create Type 1 UUIDs, from there encoding/decoding is automatic.
-
-#### Joda Time
-
-Joda time support is available, you need to require/use
-`qbits.casyn.codecs.joda-time`, and use `:date-time` in your schemas.
 
 #### Composite types
 
@@ -186,8 +175,7 @@ overview see
 or the
 [documentation](http://mpenet.github.com/casyn/qbits.casyn.codecs.composite.html).
 
-
-#### Cassandra native collection types
+#### Cassandra Collection types
 
 You can handle native Cassandra collection types (introduced in 1.2)
 almost the same way as composites.
@@ -217,13 +205,24 @@ be handled as collections, you need to use `c*map` `c*list` or `c*set`.
         "map-type" (c*map {:the-key "the value"})})
 ```
 
+#### TimeUUIDs
+
+TimeUUIDs are supported from
+[tardis](https://github.com/mpenet/tardis), you will need to use its
+API to create Type 1 UUIDs, from there encoding/decoding is automatic.
+
+#### Joda Time
+
+Joda time support is available, you need to require/use
+`qbits.casyn.codecs.joda-time`, and use `:date-time` in your schemas.
+
+
 #### Clojure serialization
 
 As shown in the previous example you can also store clojure data
 direclty (it is the fallback of the encoding protocol), this will be
 done via [Nippy](https://github.com/ptaoussanis/nippy), you will just
 need to indicate :clj as decoding type in the schema.
-
 
 #### Extending type support
 
@@ -252,20 +251,6 @@ schemas.
   (ct-c/from-long (bytes->clojure :long b)))
 
 ```
-
-<!-- ##### Advanced -->
-
-<!-- The default Object extension of the ByteBufferEncodable protocol -->
-<!-- allows you to go further: you can use metadata on the values to -->
-<!-- use another encoder. This is what is used for composite types, and -->
-<!-- what will be used to handle cassandra 1.2 collection types. -->
-<!-- It will dispatch on the qbits.casyn.codecs/meta-encodable multimethod -->
-<!-- with `(-> value meta :casyn :type)` of your value. -->
-
-<!-- See -->
-<!-- [composite.clj](https://github.com/mpenet/casyn/blob/master/src/qbits/casyn/codecs/composite.clj) -->
-<!-- for details. -->
-
 
 ### Consistency
 
