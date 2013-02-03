@@ -169,7 +169,7 @@ Here the column name will be a composite or 3 different types.
 ```clojure
 (defschema test-schema
   :row :utf-8
-  :columns {:default [[:utf-8 :long :double] :utf-8]}})
+  :columns {:default [{:composite [:utf-8 :long :double]} :utf-8]}})
 ```
 
 To create composite values just use the `composite` function or

@@ -92,8 +92,7 @@
   (fn [val-type v]
     (if (keyword? val-type)
       val-type
-      :composite)))
-
+      (ffirst val-type))))
 
 (defmethod bytes->clojure :utf-8 [_  b] (compose UTF8Type/instance b))
 (defmethod bytes->clojure :ascii [_  b] (compose AsciiType/instance b))

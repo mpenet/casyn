@@ -49,7 +49,7 @@
                 :clj3 :clj
                 :uuid :uuid
                 :tuuid :time-uuid
-                :comp [:utf-8 :long :double]}})
+                :comp {:composite [:utf-8 :long :double]}}})
 
 (def test-coerce-data
   {:long 1
@@ -73,7 +73,7 @@
 
 (defschema composite-cf-schema
   :row :long
-  :columns {:default [[:long :long :long] :utf-8]})
+  :columns {:default [{:composite [:long :long :long]} :utf-8]})
 
 (defn setup-test []
   @(c insert-column cf "0" "n0" "value0")

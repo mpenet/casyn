@@ -74,7 +74,6 @@ ex: (composite-expression [:eq? 12] [:gt? \"meh\"] [:lt? 12])"
                                         bbv))]
     (doseq [v bbv]
       (.put bb ^ByteBuffer v))
-
     (.rewind bb)))
 
 (defn composite
@@ -82,9 +81,9 @@ ex: (composite-expression [:eq? 12] [:gt? \"meh\"] [:lt? 12])"
   [x]
   (codecs/mark-as x :composite))
 
-(defmethod codecs/bytes->clojure :composite [composite-types b]
+(defmethod codecs/bytes->clojure :composite [c b]
   (->> (map #(codecs/bytes->clojure %1 %2)
-            composite-types
+            (val (first c))
             (composite->bytes-values b))
        ;; mark as composite again: consistent read/modify behavior, it
        ;; stays a composite
