@@ -74,10 +74,10 @@
    :comp #qbits.casyn/c*composite["dwa" (long 216) (double 3.14)]
    :uuid (java.util.UUID/randomUUID)
    :tuuid (uuid/unique-time-uuid)
-   :cmap (c*map {:a true :b false})
-   :cmap2 (c*map {"a" 1 "b" 2})
-   :cset (c*set #{"a" "b" "c"})
-   :clist (c*list ["a" "b" "c"])
+   :cmap (c*collection {:a true :b false})
+   :cmap2 (c*collection {"a" 1 "b" 2})
+   :cset (c*collection #{"a" "b" "c"})
+   :clist (c*collection ["a" "b" "c"])
    })
 
 (defschema composite-cf-schema

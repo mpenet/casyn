@@ -9,20 +9,13 @@ more, and I need to throw in some tests, deved this blindfolded for now"
 
 ;; Encoding markers
 
-(defn c*list
+(defn c*collection
   "Marks a clojure value as cassandra native List for encoding"
   [x]
-  (codecs/mark-as x ::list))
+  (codecs/mark-as x :collection))
 
-(defn c*set
-  "Marks a clojure value as cassandra native Set for encoding"
-  [x]
-  (codecs/mark-as x ::set))
-
-(defn c*map
-  "Marks a clojure value as cassandra native Map for encoding"
-  [x]
-  (codecs/mark-as x ::map))
+(defprotocol PCollection
+  (encode [this] "Encodes a clojure coll to Cassandra representation"))
 
 (defn pack
   "Packs a collection of buffers into a single value"
@@ -34,47 +27,54 @@ more, and I need to throw in some tests, deved this blindfolded for now"
       (.put result (.duplicate bb)))
     (.flip result)))
 
-;; Layout is: {@code <n><s_1><b_1>...<s_n><b_n> }
-;; where:
-;;  n is the number of elements
-;;  s_i is the number of bytes composing the ith element
-;;  b_i is the s_i bytes composing the ith element
-(defmethod codecs/meta-encode ::list [xs]
-  (loop [xs xs
-         bbs []
-         elements 0
-         size 0]
-    (if-let [x (first xs)]
-      (let [bb (codecs/clojure->byte-buffer x)]
-        (recur
-         (rest xs)
-         (conj bbs bb)
-         (inc elements)
-         (+ size (.remaining ^ByteBuffer bb) 2)))
-      (pack bbs elements size))))
+(extend-protocol PCollection
 
-(derive ::set ::list)
 
-;; Layout is: {@code <n><sk_1><k_1><sv_1><v_1>...<sk_n><k_n><sv_n><v_n> }
-;; where:
-;;  n is the number of elements
-;;  sk_i is the number of bytes composing the ith key k_i
-;;  k_i is the sk_i bytes composing the ith key
-;;  sv_i is the number of bytes composing the ith value v_i
-;;  v_i is the sv_i bytes composing the ith value
-(defmethod codecs/meta-encode ::map [m]
-  (loop [m m
-         bbs []
-         elements 0
-         size 0]
-    (if-let [e (first m)]
-      (let [^ByteBuffer bbk (-> e key codecs/clojure->byte-buffer)
-            ^ByteBuffer bbv (-> e val codecs/clojure->byte-buffer)]
-        (recur (rest m)
-               (conj bbs bbk bbv)
-               (inc elements)
-               (+ size 4 (.remaining bbk) (.remaining bbv))))
-      (pack bbs elements size))))
+    ;; Layout is: {@code <n><sk_1><k_1><sv_1><v_1>...<sk_n><k_n><sv_n><v_n> }
+  ;; where:
+  ;;  n is the number of elements
+  ;;  sk_i is the number of bytes composing the ith key k_i
+  ;;  k_i is the sk_i bytes composing the ith key
+  ;;  sv_i is the number of bytes composing the ith value v_i
+  ;;  v_i is the sv_i bytes composing the ith value
+  clojure.lang.IPersistentMap
+  (encode [m]
+    (loop [m m
+           bbs []
+           elements 0
+           size 0]
+      (if-let [e (first m)]
+        (let [^ByteBuffer bbk (-> e key codecs/clojure->byte-buffer)
+              ^ByteBuffer bbv (-> e val codecs/clojure->byte-buffer)]
+          (recur (rest m)
+                 (conj bbs bbk bbv)
+                 (inc elements)
+                 (+ size 4 (.remaining bbk) (.remaining bbv))))
+        (pack bbs elements size))))
+
+  ;; Layout is: {@code <n><s_1><b_1>...<s_n><b_n> }
+  ;; where:
+  ;;  n is the number of elements
+  ;;  s_i is the number of bytes composing the ith element
+  ;;  b_i is the s_i bytes composing the ith element
+
+  clojure.lang.Seqable
+  (encode [xs]
+    (loop [xs xs
+           bbs []
+           elements 0
+           size 0]
+      (if-let [x (first xs)]
+        (let [bb (codecs/clojure->byte-buffer x)]
+          (recur
+           (rest xs)
+           (conj bbs bb)
+           (inc elements)
+           (+ size (.remaining ^ByteBuffer bb) 2)))
+        (pack bbs elements size)))))
+
+(defmethod codecs/meta-encode :collection [xs]
+  (encode xs))
 
 (defn coll->clojure
   [ba-coll coll-spec]
@@ -90,12 +90,12 @@ more, and I need to throw in some tests, deved this blindfolded for now"
           (recur (conj! coll (codecs/bytes->clojure coll-type ba))))))))
 
 (defmethod codecs/bytes->clojure :list [coll-spec bytes]
-  (c*list (coll->clojure bytes coll-spec)))
+  (c*collection (coll->clojure bytes coll-spec)))
 
 (defmethod codecs/bytes->clojure :set [coll-spec bytes]
   (->> (coll->clojure bytes coll-spec)
        (into #{})
-       c*set))
+       c*collection))
 
 (defmethod codecs/bytes->clojure :map [collection-spec b]
   (let [bb (ByteBuffer/wrap b)
@@ -104,7 +104,7 @@ more, and I need to throw in some tests, deved this blindfolded for now"
         m (transient {})]
     (loop [m m]
       (if (= (.remaining bb) 0)
-        (-> m persistent! c*map)
+        (-> m persistent! c*collection)
         (let [bak (byte-array (.getShort bb))]
           (.get bb bak) ;; fill key data
           (let [bav (byte-array (.getShort bb))]

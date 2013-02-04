@@ -198,13 +198,13 @@ On this example schema we have 3 named columns showing how the schema look like.
  * the `map-type` column holds a entries with `:keyword` keys and `:utf-8` values
 
 The schema is only useful for decoding, to mark the values you want to
-be handled as collections, you need to use `c*map` `c*list` or `c*set`.
+be handled as collections, you need to use `c*collection`.
 
 ```clojure
 (c put "colFamily1" "1"
-       {"list-type" (c*list [1 2 3])
-        "set-type" (c*set #{1 2 3})
-        "map-type" (c*map {:the-key "the value"})})
+       {"list-type" (c*collection [1 2 3])
+        "set-type" (c*collection #{1 2 3})
+        "map-type" (c*collection {:the-key "the value"})})
 ```
 
 #### TimeUUIDs

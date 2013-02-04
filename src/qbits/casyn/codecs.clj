@@ -110,15 +110,16 @@
 (defmethod bytes->clojure :clj [_ b] (nippy/thaw-from-bytes b))
 (defmethod bytes->clojure :default [_ b] b)
 
-;; encoder for types with meta+:casyn info
+;; Encoder for types with meta+:casyn info
 (defmulti meta-encode (fn [x] (-> x meta :casyn :type)))
 
-(defmethod meta-encode :default [x] ;; will work for clj too
+(defmethod meta-encode :default [x]
   (-> x nippy/freeze-to-bytes ByteBuffer/wrap))
 
 ;; Special data types markers
 
 (defn mark-as
-  ""
+  "Marks a value as a Cassandra native (composite, collection and
+  possibly others in the future)"
   [x type-key]
   (vary-meta x assoc-in [:casyn :type] type-key))
