@@ -2,20 +2,12 @@
 
 ## 1.0.0
 
-* Breaking change! Changed public api for composites the composite
-  function is now `c*composite` and the format for composites
-  definitions in the schemas changed as well:
-  A composite schema used to be a vector, ex: `[:utf-8 :long :double]`
-  it is now a map, ex: `{:composite [:utf-8 :long :double]}`.
-
 * Add `shutdown` function to stop the cluster and clean its ressources
   (pools, connections, etc)
 
 * Update dependencies to cassandra 1.2.1
 
 * Add support for `atomic_batch_mutate` and `trace_next_query`
-
-* Add 1.2 collection types support.
 
 ## 0.9.7
 

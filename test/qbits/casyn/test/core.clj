@@ -49,11 +49,7 @@
                 :clj3 :clj
                 :uuid :uuid
                 :tuuid :time-uuid
-                :comp {:composite [:utf-8 :long :double]}
-                :cmap {:map [:keyword :boolean]}
-                :cmap2 {:map [:utf-8 :long]}
-                :clist {:list :utf-8}
-                :cset {:set :utf-8}}})
+                :comp [:utf-8 :long :double]}})
 
 (def test-coerce-data
   {:long 1
@@ -71,18 +67,13 @@
    :clj2 [1 2 3]
    :clj3 #{:a :b {:c {:d "e"}}} ;; #clj implicit
    :nil-value nil
-   :comp #qbits.casyn/c*composite["dwa" (long 216) (double 3.14)]
+   :comp #qbits.casyn/composite["dwa" (long 216) (double 3.14)]
    :uuid (java.util.UUID/randomUUID)
-   :tuuid (uuid/unique-time-uuid)
-   :cmap (c*collection {:a true :b false})
-   :cmap2 (c*collection {"a" 1 "b" 2})
-   :cset (c*collection #{"a" "b" "c"})
-   :clist (c*collection ["a" "b" "c"])
-   })
+   :tuuid (uuid/unique-time-uuid)})
 
 (defschema composite-cf-schema
   :row :long
-  :columns {:default [{:composite [:long :long :long]} :utf-8]})
+  :columns {:default [[:long :long :long] :utf-8]})
 
 (defn setup-test []
   @(c insert-column cf "0" "n0" "value0")
@@ -93,14 +84,14 @@
   @(c increment ccf "5" "c0" 2)
 
   @(c put cocf 0
-      {(c*composite [2 3 4]) "0"
-       (c*composite [2 6 7]) "1"
-       (c*composite [2 9 10]) "2"
-       (c*composite [3 11 10]) "3"
-       (c*composite [3 12 10]) "4"
-       (c*composite [3 13 10]) "5"
-       (c*composite [4 12 10]) "6"
-       #qbits.casyn/c*composite[4 13 10] "7"}))
+      {(composite [2 3 4]) "0"
+       (composite [2 6 7]) "1"
+       (composite [2 9 10]) "2"
+       (composite [3 11 10]) "3"
+       (composite [3 12 10]) "4"
+       (composite [3 13 10]) "5"
+       (composite [4 12 10]) "6"
+       #qbits.casyn/composite[4 13 10] "7"}))
 
 (defn teardown-test []
   @(c truncate cf))

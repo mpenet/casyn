@@ -160,15 +160,15 @@ Here the column name will be a composite or 3 different types.
 ```clojure
 (defschema test-schema
   :row :utf-8
-  :columns {:default [{:composite [:utf-8 :long :double]} :utf-8]}})
+  :columns {:default [[:utf-8 :long :double] :utf-8]}})
 ```
 
-To create composite values just use the `c*composite` function or
-`#casyn/c*composite` reader literal, it will mark the collection as
+To create composite values just use the `composite` function or
+`#casyn/composite` reader literal, it will mark the collection as
 composite and encode it accordingly when you execute the query.
 
 ```clojure
-(c insert-column "colFamily1" "1"  (c*composite ["meh" 1001  3.14]) "value0"))
+(c insert-column "colFamily1" "1"  (composite ["meh" 1001  3.14]) "value0"))
 ```
 
 Querying using composite values is also supported, for a brief
@@ -177,35 +177,35 @@ overview see
 or the
 [documentation](http://mpenet.github.com/casyn/qbits.casyn.codecs.composite.html).
 
-#### Cassandra Collection types
+<!-- #### Cassandra Collection types -->
 
-You can handle native Cassandra collection types (introduced in 1.2)
-almost the same way as composites.
+<!-- You can handle native Cassandra collection types (introduced in 1.2) -->
+<!-- almost the same way as composites. -->
 
 
-```clojure
-(defschema test-schema
-  :row :utf-8
-  :columns {:default [:utf-8 :bytes]
-            :exceptions {"list-type" {:list :long}
-                         "set-type" {:set :long}
-                         "map-type" {:map [:keyword :utf-8]}}})
-```
+<!-- ```clojure -->
+<!-- (defschema test-schema -->
+<!--   :row :utf-8 -->
+<!--   :columns {:default [:utf-8 :bytes] -->
+<!--             :exceptions {"list-type" {:list :long} -->
+<!--                          "set-type" {:set :long} -->
+<!--                          "map-type" {:map [:keyword :utf-8]}}}) -->
+<!-- ``` -->
 
-On this example schema we have 3 named columns showing how the schema look like.
- * the `list-type` column holds a list of `:longs`
- * the `set-type` column holds a set of `:longs`
- * the `map-type` column holds a entries with `:keyword` keys and `:utf-8` values
+<!-- On this example schema we have 3 named columns showing how the schema look like. -->
+<!--  * the `list-type` column holds a list of `:longs` -->
+<!--  * the `set-type` column holds a set of `:longs` -->
+<!--  * the `map-type` column holds a entries with `:keyword` keys and `:utf-8` values -->
 
-The schema is only useful for decoding, to mark the values you want to
-be handled as collections, you need to use `c*collection`.
+<!-- The schema is only useful for decoding, to mark the values you want to -->
+<!-- be handled as collections, you need to use `c*collection`. -->
 
-```clojure
-(c put "colFamily1" "1"
-       {"list-type" (c*collection [1 2 3])
-        "set-type" (c*collection #{1 2 3})
-        "map-type" (c*collection {:the-key "the value"})})
-```
+<!-- ```clojure -->
+<!-- (c put "colFamily1" "1" -->
+<!--        {"list-type" (c*collection [1 2 3]) -->
+<!--         "set-type" (c*collection #{1 2 3}) -->
+<!--         "map-type" (c*collection {:the-key "the value"})}) -->
+<!-- ``` -->
 
 #### TimeUUIDs
 

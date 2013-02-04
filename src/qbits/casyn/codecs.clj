@@ -81,7 +81,6 @@
   (clojure->byte-buffer [b]
     (.decompose EmptyType/instance b)))
 
-
 (defn compose
   [type-instance b]
   (.compose ^AbstractType type-instance
@@ -92,7 +91,7 @@
   (fn [val-type v]
     (if (keyword? val-type)
       val-type
-      (ffirst val-type))))
+      :composite)))
 
 (defmethod bytes->clojure :utf-8 [_  b] (compose UTF8Type/instance b))
 (defmethod bytes->clojure :ascii [_  b] (compose AsciiType/instance b))
