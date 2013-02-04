@@ -153,8 +153,7 @@ and handle this on your side.
 
 Composite types are also supported and use the same type definitions
 (they can be used as keys, names, values), instead of specifying a
-single type value in the schema use a map with `:composite` as key and a
-vector of types for the actual values.
+single type value in the schema use a vector of types for the actual values.
 Here the column name will be a composite or 3 different types.
 
 ```clojure
