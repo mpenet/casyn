@@ -16,9 +16,6 @@
   (encode [this] "Encodes a clojure coll to Cassandra bytes value")
   (decode [this bytes spec] "Decodes Cassandra collection from bytes to clojure value"))
 
-(defmethod codecs/meta-encode :collection [xs]
-  (encode xs))
-
 (defn pack
   "Packs a collection of buffers into a single value"
   [bbs elements size]
@@ -99,6 +96,9 @@
           (let [ba (byte-array (.getShort bb))]
             (.get bb ba)
             (recur (conj! coll (codecs/bytes->clojure coll-type ba)))))))))
+
+(defmethod codecs/meta-encode :collection [xs]
+  (encode xs))
 
 (defmethod codecs/bytes->clojure :list [spec bytes]
   (decode [] bytes spec))
