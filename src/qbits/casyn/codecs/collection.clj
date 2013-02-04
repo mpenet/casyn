@@ -82,11 +82,12 @@ more, and I need to throw in some tests, deved this blindfolded for now"
         ^ByteBuffer bb (ByteBuffer/wrap ba-coll)
         coll (transient [])
         elements (.getShort bb)] ;; skip length
-    (while (> (.remaining bb) 0)
-      (let [ba (byte-array (.getShort bb))]
-        (.get bb ba)
-        (conj! coll (codecs/bytes->clojure coll-type ba))))
-    (persistent! coll)))
+    (loop [coll coll]
+      (if (= (.remaining bb) 0)
+        (persistent! coll)
+        (let [ba (byte-array (.getShort bb))]
+          (.get bb ba)
+          (recur (conj! coll (codecs/bytes->clojure coll-type ba))))))))
 
 (defmethod codecs/bytes->clojure :list [coll-spec bytes]
   (c*list (coll->clojure bytes coll-spec)))
@@ -101,15 +102,16 @@ more, and I need to throw in some tests, deved this blindfolded for now"
         elements (.getShort bb)
         [key-type val-type] (-> collection-spec first val)
         m (transient {})]
-    (while (> (.remaining bb) 0)
-      (let [bak (byte-array (.getShort bb))]
-        (.get bb bak) ;; fill key data
-        (let [bav (byte-array (.getShort bb))]
-          (.get bb bav) ;; fill value data
-          (assoc! m
-                  (codecs/bytes->clojure key-type bak)
-                  (codecs/bytes->clojure val-type bav)))))
-    (-> m persistent! c*map)))
+    (loop [m m]
+      (if (= (.remaining bb) 0)
+        (-> m persistent! c*map)
+        (let [bak (byte-array (.getShort bb))]
+          (.get bb bak) ;; fill key data
+          (let [bav (byte-array (.getShort bb))]
+            (.get bb bav) ;; fill value data
+            (recur (assoc! m
+                           (codecs/bytes->clojure key-type bak)
+                           (codecs/bytes->clojure val-type bav)))))))))
 
 (comment
 
