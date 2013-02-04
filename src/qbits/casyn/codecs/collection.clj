@@ -13,7 +13,8 @@
   (codecs/mark-as x :collection))
 
 (defprotocol PCollection
-  (encode [this] "Encodes a clojure coll to Cassandra representation"))
+  (encode [this] "Encodes a clojure coll to Cassandra bytes value")
+  (decode [this bytes spec] "Decodes Cassandra collection from bytes to clojure value"))
 
 (defmethod codecs/meta-encode :collection [xs]
   (encode xs))
@@ -51,6 +52,22 @@
                  (+ size 4 (.remaining bbk) (.remaining bbv))))
         (pack bbs elements size))))
 
+  (decode [coll bytes spec]
+    (let [bb (ByteBuffer/wrap bytes)
+          elements (.getShort bb)
+          [key-type val-type] (-> spec first val)
+          m (transient coll)]
+      (loop [m m]
+        (if (= (.remaining bb) 0)
+          (-> m persistent! c*collection)
+          (let [bak (byte-array (.getShort bb))]
+            (.get bb bak) ;; fill key data
+            (let [bav (byte-array (.getShort bb))]
+              (.get bb bav) ;; fill value data
+              (recur (assoc! m
+                             (codecs/bytes->clojure key-type bak)
+                             (codecs/bytes->clojure val-type bav)))))))))
+
   ;; Layout is: {@code <n><s_1><b_1>...<s_n><b_n> }
   ;; where:
   ;;  n is the number of elements
@@ -69,62 +86,25 @@
            (conj bbs bb)
            (inc elements)
            (+ size (.remaining ^ByteBuffer bb) 2)))
-        (pack bbs elements size)))))
+        (pack bbs elements size))))
 
+  (decode [m bytes spec]
+    (let [coll-type (val (first spec))
+          ^ByteBuffer bb (ByteBuffer/wrap bytes)
+          coll (transient m)
+          elements (.getShort bb)] ;; skip length
+      (loop [coll coll]
+        (if (= (.remaining bb) 0)
+          (-> coll persistent! c*collection)
+          (let [ba (byte-array (.getShort bb))]
+            (.get bb ba)
+            (recur (conj! coll (codecs/bytes->clojure coll-type ba)))))))))
 
-(defn coll->clojure
-  [ba-coll coll-spec]
-  (let [coll-type (val (first coll-spec))
-        ^ByteBuffer bb (ByteBuffer/wrap ba-coll)
-        coll (transient [])
-        elements (.getShort bb)] ;; skip length
-    (loop [coll coll]
-      (if (= (.remaining bb) 0)
-        (persistent! coll)
-        (let [ba (byte-array (.getShort bb))]
-          (.get bb ba)
-          (recur (conj! coll (codecs/bytes->clojure coll-type ba))))))))
+(defmethod codecs/bytes->clojure :list [spec bytes]
+  (decode [] bytes spec))
 
-(defmethod codecs/bytes->clojure :list [coll-spec bytes]
-  (c*collection (coll->clojure bytes coll-spec)))
+(defmethod codecs/bytes->clojure :set [spec bytes]
+  (decode #{} bytes spec))
 
-(defmethod codecs/bytes->clojure :set [coll-spec bytes]
-  (->> (coll->clojure bytes coll-spec)
-       (into #{})
-       c*collection))
-
-(defmethod codecs/bytes->clojure :map [collection-spec b]
-  (let [bb (ByteBuffer/wrap b)
-        elements (.getShort bb)
-        [key-type val-type] (-> collection-spec first val)
-        m (transient {})]
-    (loop [m m]
-      (if (= (.remaining bb) 0)
-        (-> m persistent! c*collection)
-        (let [bak (byte-array (.getShort bb))]
-          (.get bb bak) ;; fill key data
-          (let [bav (byte-array (.getShort bb))]
-            (.get bb bav) ;; fill value data
-            (recur (assoc! m
-                           (codecs/bytes->clojure key-type bak)
-                           (codecs/bytes->clojure val-type bav)))))))))
-
-(comment
-
-;; (prn (codecs/meta-encode (c*list  ["a" "b"])))
-;; (prn (codecs/meta-encode (c*set  #{"a" "b"})))
-;; (prn (codecs/meta-encode (c*map  {"a" "b"
-;;                                   "c" "d"})))
-;; (prn (codecs/bytes->clojure {:map2 [:utf-8 :utf-8]}
-;;                             (codecs/meta-encode (c*map  {"a" "b"
-;;                                                          "c" "d"}))))
-
-;; (prn (codecs/bytes->clojure {:list3 :utf-8}
-;;                             (codecs/meta-encode (c*list ["a" "b"]))))
-;; (prn (codecs/bytes->clojure :utf-8 (second (list->bytes-values2 (codecs/meta-encode (c*list  ["a" "b"]))))))
-;; (prn (codecs/meta-encode (c*set  ["a" "b"])))
-;; (prn (set->bytes-values (codecs/meta-encode (c*set  ["a" "b"]))))
-;; (prn (codecs/bytes->clojure :utf-8 (first (list->bytes-values2 (codecs/meta-encode (c*set  ["a" "b"]))))))
-;; (prn (codecs/bytes->clojure :utf-8 (first (list->bytes-values2 (codecs/meta-encode (c*set  ["a" "b"]))))))
-
-)
+(defmethod codecs/bytes->clojure :map [spec bytes]
+  (decode {} bytes spec))
