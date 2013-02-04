@@ -187,9 +187,9 @@ almost the same way as composites.
 (defschema test-schema
   :row :utf-8
   :columns {:default [:utf-8 :bytes]
-            :exception ["list-type" {:list :long}
-                        "set-type" {:set :long}
-                        "map-type" {:map [:keyword :utf-8]}]})
+            :exceptions {"list-type" {:list :long}
+                         "set-type" {:set :long}
+                         "map-type" {:map [:keyword :utf-8]}}})
 ```
 
 On this example schema we have 3 named columns showing how the schema look like.
