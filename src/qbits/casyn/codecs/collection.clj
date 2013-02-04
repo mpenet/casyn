@@ -58,7 +58,7 @@ more, and I need to throw in some tests, deved this blindfolded for now"
   ;;  s_i is the number of bytes composing the ith element
   ;;  b_i is the s_i bytes composing the ith element
 
-  clojure.lang.Seqable
+  clojure.lang.IPersistentCollection
   (encode [xs]
     (loop [xs xs
            bbs []
