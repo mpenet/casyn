@@ -55,25 +55,26 @@ you can just have the call block and wait for a result/error by dereferencing it
 @(c get-row "colFamily1" "1")
 ```
 
-or since we want to play asynchronously register a callback
+or since we want to play asynchronously register success and error callbacks
 
 ```clojure
 (require '[lamina.core :as l])
 
 (l/on-realized (c get-row "colFamily1" "1")
-           #(println "It worked, row:" %)
-           #(println "It failed, error:" %))
+               #(println "It worked, row:" %)
+               #(println "It failed, error:" %))
 ```
 
 but it is often better to  use a pipeline to compose async/sync operations.
-Here a write then reading the entire row.
-A pipeline also returns a result-channel and can be nested with other
+Here we are writing a new row, then reading the entire row, with an imaginary
+step in between that could be synchronous or asynchronous (returning a `result-channel`)
+A pipeline also returns a `result-channel` and can be nested with other
 pipelines, making async workflow and error handling easier to deal with.
 
 ```clojure
 @(l/run-pipeline
   (c insert-column "colFamily1" "1" "n0" "value0")
-  {:error-handler (fn [_] (println "snap, something went wrong"))}
+  {:error-handler (fn [e] (println "snap, something went wrong: " e))}
   (some-other-async-operation)
   (fn [result] (c get-row "colFamily1" (:id result))))
 
@@ -138,7 +139,7 @@ user> {:age 35
 ```
 
 #### Supported types
-`:utf-8` `:ascii` `:long` `:float` `:double` `:int` `:boolean`
+`:utf-8` `:ascii` `:long` `:float` `:double` `:int` `big-int` `:boolean`
 `:keyword` `:bytes` `:date` `:uuid` `:time-uuid` `:clj`
 
 Note about ASCII:
