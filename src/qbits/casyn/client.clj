@@ -62,7 +62,7 @@
          (catch IllegalStateException e true)))
 
   (kill [this]
-    (-> this .-transport .close))
+    (.close ^TNonblockingTransport (.-transport this)))
 
   p/PPoolableClient
   (borrowable? [this]
