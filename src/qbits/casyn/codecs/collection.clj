@@ -10,7 +10,7 @@ more, and I need to throw in some tests, deved this blindfolded for now"
 ;; Encoding markers
 
 (defn c*collection
-  "Marks a clojure value as cassandra native List for encoding"
+  "Marks a clojure value as cassandra native collection for encoding"
   [x]
   (codecs/mark-as x :collection))
 
