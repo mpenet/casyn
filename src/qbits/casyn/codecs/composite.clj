@@ -45,36 +45,38 @@
     (.putShort bb (short (.capacity value-bb))) ;; prefix
     (.put bb value-bb) ;; actual value
     (.put bb ^byte suffix) ;; eoc suffix
-    (.rewind bb)))
+    (.flip bb)))
 
 (defn composite->bytes-values
   "Takes a composite byte-array returned by thrift and transforms it
   to a collection of byte-arrays holding actual values for decoding"
   [ba]
   (let [bb (ByteBuffer/wrap ba)]
-    (loop [values []]
+    (loop [values (transient [])]
       (if (> (.remaining bb) 0)
         (let [dest (byte-array (.getShort bb))] ;; create the output buffer for the value
           (.get bb dest)                        ;; fill it
           (.position bb (inc (.position bb))) ;; skip the last eoc byte
-          (recur (conj values dest)))
-        values))))
+          (recur (conj! values dest)))
+        (persistent! values)))))
 
 (defn composite-expression
   "Takes a sequence of values pairs holding operator and actual clojure value to
 be encoded as a composite type. Returns a ByteBuffer
 ex: (composite-expression [:eq? 12] [:gt? \"meh\"] [:lt? 12])"
   [& values]
-  (let [bbv (map (fn [[op v]]
-                   (composite-value v (get composite-operators op)))
-                 values)
-        bb (ByteBuffer/allocate (reduce (fn [s bb]
-                                          (+ s (.capacity ^ByteBuffer bb)))
-                                        0
-                                        bbv))]
-    (doseq [v bbv]
-      (.put bb ^ByteBuffer v))
-    (.rewind bb)))
+  (loop [values values
+         bbs (transient [])
+         size 0]
+    (if-let [[op value] (first values)]
+      (let [^ByteBuffer bb (composite-value value (get composite-operators op))]
+        (recur (rest values)
+               (conj! bbs bb)
+               (+ size (.capacity bb))))
+      (let [result-bb (ByteBuffer/allocate size)]
+        (doseq [bb (persistent! bbs)]
+          (.put result-bb ^ByteBuffer bb))
+        (.flip result-bb)))))
 
 (defn c*composite
   "Mark a column value|name|key value as composite"
