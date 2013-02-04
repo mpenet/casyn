@@ -17,6 +17,9 @@ more, and I need to throw in some tests, deved this blindfolded for now"
 (defprotocol PCollection
   (encode [this] "Encodes a clojure coll to Cassandra representation"))
 
+(defmethod codecs/meta-encode :collection [xs]
+  (encode xs))
+
 (defn pack
   "Packs a collection of buffers into a single value"
   [bbs elements size]
@@ -28,9 +31,7 @@ more, and I need to throw in some tests, deved this blindfolded for now"
     (.flip result)))
 
 (extend-protocol PCollection
-
-
-    ;; Layout is: {@code <n><sk_1><k_1><sv_1><v_1>...<sk_n><k_n><sv_n><v_n> }
+  ;; Layout is: {@code <n><sk_1><k_1><sv_1><v_1>...<sk_n><k_n><sv_n><v_n> }
   ;; where:
   ;;  n is the number of elements
   ;;  sk_i is the number of bytes composing the ith key k_i
@@ -57,7 +58,6 @@ more, and I need to throw in some tests, deved this blindfolded for now"
   ;;  n is the number of elements
   ;;  s_i is the number of bytes composing the ith element
   ;;  b_i is the s_i bytes composing the ith element
-
   clojure.lang.IPersistentCollection
   (encode [xs]
     (loop [xs xs
@@ -73,8 +73,6 @@ more, and I need to throw in some tests, deved this blindfolded for now"
            (+ size (.remaining ^ByteBuffer bb) 2)))
         (pack bbs elements size)))))
 
-(defmethod codecs/meta-encode :collection [xs]
-  (encode xs))
 
 (defn coll->clojure
   [ba-coll coll-spec]
