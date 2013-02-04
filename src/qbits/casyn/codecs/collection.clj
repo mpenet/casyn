@@ -1,7 +1,5 @@
 (ns qbits.casyn.codecs.collection
-  "Encoding/decoding of native Cassandra collection types.
-TODO: It is still a bit naive in some places and could be optimized
-more, and I need to throw in some tests, deved this blindfolded for now"
+  "Encoding/decoding of native Cassandra collection types."
   (:require
    [qbits.casyn.codecs :as codecs])
   (:import
