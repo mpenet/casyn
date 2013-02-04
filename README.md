@@ -189,7 +189,7 @@ almost the same way as composites.
   :columns {:default [:utf-8 :bytes]
             :exception ["list-type" {:list :long}
                         "set-type" {:set :long}
-                        "map-type" {:set [:keyword :utf-8]}]})
+                        "map-type" {:map [:keyword :utf-8]}]})
 ```
 
 On this example schema we have 3 named columns showing how the schema look like.
