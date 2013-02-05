@@ -5,9 +5,11 @@
 * Add `shutdown` function to stop the cluster and clean its ressources
   (pools, connections, etc)
 
-* Update dependencies to cassandra 1.2.1
+* Update dependencies to cassandra 1.2.1, useful 0.8.8
 
 * Add support for `atomic_batch_mutate` and `trace_next_query`
+
+* Composites performance improvements
 
 ## 0.9.7
 
