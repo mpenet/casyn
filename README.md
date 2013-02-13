@@ -4,7 +4,7 @@
 Clojure client for Cassandra using Thrift AsyncClient.
 
 The entire [Cassandra Thrift Api (1.2.x)](http://wiki.apache.org/cassandra/API) is
-supported, this includes CQL support.
+supported, this includes basic CQL support (for a pure CQL3 client try [alia](https://github.com/mpenet/alia)).
 See [commands API](http://mpenet.github.com/casyn/qbits.casyn.api.html) for details.
 
 Pooling is using Apache commons pools, but it is open to other
