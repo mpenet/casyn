@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.1
+
+* Removed clj-time from the main dependencies
+
 ## 1.0.0
 
 * Add `shutdown` function to stop the cluster and clean its ressources
