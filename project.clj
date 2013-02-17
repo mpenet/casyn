@@ -10,11 +10,11 @@
                  [commons-pool "1.6"]
                  [com.taoensso/nippy "1.1.0"]
                  [cc.qbits/tardis "0.3.1"]
-                 [cc.qbits/knit "0.2.1"]
-                 [clj-time "0.4.4"]]
+                 [cc.qbits/knit "0.2.1"]]
   :profiles {:1.4  {:dependencies [[org.clojure/clojure "1.4.0"]]}
              :1.5  {:dependencies [[org.clojure/clojure "1.5.0-master-SNAPSHOT"]]}
-             :test {:dependencies []}}
+             :dev  {:dependencies [[clj-time "0.4.4"]]}
+             :test  {:dependencies [[clj-time "0.4.4"]]}}
 
   :codox {:src-dir-uri "https://github.com/mpenet/casyn/blob/master"
           :src-linenum-anchor-prefix "L"}
