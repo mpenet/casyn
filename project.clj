@@ -4,7 +4,7 @@
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
   :dependencies [[org.clojure/clojure "1.4.0"]
-                 [lamina "0.5.0-beta10"]
+                 [lamina "0.5.0-beta12"]
                  [org.apache.cassandra/cassandra-all "1.2.1"]
                  [useful "0.8.8"]
                  [commons-pool "1.6"]

@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.2
+
+* Update to lamina "0.5.0-beta12" (perf improvements)
+
 ## 1.0.1
 
 * Removed clj-time from the main dependencies
