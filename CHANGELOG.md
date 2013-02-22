@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.1.0
+
+* Add [Hayt](https://github.com/mpenet/hayt) 0.1.1 to the dependencies
+
 ## 1.0.2
 
 * Update to lamina "0.5.0-beta12" (perf improvements)

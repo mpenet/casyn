@@ -21,7 +21,7 @@ Casyn uses Leinigen 2, but it is compatible with 1.x
 Add the following dependency on your project.clj:
 
 ```clojure
-[cc.qbits/casyn "1.0.2"]
+[cc.qbits/casyn "1.1.0"]
 ```
 
 Note: It runs on Clojure 1.4+ and is being tested with Cassandra 1.2.1
@@ -277,6 +277,11 @@ The possible values are: `:all` `:any` `:each-quorum` `:local-quorum`
 Refer to
 [Cassandra API doc](http://wiki.apache.org/cassandra/API#Write) for
 details.
+
+## Hayt: CQL3 query DSL
+
+Casyn also comes with a CQL3 query DSL that looks very much like Korma or ClojureQL.
+More details about [Hayt](https://github.com/mpenet/hayt).
 
 ## Documentation
 
