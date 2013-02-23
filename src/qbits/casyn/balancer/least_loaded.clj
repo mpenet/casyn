@@ -1,5 +1,5 @@
 (ns qbits.casyn.balancer.least-loaded
-  "Implementation of a failover strategy where the Node pool the with the least
+  "Implementation of a node selection strategy where the nodes the with the least
 active client is selected first"
   (:require
    [qbits.casyn.balancer :refer [PBalancer balancer]]

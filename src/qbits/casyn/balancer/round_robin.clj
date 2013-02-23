@@ -1,5 +1,5 @@
 (ns qbits.casyn.balancer.round-robin
-    "Implementation of a failover strategy where nodes are selected in the order
+    "Implementation of a balancing strategy where nodes are selected in the order
 they where registered, evenly distributing charge between them"
   (:require
    [qbits.casyn.balancer :refer [PBalancer balancer]])
