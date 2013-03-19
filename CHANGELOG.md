@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.1.2
+
+* fix yammer/metric-core dependency breakage
+
+
 ## 1.1.0
 
 * Add [Hayt](https://github.com/mpenet/hayt) 0.1.1 to the dependencies
