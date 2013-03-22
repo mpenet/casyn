@@ -58,8 +58,8 @@ http://wiki.apache.org/cassandra/API"
         result-hint (format "org.apache.cassandra.thrift.Cassandra$AsyncClient$%s_call"
                             (-> form first str (subs 1)))]
     `(let [result-ch# (lc/result-channel)]
-       (~method ^"org.apache.cassandra.thrift.Cassandra$AsyncClient" (.thrift-client ~client)
-                ~@args ^"org.apache.thrift.async.AsyncMethodCallback"
+       (~method ^org.apache.cassandra.thrift.Cassandra$AsyncClient (.thrift-client ~client)
+                ~@args
                 (reify AsyncMethodCallback
                   (onComplete [_ ~thrift-cmd-call]
                     (let [result# (.getResult ~(with-meta thrift-cmd-call
