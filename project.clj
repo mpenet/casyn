@@ -1,20 +1,16 @@
-(defproject cc.qbits/casyn "1.1.2"
+(defproject cc.qbits/casyn "1.1.3"
   :description "Cassandra client with support for asynchronous operations"
   :url "https://github.com/mpenet/casyn"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
   :dependencies [[org.clojure/clojure "1.4.0"]
-                 [lamina "0.5.0-beta12"
-                  :exclusions [com.yammer.metrics/metrics-core]]
-                 [com.yammer.metrics/metrics-core "3.0.0-20130318.142009-8"
-                  :exclusions [[org.slf4j/slf4j-api]
-                               [com.yammer.metrics/metrics-annotation]]]
-                 [org.apache.cassandra/cassandra-all "1.2.1"]
+                 [lamina "0.5.0-beta15"]
+                 [org.apache.cassandra/cassandra-all "1.2.3"]
                  [useful "0.8.8"]
                  [commons-pool "1.6"]
                  [com.taoensso/nippy "1.1.0"]
                  [cc.qbits/tardis "0.3.1"]
-                 [cc.qbits/hayt "0.2.1"]
+                 [cc.qbits/hayt "0.4.0-beta3"]
                  [cc.qbits/knit "0.2.1"]]
   :repositories {"sonatype-oss-public"
                  "https://oss.sonatype.org/content/groups/public/"}

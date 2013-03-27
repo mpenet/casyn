@@ -1,9 +1,12 @@
 # Changelog
 
+## 1.1.3
+
+* update dependencies (lamina, hayt, cassandra-all)
+
 ## 1.1.2
 
 * fix yammer/metric-core dependency breakage
-
 
 ## 1.1.0
 
