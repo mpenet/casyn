@@ -55,14 +55,15 @@ you can just have the call block and wait for a result/error by dereferencing it
 @(c get-row "colFamily1" "1")
 ```
 
-or since we want to play asynchronously register success and error callbacks
+or since we want to play asynchronously register success and error
+callbacks (both are optional)
 
 ```clojure
 (require '[lamina.core :as l])
 
-(l/on-realized (c get-row "colFamily1" "1")
-               #(println "It worked, row:" %)
-               #(println "It failed, error:" %))
+(c get-row "colFamily1" "1"
+   :success #(println "It worked, row:" %)
+   :error #(println "It failed, error:" %))
 ```
 
 but it is often better to  use a pipeline to compose async/sync operations.

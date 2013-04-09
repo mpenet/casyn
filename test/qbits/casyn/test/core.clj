@@ -251,21 +251,17 @@
                       :as :map)))))
 
 (deftest error-handlers
-  (is (= nil @(lc/run-pipeline
-               (c get-row cf "mehhhhh" :super "meh" :schema test-schema)
-               {:error-handler
-                (fn [e]
-                  (if-not (instance? org.apache.cassandra.thrift.InvalidRequestException e)
-                    (throw (Exception. "meh"))
-                    (lc/complete nil))
-                  )}
-              count)))
+  (is (= nil @(c get-row cf "mehhhhh"
+                 :super "meh"
+                 :schema test-schema
+                 :error (fn [e]
+                          (if-not (instance? org.apache.cassandra.thrift.InvalidRequestException e)
+                            (throw (Exception. "meh"))
+                            (lc/complete nil))))))
 
   ;; not found returns nil
-  (is (= nil @(lc/run-pipeline
-               (c get-column cf "1" "meh")
-               :foo
-               :bar))))
+  (is (= nil (-> @(c get-column cf "1" "meh")
+                 :foo :bar))))
 
 (deftest test-cql
   (is @(lc/run-pipeline
@@ -278,20 +274,6 @@
             (c execute-prepared-cql-query (:item-id prepared-statement) ["0"]
                :schema test-codec-schema :as :map)
             #(= "value0" (-> % :rows first :n0))))))
-
-
-;; (deftest test-with*
-;;   (is @(with-client c
-;;          (lc/run-pipeline
-;;           (execute-cql-query "SELECT * FROM test_cf;"
-;;                              :schema test-codec-schema :as :map)
-;;           #(= "value0" (-> % :rows first :n0)))))
-;;     (is @(with-client2 c
-;;          (lc/run-pipeline
-;;           (execute-cql-query "SELECT * FROM test_cf;"
-;;                              :schema test-codec-schema :as :map)
-;;           #(= "value0" (-> % :rows first :n0))))))
-
 
 (deftest test-composites-expressions
   (is  (= {[2 9 10] "2", [3 11 10] "3" [3 12 10] "4", [3 13 10] "5"}

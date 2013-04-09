@@ -1,9 +1,9 @@
-(defproject cc.qbits/casyn "1.1.3"
+(defproject cc.qbits/casyn "1.2.0"
   :description "Cassandra client with support for asynchronous operations"
   :url "https://github.com/mpenet/casyn"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
-  :dependencies [[org.clojure/clojure "1.4.0"]
+  :dependencies [[org.clojure/clojure "1.5.1"]
                  [lamina "0.5.0-beta15"]
                  [org.apache.cassandra/cassandra-all "1.2.3"]
                  [useful "0.8.8"]
@@ -15,7 +15,8 @@
   :repositories {"sonatype-oss-public"
                  "https://oss.sonatype.org/content/groups/public/"}
   :profiles {:1.4  {:dependencies [[org.clojure/clojure "1.4.0"]]}
-             :1.5  {:dependencies [[org.clojure/clojure "1.5.0-master-SNAPSHOT"]]}
+             :1.5.1  {:dependencies [[org.clojure/clojure "1.5.1"]]}
+             :1.6  {:dependencies [[org.clojure/clojure "1.6.0-master-SNAPSHOT"]]}
              :dev  {:dependencies [[clj-time "0.4.4"]]}
              :test  {:dependencies [[clj-time "0.4.4"]]}}
 

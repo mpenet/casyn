@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.2.0
+
+* update default clojure version to 1.5.1
+
+* every api call now accepts callbacks under `:success` and `:error` keys.
+
 ## 1.1.3
 
 * update dependencies (lamina, hayt, cassandra-all)
