@@ -128,7 +128,9 @@
     ksd))
 
 (defn add-keyspace
-  [client ks-name strategy-class column-family-defs & more]
+  [client ks-name strategy-class column-family-defs
+   & {:keys [success error]
+      :as opts}]
   (api/wrap-result-channel
    (.system_add_keyspace
     client
@@ -136,11 +138,14 @@
            ks-name strategy-class
            (map #(cons ks-name %)
                 column-family-defs)
-           more))))
+           (mapcat identity (dissoc opts :success :error))))
+   success
+   error))
 
 (defn update-keyspace
   ""
-  [client ks-name strategy-class column-family-defs & more]
+  [client ks-name strategy-class column-family-defs & {:keys [success error]
+                                                       :as opts}]
   (api/wrap-result-channel
    (.system_update_keyspace
     client
@@ -148,32 +153,41 @@
            ks-name strategy-class
            (map #(cons ks-name %)
                 column-family-defs)
-           more))))
+           (mapcat identity (dissoc opts :success :error))))
+   success error))
 
 (defn drop-keyspace
   ""
-  [client ks-name]
+  [client ks-name & {:keys [success error]}]
   (api/wrap-result-channel
-   (.system_drop_keyspace client ks-name)))
+   (.system_drop_keyspace client ks-name)
+   success error))
 
 (defn add-column-family
   ""
-  [client & cf-args]
+  [client {:keys [success error]
+           :as opts}]
   (api/wrap-result-channel
    (.system_add_column_family
     client
-    (apply column-family-definition cf-args))))
+    (apply column-family-definition
+           (mapcat identity (dissoc opts :success :error))))
+   success error))
 
 (defn update-column-family
   ""
-  [client & cf-args]
+  [client & {:keys [success error]
+             :as opts}]
   (api/wrap-result-channel
    (.system_update_column_family
     client
-    (apply column-family-definition cf-args))))
+    (apply column-family-definition
+           (mapcat identity (dissoc opts :success :error))))
+   success error))
 
 (defn drop-column-family
   ""
-  [client cf-name]
+  [client cf-name & {:keys [success error]}]
   (api/wrap-result-channel
-   (.system_drop_column_family client cf-name)))
+   (.system_drop_column_family client cf-name)
+   success error))

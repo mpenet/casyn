@@ -51,7 +51,7 @@ http://wiki.apache.org/cassandra/API"
   "Wraps a form in a Lamina result-channel, and make the last arg of the form an
    AsyncMethodCallback with error/complete callback bound to a result-channel"
   {:no-doc true}
-  [form & post-realize-fns]
+  [form success error & post-realize-fns]
   (let [thrift-cmd-call (gensym)
         [method client & args] form
         client (vary-meta client assoc :tag "qbits.casyn.client.Client")
@@ -71,16 +71,19 @@ http://wiki.apache.org/cassandra/API"
                                   #(lc/error result-ch# error#)))))
        (lc/run-pipeline
         result-ch#
-        {:error-handler (fn [_#])}
+        {:error-handler (or ~error (fn [_#]))}
         t/thrift->casyn
-        ~@(filter identity post-realize-fns)))))
+        ~@(filter identity post-realize-fns)
+        #(if ~success (~success %) %)))))
 
 (defmacro wrap-result-channel+schema
   ""
   {:no-doc true}
-  [form schema as]
+  [form success error schema as]
   `(wrap-result-channel
     ~form
+    ~success
+    ~error
     #(if ~schema
        (qbits.casyn.schema/decode-result % ~schema ~as)
        %)))
@@ -281,13 +284,14 @@ Optional kw args:
 
 (defn login
   "Expect an AuthenticationRequest instance as argument"
-  [client ^AuthenticationRequest auth-req]
-  (wrap-result-channel (.login client auth-req) ))
+  [client ^AuthenticationRequest auth-req & {:keys [success error]}]
+  (wrap-result-channel (.login client auth-req)
+                       success error))
 
 (defn set-keyspace
   ""
-  [client ks]
-  (wrap-result-channel (.set_keyspace client ^String ks)))
+  [client ks & {:keys [success error]}]
+  (wrap-result-channel (.set_keyspace client ^String ks) success error))
 
 (defn get-column
   "Returns a single column.
@@ -298,13 +302,16 @@ Optional kw args:
   :as : ouput format (if nil it will return casyn types,
               if :map it will try to turn collections to maps"
   [client cf row-key col
-   & {:keys [super consistency schema as]}]
+   & {:keys [super consistency schema as success error]}]
   (wrap-result-channel+schema
    (.get client
          ^ByteBuffer (codecs/clojure->byte-buffer row-key)
          (column-path cf :super super :column col)
          (consistency-level consistency))
+   success error
    schema as))
+
+
 
 (defn get-slice
   "Returns a slice of columns. Accepts optional slice-predicate arguments :columns, :start, :finish, :count,
@@ -322,7 +329,7 @@ Optional kw args:
   :as : as format (if nil it will return casyn types,
               if :as-map it will try to turn collections to maps"
   [client cf row-key
-   & {:keys [super consistency schema as]
+   & {:keys [super consistency schema as success error]
       :as opts}]
   (wrap-result-channel+schema
    (.get_slice client
@@ -330,7 +337,8 @@ Optional kw args:
                (column-parent cf super)
                (slice-predicate opts)
                (consistency-level consistency))
-    schema as))
+   success error
+   schema as))
 
 (defn mget-slice
   "Returns a collection of slices of columns.
@@ -350,7 +358,7 @@ Optional kw args:
   :as : as format (if nil it will return casyn types,
               if :map it will try to turn collections to maps"
   [client cf row-keys
-   & {:keys [super consistency schema as]
+   & {:keys [super consistency schema as success error]
       :as opts}]
   (wrap-result-channel+schema
    (.multiget_slice client
@@ -358,7 +366,8 @@ Optional kw args:
                     (column-parent cf super)
                     (slice-predicate opts)
                     (consistency-level consistency))
-    schema as))
+   success error
+   schema as))
 
 (defn get-count
   "Accepts optional slice-predicate arguments :columns, :start, :finish, :count,
@@ -377,7 +386,7 @@ Optional kw args:
   :as : as format (if nil it will return casyn types,
               if :map it will try to turn collections to maps"
   [client cf row-key
-   & {:keys [super consistency schema as]
+   & {:keys [super consistency schema as success error]
       :as opts}]
   (wrap-result-channel+schema
    (.get_count client
@@ -385,7 +394,8 @@ Optional kw args:
                (column-parent cf super)
                (slice-predicate opts)
                (consistency-level consistency))
-    schema as))
+   success error
+   schema as))
 
 (defn mget-count
   "Accepts optional slice-predicate arguments :columns, :start, :finish, :count,
@@ -404,7 +414,7 @@ Optional kw args:
   :as : as format (if nil it will return casyn types,
               if :map it will try to turn collections to maps"
   [client cf row-keys
-   & {:keys [super consistency schema as]
+   & {:keys [super consistency schema as success error]
       :as opts}]
   (wrap-result-channel+schema
    (.multiget_count client
@@ -412,7 +422,8 @@ Optional kw args:
                     (column-parent cf super)
                     (slice-predicate opts)
                     (consistency-level consistency))
-    schema as))
+   success error
+   schema as))
 
 (defn insert-column
   "Inserts a single column.
@@ -425,7 +436,7 @@ Optional kw args:
                        (in nanosecs), defaults to the value for the current time
   :consistency : optional consistency-level, defaults to :one"
   [client cf row-key name value
-   & {:keys [super type consistency ttl timestamp]
+   & {:keys [super type consistency ttl timestamp success error]
       :or {type :column}}]
   (wrap-result-channel
    (.insert client
@@ -436,7 +447,8 @@ Optional kw args:
               :counter (column name value :type :counter)
                ;; values is a collection of columns for super-cols
               :super (column super value :type :super))
-            (consistency-level consistency))))
+            (consistency-level consistency))
+   success error))
 
 (defn increment
   "Increment the specified counter column value.
@@ -445,13 +457,14 @@ Optional kw args:
   :super : this argument will be used as the super column name if specified
   :consistency : optional consistency-level, defaults to :one"
   [client cf row-key column-name value
-   & {:keys [super consistency]}]
+   & {:keys [super consistency success error]}]
   (wrap-result-channel
    (.add client
          (codecs/clojure->byte-buffer row-key)
          (column-parent cf super)
          (column column-name value :type :counter)
-         (consistency-level consistency))))
+         (consistency-level consistency))
+   success error))
 
 (defn delete
   "Delete column(s), works on regular columns or counters.
@@ -464,19 +477,21 @@ Optional kw args:
                        (in nanosecs), defaults to the value for the current time
   :consistency : optional consistency-level, defaults to :one"
   [client cf row-key
-   & {:keys [column super timestamp consistency type]}]
+   & {:keys [column super timestamp consistency type success error]}]
   (if (= :counter type)
     (wrap-result-channel
      (.remove_counter client
                       (codecs/clojure->byte-buffer row-key)
                       (column-path cf :super super :column column)
-                      (consistency-level consistency)))
+                      (consistency-level consistency))
+     success error)
     (wrap-result-channel
      (.remove client
               (codecs/clojure->byte-buffer row-key)
               (column-path cf :super super :column column)
               (or timestamp (utils/ts))
-              (consistency-level consistency)))))
+              (consistency-level consistency))
+     success error)))
 
 (defn batch-mutate
   "Executes the specified mutations on the keyspace.
@@ -493,7 +508,7 @@ Optional kw args:
 :atomic? write to the batchlog before attempting distribution to the batch rows
 replicas for details see: https://issues.apache.org/jira/browse/CASSANDRA-4542"
   [client mutations
-   & {:keys [consistency atomic?]}]
+   & {:keys [consistency atomic? success error]}]
   (let [mutations (reduce (fn [m [cf rk mut]]
                             (update-in m
                                        [(codecs/clojure->byte-buffer rk) cf]
@@ -502,9 +517,11 @@ replicas for details see: https://issues.apache.org/jira/browse/CASSANDRA-4542"
                           mutations)]
     (if atomic?
       (wrap-result-channel
-       (.atomic_batch_mutate client mutations (consistency-level consistency)))
+       (.atomic_batch_mutate client mutations (consistency-level consistency))
+success error)
       (wrap-result-channel
-       (.batch_mutate client mutations (consistency-level consistency))))))
+       (.batch_mutate client mutations (consistency-level consistency))
+success error))))
 
 (defn get-range-slice
   "Accepts optional slice-predicate arguments :columns, :start, :finish, :count,
@@ -532,7 +549,7 @@ Optional kw args:
   :as : as format (if nil it will return casyn types,
               if :map it will try to turn collections to maps"
   [client cf
-   & {:keys [super consistency schema as]
+   & {:keys [super consistency schema as success error]
       :as opts}]
   (wrap-result-channel+schema
    (.get_range_slices client
@@ -540,7 +557,8 @@ Optional kw args:
                       (slice-predicate opts)
                       (key-range opts)
                       (consistency-level consistency))
-    schema as))
+   success error
+   schema as))
 
 (defn get-indexed-slice
   "Accepts optional slice-predicate arguments :columns, :start, :finish, :count,
@@ -560,7 +578,7 @@ Optional kw args:
   :as : as format (if nil it will return casyn types,
               if :map it will try to turn collections to maps"
   [client cf index-clause-args
-   & {:keys [super consistency schema as]
+   & {:keys [super consistency schema as success error]
       :as opts}]
   (wrap-result-channel+schema
    (.get_indexed_slices client
@@ -568,32 +586,38 @@ Optional kw args:
                         (index-clause index-clause-args)
                         (slice-predicate opts)
                         (consistency-level consistency))
-    schema as))
+   success error
+   schema as))
 
 (defn truncate
   "Removes all the rows from the given column family."
-  [client cf]
-  (wrap-result-channel (.truncate client cf)))
+  [client cf & {:keys [success error]}]
+  (wrap-result-channel (.truncate client cf)
+                       success error))
 
 (defn describe-cluster-name
   "Gets the name of the cluster."
-  [client]
-  (wrap-result-channel (.describe_cluster_name client)))
+  [client & {:keys [success error]}]
+  (wrap-result-channel (.describe_cluster_name client)
+                       success error))
 
 (defn describe-keyspace
   "Gets information about the specified keyspace."
-  [client ks]
-  (wrap-result-channel (.describe_keyspace client ks) ))
+  [client ks & {:keys [success error]}]
+  (wrap-result-channel (.describe_keyspace client ks)
+                       success error))
 
 (defn describe-keyspaces
   "Gets a list of all the keyspaces configured for the cluster."
-  [client]
-  (wrap-result-channel (.describe_keyspaces client)))
+  [client & {:keys [success error]}]
+  (wrap-result-channel (.describe_keyspaces client)
+                       success error))
 
 (defn describe-partitioner
   "Gets the name of the partitioner for the cluster."
-  [client]
-  (wrap-result-channel (.describe_partitioner client)))
+  [client & {:keys [success error]}]
+  (wrap-result-channel (.describe_partitioner client)
+                       success error))
 
 (defn describe-ring
   "Gets the token ring; a map of ranges to host addresses. Represented
@@ -602,53 +626,61 @@ Optional kw args:
   https://issues.apache.org/jira/browse/THRIFT-162 for the same
   reason, we can't return a set here, even though order is neither
   important nor predictable."
-  [client ks]
-  (wrap-result-channel (.describe_ring client ks)))
+  [client ks & {:keys [success error]}]
+  (wrap-result-channel (.describe_ring client ks)
+                       success error))
 
 (defn describe-schema-versions
   "For each schema version present in the cluster, returns a list of
   nodes at that version. Hosts that do not respond will be under the
   key DatabaseDescriptor.INITIAL_VERSION. The cluster is all on the
   same version if the size of the map is 1"
-  [client]
-  (wrap-result-channel (.describe_schema_versions client)))
+  [client & {:keys [success error]}]
+  (wrap-result-channel (.describe_schema_versions client)
+                       success error))
 
 (defn describe-snitch
   "Gets the name of the snitch used for the cluster."
-  [client]
-  (wrap-result-channel (.describe_snitch client)))
+  [client & {:keys [success error]}]
+  (wrap-result-channel (.describe_snitch client)
+                       success error))
 
 (defn describe-splits
   ""
-  [client cf start-token end-token keys-per-split]
+  [client cf start-token end-token keys-per-split & {:keys [success error]}]
   (wrap-result-channel (.describe_splits client
                                          cf
                                          start-token end-token
-                                         keys-per-split)))
+                                         keys-per-split)
+                       success error))
 
 (defn describe-token-map
   ""
-  [client]
-  (wrap-result-channel (.describe_token_map client)))
+  [client & {:keys [success error]}]
+  (wrap-result-channel (.describe_token_map client)
+                       success error))
 
 (defn describe-version
   "Gets the Thrift API version."
-  [client]
-  (wrap-result-channel (.describe_version client)))
+  [client & {:keys [success error]}]
+  (wrap-result-channel (.describe_version client)
+                       success error))
 
 (defn set-cql-version
   ""
-  [client version]
-  (wrap-result-channel (.set_cql_version client version)))
+  [client version & {:keys [success error]}]
+  (wrap-result-channel (.set_cql_version client version)
+                       success error))
 
 (defn prepare-cql-query
   "Prepare a CQL (Cassandra Query Language) statement by compiling and returning
 a qbits.casyn.types.CqlPreparedResult instance"
-  [client query]
+  [client query & {:keys [success error]}]
   (wrap-result-channel
    (.prepare_cql_query client
                        (codecs/clojure->byte-buffer query)
-                       Compression/NONE)))
+                       Compression/NONE)
+   success error))
 
 (defn execute-cql-query
   "Executes a CQL (Cassandra Query Language) statement.
@@ -657,12 +689,13 @@ Optional kw args:
   :as : as format (if nil it will return casyn types,
               if :map it will try to turn collections to maps"
   [client query
-   & {:keys [schema as]}]
+   & {:keys [schema as success error]}]
   (wrap-result-channel+schema
    (.execute_cql_query client
                        (codecs/clojure->byte-buffer query)
                        Compression/NONE)
-    schema as))
+   success error
+   schema as))
 
 (defn execute-prepared-cql-query
   "Executes a prepared CQL (Cassandra Query Language) statement by
@@ -673,16 +706,18 @@ Optional kw args:
   :as : as format (if nil it will return casyn types,
               if :map it will try to turn collections to maps"
   [client item-id values
-   & {:keys [schema as]}]
+   & {:keys [schema as success error]}]
   (wrap-result-channel+schema
    (.execute_prepared_cql_query client
                                 (int item-id)
                                 (map codecs/clojure->byte-buffer values))
-    schema as))
+   success error
+   schema as))
 
 (defn trace-next-query
-  [client]
-  (wrap-result-channel (.trace_next_query client)))
+  [client & {:keys [success error]}]
+  (wrap-result-channel (.trace_next_query client)
+                       success error))
 
 ;; Sugar
 
@@ -698,12 +733,13 @@ Optional kw args for mutations when passed as vectors:
   :timestamp (long): Allows to specify the Timestamp for the column
                        (in nanosecs), defaults to the value for the current time"
   [client cf row-key columns
-   & {:keys [consistency type]}]
+   & {:keys [consistency type success error]}]
   (wrap-result-channel
    (.batch_mutate client
                   {(codecs/clojure->byte-buffer row-key)
                    {cf (map #(apply mutation %) columns)}}
-                  (consistency-level consistency))))
+                  (consistency-level consistency))
+   success error))
 
 ;; aliases
 (def ^{:doc "Alias to mget-slice"} get-rows mget-slice)
