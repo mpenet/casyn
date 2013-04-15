@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.2.1
+
+* use latest nippy version
+
 ## 1.2.0
 
 * update default clojure version to 1.5.1

@@ -1,4 +1,4 @@
-(defproject cc.qbits/casyn "1.2.0"
+(defproject cc.qbits/casyn "1.2.1"
   :description "Cassandra client with support for asynchronous operations"
   :url "https://github.com/mpenet/casyn"
   :license {:name "Eclipse Public License"
@@ -8,7 +8,7 @@
                  [org.apache.cassandra/cassandra-all "1.2.3"]
                  [useful "0.8.8"]
                  [commons-pool "1.6"]
-                 [com.taoensso/nippy "1.1.0"]
+                 [com.taoensso/nippy "1.2.0"]
                  [cc.qbits/tardis "0.3.1"]
                  [cc.qbits/hayt "0.4.0-beta3"]
                  [cc.qbits/knit "0.2.1"]]
