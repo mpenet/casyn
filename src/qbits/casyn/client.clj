@@ -46,7 +46,8 @@
 
 (defprotocol PClient
   (set-timeout [client timeout])
-  (errors? [client])
+  (error? [client])
+  (timeout? [client])
   (kill [client]))
 
 (deftype Client [^TAsyncClient thrift-client
@@ -57,21 +58,14 @@
     (.setTimeout thrift-client timeout)
     this)
 
-  (errors? [this]
-    (try (.hasError thrift-client)
-         (catch IllegalStateException e true)))
-
   (kill [this]
     (.close ^TNonblockingTransport (.-transport this)))
 
-  p/PPoolableClient
-  (borrowable? [this]
-    "Health check client before borrow"
-    (not (errors? this)))
+  (error? [this]
+    (.hasError thrift-client))
 
-  (returnable? [this]
-    "Health check client before it is returned"
-    (not (errors? this))))
+  (timeout? [this]
+    (.hasTimeout thrift-client)))
 
 (def default-factory-pool (client-factory-pool 3))
 

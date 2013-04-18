@@ -264,6 +264,7 @@
                  :foo :bar))))
 
 (deftest test-cql
+  ;; (c set-cql-version "3.0")
   (is @(lc/run-pipeline
         (c execute-cql-query "SELECT * FROM test_cf;"
            :schema test-codec-schema :as :map)

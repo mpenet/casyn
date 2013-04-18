@@ -1,6 +1,6 @@
 (ns qbits.casyn.pool.commons
   (:require
-   [qbits.casyn.pool :refer [PPool returnable? return invalidate]]
+   [qbits.casyn.pool :as p]
    [qbits.casyn.client :as c]
    [qbits.casyn.api :as api])
 
@@ -9,7 +9,7 @@
    [org.apache.commons.pool.impl GenericKeyedObjectPool]))
 
 (extend-type GenericKeyedObjectPool
-  PPool
+  p/PPool
   (add [pool node-host]
     (.addObject pool node-host))
 
@@ -23,9 +23,9 @@
     (.invalidateObject pool node-host client))
 
   (return-or-invalidate [pool node-host client]
-    (if (returnable? client)
-      (return pool node-host client)
-      (invalidate pool node-host client)))
+    (if (c/error? client)
+      (p/invalidate pool node-host client)
+      (p/return pool node-host client)))
 
   (drain [pool node-host]
     (.clear pool node-host))
@@ -61,7 +61,8 @@
     (destroyObject [this node-host client]
       (c/kill client))
     (activateObject [this node-host client])
-    (validateObject [this node-host client])
+    (validateObject [this node-host client]
+      (c/error? client))
     (passivateObject [this node-host client])))
 
 ;; borrowed from ptaoussanis/accession

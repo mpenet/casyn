@@ -12,7 +12,3 @@
   (close [pool] "Clear and close the pool")
   (active-clients [pool] [pool node-host] "")
   (idle-clients [pool] [pool node-host] ""))
-
-(defprotocol PPoolableClient
-  (borrowable? [client] "Health check client before borrow")
-  (returnable? [client] "Health check client before it is returned"))
