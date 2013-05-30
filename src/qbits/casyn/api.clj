@@ -523,7 +523,7 @@ success error)
        (.batch_mutate client mutations (consistency-level consistency))
 success error))))
 
-(defn get-range-slice
+(defn get-range-slices
   "Accepts optional slice-predicate arguments :columns, :start, :finish, :count,
 :reversed?, if you specify :columns the other slice args will be ignored (as
 defined by the cassandra api). Accepts optional key-range arguments :start-token
@@ -560,7 +560,7 @@ Optional kw args:
    success error
    schema as))
 
-(defn get-indexed-slice
+(defn get-indexed-slices
   "Accepts optional slice-predicate arguments :columns, :start, :finish, :count,
 :reversed?, if you specify :columns the other slice args will be ignored (as
 defined by the cassandra api).

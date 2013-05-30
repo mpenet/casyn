@@ -216,7 +216,7 @@
   (is (= 0 (count @(c get-row cf "0")))))
 
 (deftest test-ranges
-  (is (= 1 (count @(c get-range-slice cf
+  (is (= 1 (count @(c get-range-slices cf
                       :start-key "0"
                       :end-key "1"
                       :columns ["n0" "n00"]
@@ -237,13 +237,13 @@
 
 (deftest test-index
   (is (= '({"1" {"n1" "value1"}})
-         @(c get-indexed-slice cf
+         @(c get-indexed-slices cf
             [[:eq? :n1 "value1"]]
             :columns ["n1"]
             :schema test-schema
             :as :map)))
 
-  (is (= 1 (count @(c get-indexed-slice
+  (is (= 1 (count @(c get-indexed-slices
                       cf
                       [[:eq? :n1 "value1"]]
                       :columns ["n1"]

@@ -1,4 +1,4 @@
-(defproject cc.qbits/casyn "1.2.2"
+(defproject cc.qbits/casyn "1.3.0"
   :description "Cassandra client with support for asynchronous operations"
   :url "https://github.com/mpenet/casyn"
   :license {:name "Eclipse Public License"
@@ -10,7 +10,7 @@
                  [commons-pool "1.6"]
                  [com.taoensso/nippy "1.2.0"]
                  [cc.qbits/tardis "0.3.1"]
-                 [cc.qbits/hayt "0.4.0-beta4"]
+                 [cc.qbits/hayt "1.0.3"]
                  [cc.qbits/knit "0.2.1"]]
   :repositories {"sonatype-oss-public"
                  "https://oss.sonatype.org/content/groups/public/"}

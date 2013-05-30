@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.3.0
+
+* rename `get-range-slice` -> `get-range-slices` and
+  `get-indexed-slice` -> `get-indexed-slices`, matching thrift methods
+
+
 ## 1.2.1
 
 * use latest nippy version
