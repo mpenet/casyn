@@ -500,8 +500,8 @@ Expects a collection of mutation specs, every mutation is a vector of
 [column-family, row-id, mutation instance]:
 
 Example:
-[[\"cf\" \"row-2\" (mutation \"col-name\" \"col-value\")]
- [\"cf\" \"row-1\" (delete-mutation :columns [\"col-name\"])]]
+[[\"cf\" \"row-2\" [(mutation \"col-name\" \"col-value\")]]
+ [\"cf\" \"row-1\" [(delete-mutation :columns [\"col-name\"])]]]
 
 Optional kw args:
 :consistency : optional consistency-level, defaults to :one
