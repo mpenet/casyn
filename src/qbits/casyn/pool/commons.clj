@@ -62,7 +62,7 @@
       (c/kill client))
     (activateObject [this node-host client])
     (validateObject [this node-host client]
-      (c/error? client))
+      (not (c/error? client)))
     (passivateObject [this node-host client])))
 
 ;; borrowed from ptaoussanis/accession
