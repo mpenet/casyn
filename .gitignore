@@ -10,3 +10,5 @@
 /updoc.sh
 /src/log4j.properties
 /target
+/.idea
+*.iml
