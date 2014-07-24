@@ -1,4 +1,4 @@
-(defproject cc.qbits/casyn "1.3.1"
+(defproject cc.qbits/casyn "1.3.2"
   :description "Cassandra client with support for asynchronous operations"
   :url "https://github.com/mpenet/casyn"
   :license {:name "Eclipse Public License"

@@ -3,7 +3,7 @@
 (defn ts
   "Simple/naive microsec clock"
   []
-  (* (System/currentTimeMillis) 1000))
+  (System/nanoTime))
 
 (defonce ts-sync-counter (atom 0))
 

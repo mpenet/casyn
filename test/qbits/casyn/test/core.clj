@@ -290,6 +290,12 @@
   (is (= "CompositeType(UTF8Type,LongType)"
          (clj->cassandra-type {:composite [:utf-8 :long]}))))
 
+(deftest test-column
+  (testing "will respect the timestamp supplied to column"
+    (let [x (qbits.casyn.api/column "MySuperColumnFamily" {"foo" "bar"} :type :super :timestamp 1)]
+      (is (= (.getTimestamp (first (.getColumns x)))
+             1)))))
+
 (deftest test-shutdown
   (let [cl (make-cluster "127.0.0.1" 9160 ks) ]
     (is (= nil (shutdown cl)))))
