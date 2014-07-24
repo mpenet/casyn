@@ -109,7 +109,7 @@ Optional kw args:
     :counter (CounterColumn. (codecs/clojure->byte-buffer name)
                              (long value))
     :super (SuperColumn. (codecs/clojure->byte-buffer name)
-                         (map #(apply column %) value))
+                         (map #(apply column % [:timestamp timestamp]) value))
     :counter-super-column (CounterSuperColumn. (codecs/clojure->byte-buffer name)
                                                (map #(apply column :counter %) value))))
 
